@@ -17,6 +17,15 @@ public class Request<T> {
 
 	public Request() {}
 	
+	public Request(String method) {
+		this.method = method;
+	}
+	
+	public Request(String method, T contents) {
+		this.method = method;
+		this.contents = contents;
+	}
+	
 	public String getMethod() {
 		return method;
 	}
