@@ -7,5 +7,6 @@
   <name>Net album program</name>
   <modules>
   	<module>netalbum-api</module>
+  	<module>netalbum-server</module>
   </modules>
 </project>
