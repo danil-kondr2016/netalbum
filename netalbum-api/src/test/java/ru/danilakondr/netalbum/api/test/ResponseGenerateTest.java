@@ -53,6 +53,6 @@ public class ResponseGenerateTest {
 		Response<DirectoryInfo> resp = Responses.directoryInfo("testDirectory", 8);
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"contents\":{\"directoryName\":\"testDirectory\",\"directorySize\":8},\"status\":{\"id\":\"SUCCESS\",\"message\":\"Success\"}}", x);
+		assertEquals("{\"status\":{\"id\":\"SUCCESS\",\"message\":\"Success\"},\"contents\":{\"directoryName\":\"testDirectory\",\"directorySize\":8}}", x);
 	}
 }
