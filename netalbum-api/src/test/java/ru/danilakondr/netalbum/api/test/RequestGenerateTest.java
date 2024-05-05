@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.json.bind.*;
 import jakarta.json.bind.config.BinaryDataStrategy;
-import jakarta.json.bind.config.PropertyOrderStrategy;
 import ru.danilakondr.netalbum.api.*;
 import ru.danilakondr.netalbum.api.request.*;
 
