@@ -56,4 +56,15 @@ public class Requests {
 	public static Request<Void> getDirectoryInfo() {
 		return new Request<Void>("getDirectoryInfo");
 	}
+	
+	public static Request<Void> downloadContents() {
+		return new Request<Void>("downloadContents");
+	}
+	
+	public static Request<Synchronize> synchronize(List<Change> changes) {
+		Synchronize content = new Synchronize();
+		content.setChanges(changes);
+		
+		return new Request<>("synchronize", content);
+	}
 }
