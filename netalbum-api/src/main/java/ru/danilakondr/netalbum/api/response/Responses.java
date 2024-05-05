@@ -23,4 +23,16 @@ public class Responses {
 	public static Response<Void> sqlError(String reason) {
 		return responseWithStatus(Status.sqlError(reason));
 	}
+	
+	public static Response<DirectoryInfo> directoryInfo(String name, long size) {
+		DirectoryInfo info = new DirectoryInfo();
+		info.setDirectoryName(name);
+		info.setDirectorySize(size);
+		
+		Response<DirectoryInfo> resp = new Response<>();
+		resp.setStatus(Status.success());
+		resp.setContents(info);
+		
+		return resp;
+	}
 }

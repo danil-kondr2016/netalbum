@@ -52,4 +52,8 @@ public class Requests {
 		
 		return new Request<AddImages>("addImages", add);
 	}
+	
+	public static Request<Void> getDirectoryInfo() {
+		return new Request<Void>("getDirectoryInfo");
+	}
 }

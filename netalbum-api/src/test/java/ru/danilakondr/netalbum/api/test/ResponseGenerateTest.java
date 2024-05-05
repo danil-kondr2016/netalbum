@@ -10,6 +10,7 @@ import jakarta.json.bind.JsonbBuilder;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.config.BinaryDataStrategy;
 import jakarta.json.bind.config.PropertyOrderStrategy;
+import ru.danilakondr.netalbum.api.response.DirectoryInfo;
 import ru.danilakondr.netalbum.api.response.Response;
 import ru.danilakondr.netalbum.api.response.Responses;
 
@@ -44,5 +45,14 @@ public class ResponseGenerateTest {
 		String x = objectToJson(resp);
 		
 		assertEquals("{\"status\":{\"id\":\"SQL_ERROR\",\"message\":\"SQL request error: Database has not been designed\"}}", x);
+	}
+	
+	@Test
+	@DisplayName("Check success response with some body (directoryInfo)")
+	void directoryInfo() {
+		Response<DirectoryInfo> resp = Responses.directoryInfo("testDirectory", 8);
+		String x = objectToJson(resp);
+		
+		assertEquals("{\"contents\":{\"directoryName\":\"testDirectory\",\"directorySize\":8},\"status\":{\"id\":\"SUCCESS\",\"message\":\"Success\"}}", x);
 	}
 }
