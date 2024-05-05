@@ -11,26 +11,17 @@ package ru.danilakondr.netalbum.api.response;
  * </pre>
  */
 public class Status {
-	public static final int STATUS_ID_SUCCESS = 1;
-	public static final int STATUS_ID_GET = 0;
-	public static final int STATUS_ID_INVALID_METHOD = -1;
-	public static final int STATUS_ID_INVALID_ARGUMENT = -2;
-	public static final int STATUS_ID_SQL_ERROR = -3;
-	
-	public static final Status STATUS_SUCCESS = new Status(STATUS_ID_SUCCESS, "Success");
-	public static final Status STATUS_GET = new Status(STATUS_ID_GET, "GET method invoked");
-	
-	private int id;
+	private StatusId id;
 	private String message;
 	
 	public Status() {}
 	
-	public Status(int id, String message) {
+	public Status(StatusId id, String message) {
 		this.id = id;
 		this.message = message;
 	}
 	
-	public int getId() {
+	public StatusId getId() {
 		return id;
 	}
 	
@@ -38,11 +29,37 @@ public class Status {
 		return message;
 	}
 	
-	public void setId(int id) {
+	public void setId(StatusId id) {
 		this.id = id;
 	}
 	
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	
+	private static String errorMessage(String mandatory, String optional) {
+		if (optional != null && !optional.isBlank())
+			return mandatory + ": " + optional;
+		return mandatory;
+	}
+	
+	static Status success() {
+		return new Status(StatusId.SUCCESS, "Success");
+	}
+	
+	static Status getMethod() {
+		return new Status(StatusId.GET_METHOD, "GET method invoked");
+	}
+	
+	static Status invalidMethod(String method) {
+		return new Status(StatusId.INVALID_METHOD, errorMessage("Invalid method", method));
+	}
+	
+	static Status invalidArgument(String reason) {
+		return new Status(StatusId.INVALID_ARGUMENT, errorMessage("Invalid argument", reason));
+	}
+	
+	static Status sqlError(String reason) {
+		return new Status(StatusId.SQL_ERROR, errorMessage("SQL request error", reason));
 	}
 }
