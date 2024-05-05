@@ -1,5 +1,9 @@
 package ru.danilakondr.netalbum.api.response;
 
+import java.util.List;
+
+import ru.danilakondr.netalbum.api.ImageData;
+
 public class Responses {
 	private static Response<Void> responseWithStatus(Status st) {
 		Response<Void> response = new Response<>();
@@ -32,6 +36,17 @@ public class Responses {
 		Response<DirectoryInfo> resp = new Response<>();
 		resp.setStatus(Status.success());
 		resp.setContents(info);
+		
+		return resp;
+	}
+	
+	public static Response<DirectoryContents> directoryContents(List<ImageData> contents) {
+		DirectoryContents dirContents = new DirectoryContents();
+		dirContents.setDirectoryContents(contents);
+		
+		Response<DirectoryContents> resp = new Response<DirectoryContents>();
+		resp.setStatus(Status.success());
+		resp.setContents(dirContents);
 		
 		return resp;
 	}
