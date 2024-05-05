@@ -36,7 +36,7 @@ public class RequestGenerateTest {
 		Request<DirectoryName> req = Requests.initSession(TEST_DIRECTORY_NAME);
 		String x = objectToJson(req);
 
-		assertEquals(String.format(Locale.ROOT, "{\"method\":\"initSession\",\"contents\":{\"directoryName\":\"%s\"}}", TEST_DIRECTORY_NAME), x);
+		assertEquals(String.format(Locale.ROOT, "{\"method\":\"INIT_SESSION\",\"contents\":{\"directoryName\":\"%s\"}}", TEST_DIRECTORY_NAME), x);
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class RequestGenerateTest {
 		Request<Void> req = Requests.closeSession();
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"closeSession\"}", x);
+		assertEquals("{\"method\":\"CLOSE_SESSION\"}", x);
 	}
 	
 	@Test
@@ -61,7 +61,7 @@ public class RequestGenerateTest {
 		Request<AddImages> req = Requests.addSingleImage(data);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"addImages\",\"contents\":{\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"height\":8,\"width\":1,\"thumbnail\":\"VEhVTUIxDQo=\"}]}}", x);
+		assertEquals("{\"method\":\"ADD_IMAGES\",\"contents\":{\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"height\":8,\"width\":1,\"thumbnail\":\"VEhVTUIxDQo=\"}]}}", x);
 	}
 	
 	@Test
@@ -79,6 +79,6 @@ public class RequestGenerateTest {
 		Request<Synchronize> req = Requests.synchronize(changes);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"synchronize\",\"contents\":{\"changes\":[{\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"oldName\":\"test2.png\",\"newName\":null}]}}", x);
+		assertEquals("{\"method\":\"SYNCHRONIZE\",\"contents\":{\"changes\":[{\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"oldName\":\"test2.png\",\"newName\":null}]}}", x);
 	}
 }

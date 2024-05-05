@@ -15,25 +15,25 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  */
 @JsonbPropertyOrder({"method", "contents"})
 public class Request<T> {
-	private String method;
+	private RequestType method;
 	private T contents;
 
 	public Request() {}
 	
-	public Request(String method) {
+	public Request(RequestType method) {
 		this.method = method;
 	}
 	
-	public Request(String method, T contents) {
+	public Request(RequestType method, T contents) {
 		this.method = method;
 		this.contents = contents;
 	}
 	
-	public String getMethod() {
+	public RequestType getMethod() {
 		return method;
 	}
 	
-	public void setMethod(String method) {
+	public void setMethod(RequestType method) {
 		this.method = method;
 	}
 	
