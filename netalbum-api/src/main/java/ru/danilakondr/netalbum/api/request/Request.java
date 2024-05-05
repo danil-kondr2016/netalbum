@@ -1,5 +1,7 @@
 package ru.danilakondr.netalbum.api.request;
 
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
+
 /**
  * Объект запроса, посылаемого в формате JSON.
  * <p>
@@ -11,6 +13,7 @@ package ru.danilakondr.netalbum.api.request;
  * </pre>
  * @param <T> тип содержимого
  */
+@JsonbPropertyOrder({"method", "contents"})
 public class Request<T> {
 	private String method;
 	private T contents;

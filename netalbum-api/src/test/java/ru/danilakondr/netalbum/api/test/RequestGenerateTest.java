@@ -3,7 +3,7 @@ package ru.danilakondr.netalbum.api.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +23,6 @@ public class RequestGenerateTest {
 	static {
 		JSONB_CONFIG = new JsonbConfig()
 				.withBinaryDataStrategy(BinaryDataStrategy.BASE_64)
-				.withPropertyOrderStrategy(PropertyOrderStrategy.LEXICOGRAPHICAL)
 				;
 	}
 	
@@ -38,7 +37,7 @@ public class RequestGenerateTest {
 		Request<DirectoryName> req = Requests.initSession(TEST_DIRECTORY_NAME);
 		String x = objectToJson(req);
 
-		assertEquals(String.format(Locale.ROOT, "{\"contents\":{\"directoryName\":\"%s\"},\"method\":\"initSession\"}", TEST_DIRECTORY_NAME), x);
+		assertEquals(String.format(Locale.ROOT, "{\"method\":\"initSession\",\"contents\":{\"directoryName\":\"%s\"}}", TEST_DIRECTORY_NAME), x);
 	}
 
 	@Test
@@ -63,6 +62,24 @@ public class RequestGenerateTest {
 		Request<AddImages> req = Requests.addSingleImage(data);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"contents\":{\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"height\":8,\"width\":1,\"thumbnail\":\"VEhVTUIxDQo=\"}]},\"method\":\"addImages\"}", x);
+		assertEquals("{\"method\":\"addImages\",\"contents\":{\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"height\":8,\"width\":1,\"thumbnail\":\"VEhVTUIxDQo=\"}]}}", x);
+	}
+	
+	@Test
+	@DisplayName("Check request with nullable fields (synchronize)")
+	void synchronize() {
+		Change first = new Change();
+		first.setOldName("test1.png");
+		first.setNewName("test/test1.png");
+		
+		Change second = new Change();
+		second.setOldName("test2.png");
+		second.setNewName(null);
+		
+		List<Change> changes = List.of(first, second);
+		Request<Synchronize> req = Requests.synchronize(changes);
+		String x = objectToJson(req);
+		
+		assertEquals("{\"method\":\"synchronize\",\"contents\":{\"changes\":[{\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"oldName\":\"test2.png\",\"newName\":null}]}}", x);
 	}
 }
