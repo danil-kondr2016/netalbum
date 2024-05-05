@@ -1,6 +1,9 @@
 package ru.danilakondr.netalbum.api.request;
 
+import java.util.List;
+
 import ru.danilakondr.netalbum.api.DirectoryName;
+import ru.danilakondr.netalbum.api.ImageData;
 import ru.danilakondr.netalbum.api.SessionId;
 
 public class Requests {
@@ -34,5 +37,19 @@ public class Requests {
 	
 	public static Request<Void> closeSession() {
 		return new Request<Void>("closeSession");
+	}
+	
+	public static Request<AddImages> addImages(List<ImageData> images) {
+		AddImages add = new AddImages();
+		add.setImages(images);
+		
+		return new Request<AddImages>("addImages", add);
+	}
+	
+	public static Request<AddImages> addSingleImage(ImageData image) {
+		AddImages add = new AddImages();
+		add.setImages(List.of(image));
+		
+		return new Request<AddImages>("addImages", add);
 	}
 }
