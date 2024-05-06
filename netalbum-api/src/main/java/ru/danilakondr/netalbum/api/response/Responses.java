@@ -3,6 +3,7 @@ package ru.danilakondr.netalbum.api.response;
 import java.util.List;
 
 import ru.danilakondr.netalbum.api.ImageData;
+import ru.danilakondr.netalbum.api.SessionId;
 
 public class Responses {
 	private static Response<Void> responseWithStatus(Status st) {
@@ -53,5 +54,16 @@ public class Responses {
 	
 	public static Response<Void> message(String msg) {
 		return responseWithStatus(Status.message(msg));
+	}
+	
+	public static Response<SessionId> sessionId(String id) {
+		SessionId contents = new SessionId();
+		contents.setSessionId(id);
+		
+		Response<SessionId> resp = new Response<SessionId>();
+		resp.setStatus(Status.success());
+		resp.setContents(contents);
+		
+		return resp;
 	}
 }
