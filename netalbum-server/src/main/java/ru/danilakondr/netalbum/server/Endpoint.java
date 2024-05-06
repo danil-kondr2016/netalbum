@@ -30,9 +30,24 @@ public class Endpoint {
 	}
 	
 	@OnMessage
-    public void onMessage(Session session, Request<?> req) throws IOException, EncodeException {
+    public void onMessage(Session session, Request<Map<String, Object>> req) throws IOException, EncodeException {
+		try {
+			handleRequest(session, req);
+		}
+		catch (IllegalArgumentException e) {
+			session.getBasicRemote().sendObject(Responses.invalidArgument(e.getMessage()));
+		}
+		catch (RuntimeException e) {
+			session.getBasicRemote().sendObject(Responses.invalidRequest(e.getMessage()));
+		}
+    }
+	
+	private void handleRequest(Session session, Request<Map<String, Object>> req) throws IOException, EncodeException {
 		switch (req.getMethod()) {
 		case INIT_SESSION:
+			if (sessionId != null)
+				throw new RuntimeException("Session already initiated");
+			
 			String id = SessionIdProvider.generateSessionId();
 			Response<?> resp = Responses.sessionId(id);
 			session.getBasicRemote().sendObject(resp);
@@ -72,11 +87,6 @@ public class Endpoint {
 
     @OnError
     public void onError(Session session, Throwable throwable) throws IOException {
-    	try {
-			session.getBasicRemote().sendText("error "+throwable);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    	session.getBasicRemote().sendObject(Responses.exception(throwable));
     }
 }

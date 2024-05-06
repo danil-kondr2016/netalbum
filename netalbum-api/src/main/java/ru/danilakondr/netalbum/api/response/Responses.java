@@ -66,4 +66,8 @@ public class Responses {
 		
 		return resp;
 	}
+	
+	public static Response<Void> exception(Throwable t) {
+		return responseWithStatus(Status.exception(t));
+	}
 }

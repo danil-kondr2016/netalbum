@@ -73,4 +73,9 @@ public class Status {
 	static Status message(String message) {
 		return new Status(StatusId.MESSAGE, message);
 	}
+	
+	static Status exception(Throwable e) {
+		return new Status(StatusId.EXCEPTION, e.toString());
+	}
+	}
 }
