@@ -71,7 +71,7 @@ public class Status {
 	}
 	
 	static Status message(String message) {
-		return new Status(StatusId.MESSAGE, message);
+		return new Status(StatusId.SUCCESS, message);
 	}
 	
 	static Status exception(Throwable e) {
