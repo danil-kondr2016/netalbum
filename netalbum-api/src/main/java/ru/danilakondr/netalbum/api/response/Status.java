@@ -11,6 +11,13 @@ package ru.danilakondr.netalbum.api.response;
  * </pre>
  */
 public class Status {
+	private static final Status STATUS_SUCCESS;
+	private static final Status STATUS_GET_METHOD;
+	static {
+		STATUS_SUCCESS = new Status(StatusId.SUCCESS, "Success");
+		STATUS_GET_METHOD = new Status(StatusId.GET_METHOD, "GET method invoked");
+	}
+	
 	private StatusId id;
 	private String message;
 	
@@ -44,11 +51,11 @@ public class Status {
 	}
 	
 	static Status success() {
-		return new Status(StatusId.SUCCESS, "Success");
+		return STATUS_SUCCESS;
 	}
 	
 	static Status getMethod() {
-		return new Status(StatusId.GET_METHOD, "GET method invoked");
+		return STATUS_GET_METHOD;
 	}
 	
 	static Status invalidMethod(String method) {
