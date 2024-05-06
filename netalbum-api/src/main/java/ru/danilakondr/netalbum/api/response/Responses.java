@@ -70,4 +70,8 @@ public class Responses {
 	public static Response<Void> exception(Throwable t) {
 		return responseWithStatus(Status.exception(t));
 	}
+	
+	public static Response<Void> invalidRequest(String reason) {
+		return responseWithStatus(Status.invalidRequest(reason));
+	}
 }

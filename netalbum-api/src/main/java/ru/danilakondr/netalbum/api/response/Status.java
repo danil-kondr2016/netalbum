@@ -77,5 +77,8 @@ public class Status {
 	static Status exception(Throwable e) {
 		return new Status(StatusId.EXCEPTION, e.toString());
 	}
+	
+	static Status invalidRequest(String reason) {
+		return new Status(StatusId.INVALID_REQUEST, errorMessage("Invalid request", reason));
 	}
 }
