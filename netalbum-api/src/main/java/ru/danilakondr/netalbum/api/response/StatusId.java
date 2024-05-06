@@ -6,5 +6,6 @@ public enum StatusId {
 	, INVALID_METHOD
 	, INVALID_ARGUMENT
 	, SQL_ERROR
+	, MESSAGE
 	;
 }

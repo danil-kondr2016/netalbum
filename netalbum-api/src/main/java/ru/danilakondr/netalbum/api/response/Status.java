@@ -62,4 +62,8 @@ public class Status {
 	static Status sqlError(String reason) {
 		return new Status(StatusId.SQL_ERROR, errorMessage("SQL request error", reason));
 	}
+	
+	static Status message(String message) {
+		return new Status(StatusId.MESSAGE, message);
+	}
 }

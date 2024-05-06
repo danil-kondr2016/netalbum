@@ -50,4 +50,8 @@ public class Responses {
 		
 		return resp;
 	}
+	
+	public static Response<Void> message(String msg) {
+		return responseWithStatus(Status.message(msg));
+	}
 }
