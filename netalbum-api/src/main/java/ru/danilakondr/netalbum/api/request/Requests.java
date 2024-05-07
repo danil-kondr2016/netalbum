@@ -1,6 +1,9 @@
 package ru.danilakondr.netalbum.api.request;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ru.danilakondr.netalbum.api.DirectoryName;
 import ru.danilakondr.netalbum.api.ImageData;
@@ -32,6 +35,14 @@ public class Requests {
 		
 		return request;
 	}
+
+	public static Request<SessionId> connectToSession(Map<String, Object> contents) {
+		if (!contents.containsKey("sessionId"))
+			throw new IllegalArgumentException("sessionId has not been specified");
+
+		String sessionId = (String)contents.get("sessionId");
+		return connectToSession(sessionId);
+	}
 	
 	public static Request<Void> disconnectFromSession() {
 		return new Request<Void>(DISCONNECT_FROM_SESSION);
@@ -46,6 +57,17 @@ public class Requests {
 		add.setImages(images);
 		
 		return new Request<AddImages>(ADD_IMAGES, add);
+	}
+
+	public static Request<AddImages> addImages(Map<String, Object> contents) {
+		if (!contents.containsKey("images"))
+			throw new IllegalArgumentException("images have not been specified");
+
+		List<Map<String, Object>> oImages = (List<Map<String, Object>>) contents.get("images");
+		List<ImageData> data = new ArrayList<>();
+
+		oImages.forEach(m -> data.add(ImageData.fromMap(m)));
+		return addImages(data);
 	}
 	
 	public static Request<AddImages> addSingleImage(ImageData image) {
