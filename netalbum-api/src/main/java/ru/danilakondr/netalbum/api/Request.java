@@ -12,7 +12,9 @@ public class Request {
     private RequestType method;
     private Map<String, Object> contents;
 
-    public Request() {}
+    public Request() {
+        this.contents = new HashMap<>();
+    }
 
     public Request(RequestType method) {
         this.method = method;

@@ -9,14 +9,38 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 public class Response {
+    private static Response SUCCESS = null;
     private Status status;
     private Map<String, Object> contents;
 
-    public Response() {}
+    public Response() {
+        this.contents = new HashMap<>();
+    }
 
     public Response(Status status) {
         this.status = status;
         this.contents = new HashMap<>();
+    }
+
+    public static Response success() {
+        if (SUCCESS == null)
+            SUCCESS = new Response(Status.SUCCESS);
+
+        return SUCCESS;
+    }
+
+    public static Response withMessage(Status status, String message) {
+        Response response = new Response(status);
+        response.setProperty("message", message);
+        return response;
+    }
+
+    public static Response directoryInfo(String name, long size) {
+        Response response = new Response(Status.SUCCESS);
+        response.setProperty("directoryName", name);
+        response.setProperty("directorySize", size);
+
+        return response;
     }
 
     @JsonGetter("status")
