@@ -1,6 +1,6 @@
-package ru.danilakondr.netalbum.api.response;
+package ru.danilakondr.netalbum.api;
 
-public enum StatusId {
+public enum Status {
 	  SUCCESS
 	, GET_METHOD
 	, INVALID_REQUEST

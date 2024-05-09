@@ -1,58 +1,49 @@
 package ru.danilakondr.netalbum.api.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
-import jakarta.json.bind.config.BinaryDataStrategy;
-import jakarta.json.bind.config.PropertyOrderStrategy;
-import ru.danilakondr.netalbum.api.response.DirectoryInfo;
-import ru.danilakondr.netalbum.api.response.Response;
-import ru.danilakondr.netalbum.api.response.Responses;
+import ru.danilakondr.netalbum.api.Response;
+import ru.danilakondr.netalbum.api.Status;
 
 public class ResponseGenerateTest {
-	private static final JsonbConfig JSONB_CONFIG;
-	
-	static {
-		JSONB_CONFIG = new JsonbConfig()
-				.withBinaryDataStrategy(BinaryDataStrategy.BASE_64)
-				.withPropertyOrderStrategy(PropertyOrderStrategy.LEXICOGRAPHICAL)
-				;
+	String objectToJson(Object o) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(o);
 	}
-	
-	String objectToJson(Object o) {
-		Jsonb b = JsonbBuilder.create(JSONB_CONFIG);
-		return b.toJson(o);
-	}
-	
 	@Test
 	@DisplayName("Check success response with empty body")
-	void success() {
-		Response<Void> resp = Responses.success();
+	void success() throws JsonProcessingException {
+		Response resp = new Response(Status.SUCCESS);
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"status\":{\"id\":\"SUCCESS\",\"message\":\"Success\"}}", x);
+		assertEquals("{\"status\":\"SUCCESS\"}", x);
 	}
 	
 	@Test
 	@DisplayName("Check error message response with some reason")
-	void sqlError() {
-		Response<Void> resp = Responses.sqlError("Database has not been designed");
+	void sqlError() throws JsonProcessingException {
+		Response resp = new Response(Status.SQL_ERROR);
+		resp.setProperty("message", "Database has not been designed");
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"status\":{\"id\":\"SQL_ERROR\",\"message\":\"SQL request error: Database has not been designed\"}}", x);
+		assertEquals("{\"status\":\"SQL_ERROR\",\"message\":\"Database has not been designed\"}", x);
 	}
 	
 	@Test
 	@DisplayName("Check success response with some body (directoryInfo)")
-	void directoryInfo() {
-		Response<DirectoryInfo> resp = Responses.directoryInfo("testDirectory", 8);
+	void directoryInfo() throws JsonProcessingException {
+		Response resp = new Response(Status.SUCCESS);
+		resp.setProperty("directoryName", "testDirectory");
+		resp.setProperty("directorySize", 8);
+
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"status\":{\"id\":\"SUCCESS\",\"message\":\"Success\"},\"contents\":{\"directoryName\":\"testDirectory\",\"directorySize\":8}}", x);
+		assertTrue(x.contains("\"directoryName\":\"testDirectory\""));
+		assertTrue(x.contains("\"directorySize\":8"));
 	}
 }

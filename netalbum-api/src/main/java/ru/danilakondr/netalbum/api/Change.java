@@ -1,8 +1,8 @@
-package ru.danilakondr.netalbum.api.request;
+package ru.danilakondr.netalbum.api;
 
-import jakarta.json.bind.annotation.*;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonbPropertyOrder({"oldName", "newName"})
+@JsonPropertyOrder({"oldName", "newName"})
 public class Change {
 	private String oldName;
 	private String newName;
@@ -11,7 +11,6 @@ public class Change {
 		this.oldName = name;
 	}
 	
-	@JsonbNillable
 	public void setNewName(String name) {
 		this.newName = name;
 	}
@@ -20,7 +19,6 @@ public class Change {
 		return oldName;
 	}
 	
-	@JsonbNillable
 	public String getNewName() {
 		return newName;
 	}

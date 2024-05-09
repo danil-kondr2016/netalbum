@@ -2,9 +2,9 @@ package ru.danilakondr.netalbum.api;
 
 public class ImageInfo {
 	private String fileName;
+	private long fileSize;
 	private int width;
 	private int height;
-	private long fileSize;
 
 	public ImageInfo() {
 		super();

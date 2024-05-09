@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api.request;
+package ru.danilakondr.netalbum.api;
 
 public enum RequestType {
 	  INIT_SESSION
