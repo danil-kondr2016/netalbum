@@ -1,9 +1,7 @@
-package ru.danilakondr.netalbum.server.model;
+package ru.danilakondr.netalbum.db;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name="sessions")
@@ -14,6 +12,10 @@ public class NetAlbumSession {
 	
 	@Column(name="directoryName")
 	private String directoryName;
+
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinColumn(name="sessionId")
+	private List<ImageFile> files;
 	
 	public String getSessionId() {
 		return sessionId;
@@ -29,5 +31,13 @@ public class NetAlbumSession {
 	
 	public void setDirectoryName(String name) {
 		this.directoryName = name;
+	}
+
+	public List<ImageFile> getFiles() {
+		return files;
+	}
+
+	public void setFiles(List<ImageFile> files) {
+		this.files = files;
 	}
 }
