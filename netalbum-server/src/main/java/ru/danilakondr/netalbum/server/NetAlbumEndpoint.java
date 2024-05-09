@@ -12,41 +12,40 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import jakarta.json.bind.JsonbException;
-import ru.danilakondr.netalbum.api.request.Request;
-import ru.danilakondr.netalbum.api.request.RequestType;
-import ru.danilakondr.netalbum.api.response.Response;
-import ru.danilakondr.netalbum.api.response.Responses;
+import ru.danilakondr.netalbum.api.Request;
+import ru.danilakondr.netalbum.api.Response;
+import ru.danilakondr.netalbum.api.Status;
+import ru.danilakondr.netalbum.db.Database;
+import ru.danilakondr.netalbum.db.NetAlbumDAO;
 
 @ServerEndpoint(
 		value="/",
-		decoders= {GenericRequestDecoder.class},
-		encoders= {GenericResponseEncoder.class})
-public class Endpoint {
+		decoders= {RequestDecoder.class},
+		encoders= {ResponseEncoder.class})
+public class NetAlbumEndpoint {
 	private String sessionId = null;
+	private NetAlbumDAO dao = null;
 	
 	@OnOpen
 	public void onOpen(Session session) throws IOException {
-		
+		dao = new NetAlbumDAO();
+		dao.setFactory(Database.getInstance().getSessionFactory());
 	}
 	
 	@OnMessage
-    public void onMessage(Session session, Request<Map<String, Object>> req) throws IOException, EncodeException {
+    public void onMessage(Session session, Request req) throws IOException, EncodeException {
 		try {
 			handleRequest(session, req);
 		}
 		catch (IllegalArgumentException e) {
-			session.getBasicRemote().sendObject(Responses.invalidArgument(e.getMessage()));
-		}
-		catch (RuntimeException e) {
-			session.getBasicRemote().sendObject(Responses.invalidRequest(e.getMessage()));
+			session.getBasicRemote().sendObject(Response.withMessage(Status.INVALID_ARGUMENT, e.toString()));
 		}
     }
 	
-	private void handleRequest(Session session, Request<Map<String, Object>> req) throws IOException, EncodeException {
+	private void handleRequest(Session session, Request req) throws IOException, EncodeException {
 		switch (req.getMethod()) {
 		case INIT_SESSION:
-			handleInitSession(session);
+			handleInitSession(session, req);
 			break;
 		case CONNECT_TO_SESSION:
 			handleConnectToSession(session, req);
@@ -70,44 +69,47 @@ public class Endpoint {
 			handleSynchronize(session, req);
 			break;
 		default:
-			session.getBasicRemote().sendObject(Responses.invalidMethod(req.getMethod().name() + " (not implemented)"));
+			session.getBasicRemote().sendObject(Response.withMessage(Status.INVALID_METHOD, req.getMethod().name() + " (not implemented)"));
 			break;
 		}
 	}
 
-	private void handleSynchronize(Session session, Request<Map<String, Object>> req) throws EncodeException, IOException {
+	private void handleSynchronize(Session session, Request req) throws EncodeException, IOException {
 		if (sessionId == null)
 			throw new RuntimeException("Client has not connected to a session");
 
-		session.getBasicRemote().sendObject(Responses.invalidRequest("synchronization has not been implemented"));
+		session.getBasicRemote().sendObject(Response.withMessage(Status.INVALID_REQUEST, "synchronization has not been implemented"));
 	}
 
 	private void handleGetDirectoryInfo(Session session) throws EncodeException, IOException {
 		if (sessionId == null)
 			throw new RuntimeException("Client has not connected to a session");
 
-		session.getBasicRemote().sendObject(Responses.directoryInfo("", 0));
+		session.getBasicRemote().sendObject(Response.directoryInfo("", 0));
 	}
 
 	private void handleDownloadContents(Session session) throws EncodeException, IOException {
 		if (sessionId == null)
 			throw new RuntimeException("Client has not connected to a session");
 
-		session.getBasicRemote().sendObject(Responses.directoryContents(new ArrayList<>()));
+		Response resp = new Response(Status.SUCCESS);
+		resp.setProperty("directoryContents", new ArrayList<>());
+		session.getBasicRemote().sendObject(resp);
 	}
 
 	private void handleAddImages(Session session) throws IOException, EncodeException {
 		if (sessionId == null)
 			throw new RuntimeException("Client has not connected to a session");
 
-		session.getBasicRemote().sendObject(Responses.success());
+		session.getBasicRemote().sendObject(Response.success());
 	}
 
 	private void handleCloseSession(Session session) throws IOException, EncodeException {
 		if (sessionId == null)
 			throw new RuntimeException("Client has not connected to a session");
 
-		session.getBasicRemote().sendObject(Responses.success());
+		dao.removeSession(dao.getSession(sessionId));
+		session.getBasicRemote().sendObject(Response.success());
 		session.close();
 	}
 
@@ -115,22 +117,26 @@ public class Endpoint {
 		if (sessionId == null)
 			throw new RuntimeException("Client has not connected to a session");
 
-		session.getBasicRemote().sendObject(Responses.success());
+		session.getBasicRemote().sendObject(Response.success());
 		session.close();
 	}
 
-	private void handleInitSession(Session session) throws EncodeException, IOException {
+	private void handleInitSession(Session session, Request request) throws EncodeException, IOException {
 		if (sessionId != null)
 			throw new RuntimeException("Session already initiated");
 
+		String dirName = (String) request.getProperties().get("directoryName");
 		String id = SessionIdProvider.generateSessionId();
-		Response<?> resp = Responses.sessionId(id);
+		Response resp = new Response(Status.SUCCESS);
+		resp.setProperty("sessionId", id);
 		session.getBasicRemote().sendObject(resp);
 		this.sessionId = id;
+
+		dao.initSession(id, dirName);
 	}
 
-	private void handleConnectToSession(Session session, Request<Map<String,Object>> req) throws EncodeException, IOException {
-		Map<String, Object> contents = req.getContents();
+	private void handleConnectToSession(Session session, Request req) throws EncodeException, IOException {
+		Map<String, Object> contents = req.getProperties();
 		if (!contents.containsKey("sessionId"))
 			throw new IllegalArgumentException("session id has not been specified");
 
@@ -139,7 +145,7 @@ public class Endpoint {
 			throw new IllegalArgumentException("session id is not a string");
 
 		this.sessionId = (String)oSessionId;
-		session.getBasicRemote().sendObject(Responses.success());
+		session.getBasicRemote().sendObject(Response.success());
 	}
 
 
@@ -150,7 +156,8 @@ public class Endpoint {
 
     @OnError
     public void onError(Session session, Throwable throwable) throws IOException, EncodeException {
-    	if (throwable.getClass() == JsonbException.class) {
+    	/*
+		if (throwable.getClass() == JsonbException.class) {
     		String msg = throwable.getMessage();
     		if (msg.contains("No enum constant")) {
     			String className = RequestType.class.getCanonicalName().replace(".", "\\.");
@@ -160,6 +167,6 @@ public class Endpoint {
     			session.getBasicRemote().sendObject(Responses.invalidMethod(absentConstant));
     		}
     	}
-    	else session.getBasicRemote().sendObject(Responses.exception(throwable));
+    	else */session.getBasicRemote().sendObject(Response.withMessage(Status.EXCEPTION, throwable.toString()));
     }
 }
