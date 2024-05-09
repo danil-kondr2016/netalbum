@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.db;
+package ru.danilakondr.netalbum.server.model;
 
 import javax.persistence.*;
 
