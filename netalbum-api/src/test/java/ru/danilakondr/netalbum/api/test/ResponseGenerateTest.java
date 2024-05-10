@@ -27,11 +27,11 @@ public class ResponseGenerateTest {
 	@Test
 	@DisplayName("Check error message response with some reason")
 	void sqlError() throws JsonProcessingException {
-		Response resp = new Response(Status.SQL_ERROR);
+		Response resp = new Response(Status.ERROR);
 		resp.setProperty("message", "Database has not been designed");
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"status\":\"SQL_ERROR\",\"message\":\"Database has not been designed\"}", x);
+		assertEquals("{\"status\":\"ERROR\",\"message\":\"Database has not been designed\"}", x);
 	}
 	
 	@Test
