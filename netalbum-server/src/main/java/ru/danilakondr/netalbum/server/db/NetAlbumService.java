@@ -59,6 +59,7 @@ public class NetAlbumService {
         dao.putImageFile(file);
     }
 
+    @Transactional
     public void renameFile(String sessionId, String oldName, String newName) {
         ImageFile file = dao.getImageFile(sessionId, oldName);
         if (file == null)
@@ -69,5 +70,14 @@ public class NetAlbumService {
 
         file.setFileName(newName);
         dao.putImageFile(file);
+    }
+
+    @Transactional
+    public long getDirectorySize(String sessionId) {
+        NetAlbumSession s = dao.getSession(sessionId);
+
+        return s.getFiles().stream()
+                .mapToLong(ImageFile::getFileSize)
+                .sum();
     }
 }
