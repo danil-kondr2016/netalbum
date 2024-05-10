@@ -7,6 +7,9 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.danilakondr.netalbum.api.*;
+import ru.danilakondr.netalbum.api.error.FileAlreadyExistsError;
+import ru.danilakondr.netalbum.api.error.FileNotFoundError;
+import ru.danilakondr.netalbum.api.error.InvalidRequestError;
 import ru.danilakondr.netalbum.server.SessionIdProvider;
 import ru.danilakondr.netalbum.server.db.NetAlbumService;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
@@ -41,45 +44,58 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String msg = message.getPayload();
-
         Request req = mapper.readValue(msg, Request.class);
 
-        switch (req.getMethod()) {
-            case INIT_SESSION:
-                handleInitSession(session, req);
-                break;
-            case RESTORE_SESSION:
-                handleRestoreSession(session, req);
-                break;
-            case CONNECT_TO_SESSION:
-                handleConnectToSession(session, req);
-                break;
-            case DISCONNECT_FROM_SESSION:
-                handleDisconnectFromSession(session);
-                break;
-            case CLOSE_SESSION:
-                handleCloseSession(session);
-                break;
-            case ADD_IMAGES: {
-                AddImagesRequest req1 = mapper.readValue(msg, AddImagesRequest.class);
-                handleAddImages(session, req1);
-                break;
+        try {
+            switch (req.getMethod()) {
+                case INIT_SESSION:
+                    handleInitSession(session, req);
+                    break;
+                case RESTORE_SESSION:
+                    handleRestoreSession(session, req);
+                    break;
+                case CONNECT_TO_SESSION:
+                    handleConnectToSession(session, req);
+                    break;
+                case DISCONNECT_FROM_SESSION:
+                    handleDisconnectFromSession(session);
+                    break;
+                case CLOSE_SESSION:
+                    handleCloseSession(session);
+                    break;
+                case ADD_IMAGES: {
+                    AddImagesRequest req1 = mapper.readValue(msg, AddImagesRequest.class);
+                    handleAddImages(session, req1);
+                    break;
+                }
+                case DOWNLOAD_THUMBNAILS:
+                    handleDownloadThumbnails(session);
+                    break;
+                case GET_DIRECTORY_INFO:
+                    handleGetDirectoryInfo(session);
+                    break;
+                case SYNCHRONIZE: {
+                    SynchronizeRequest req1 = mapper.readValue(msg, SynchronizeRequest.class);
+                    handleSynchronize(session, req1);
+                    break;
+                }
+                default:
+                    sendResponse(session, Response.withMessage(Status.INVALID_METHOD,
+                            req.getMethod().name() + " (not implemented)"));
+                    break;
             }
-            case DOWNLOAD_THUMBNAILS:
-                handleDownloadThumbnails(session);
-                break;
-            case GET_DIRECTORY_INFO:
-                handleGetDirectoryInfo(session);
-                break;
-            case SYNCHRONIZE: {
-                SynchronizeRequest req1 = mapper.readValue(msg, SynchronizeRequest.class);
-                handleSynchronize(session, req1);
-                break;
-            }
-            default:
-                sendResponse(session, Response.withMessage(Status.INVALID_METHOD,
-                        req.getMethod().name() + " (not implemented)"));
-                break;
+        }
+        catch (InvalidRequestError e) {
+            sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, e.getMessage()));
+        }
+        catch (IllegalArgumentException e) {
+            sendResponse(session, Response.withMessage(Status.INVALID_ARGUMENT, e.getMessage()));
+        }
+        catch (FileNotFoundError e) {
+            sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "File not found: " + e.getMessage()));
+        }
+        catch (FileAlreadyExistsError e) {
+            sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "File already exists: " + e.getMessage()));
         }
     }
 
