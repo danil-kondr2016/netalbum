@@ -23,8 +23,14 @@ public class NetAlbumService {
         dao.initSession(session);
     }
 
+    @Transactional
     public void removeSession(String sessionId) {
         NetAlbumSession session = dao.getSession(sessionId);
         dao.removeSession(session);
+    }
+
+    @Transactional
+    public NetAlbumSession getSession(String sessionId) {
+        return dao.getSession(sessionId);
     }
 }
