@@ -60,19 +60,22 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             case CLOSE_SESSION:
                 handleCloseSession(session);
                 break;
-            case ADD_IMAGES:
+            case ADD_IMAGES: {
                 AddImagesRequest req1 = mapper.readValue(msg, AddImagesRequest.class);
                 handleAddImages(session, req1);
                 break;
+            }
             case DOWNLOAD_THUMBNAILS:
                 handleDownloadThumbnails(session);
                 break;
             case GET_DIRECTORY_INFO:
                 handleGetDirectoryInfo(session);
                 break;
-            case SYNCHRONIZE:
-                handleSynchronize(session, req);
+            case SYNCHRONIZE: {
+                SynchronizeRequest req1 = mapper.readValue(msg, SynchronizeRequest.class);
+                handleSynchronize(session, req1);
                 break;
+            }
             default:
                 sendResponse(session, Response.withMessage(Status.INVALID_METHOD,
                         req.getMethod().name() + " (not implemented)"));
@@ -95,14 +98,23 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, Response.success());
     }
 
-    private void handleSynchronize(WebSocketSession session, Request req) throws IOException {
+    private void handleSynchronize(WebSocketSession session, SynchronizeRequest req) throws IOException {
         if (sessionId == null)
             throw new IllegalArgumentException("client has not been connected to session");
 
         if (!initiator)
             throw new IllegalArgumentException("you cannot load images in session initiated by not you");
 
-        sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
+        List<Change> changes = req.getChanges();
+        // Первое. Записать изменения в базу данных.
+        for (Change change: changes) {
+            service.renameFile(sessionId, change.getOldName(), change.getNewName());
+        }
+        // Второе. Отправить изменения инициатору сессии.
+        WebSocketSession initiatorSession = initiators.get(sessionId);
+        sendResponse(initiatorSession, Response.synchronizing(changes));
+
+        sendResponse(session, Response.success());
     }
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
