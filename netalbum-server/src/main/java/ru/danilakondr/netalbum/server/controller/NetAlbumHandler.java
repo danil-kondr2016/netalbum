@@ -95,6 +95,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
         this.sessionId = id;
         this.initiator = true;
+        initiators.put(sessionId, session);
         sendResponse(session, Response.success());
     }
 
