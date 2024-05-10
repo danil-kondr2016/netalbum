@@ -37,6 +37,42 @@ public class Response {
         return response;
     }
 
+    public static Response invalidRequest(String reason) {
+        Response response = new Response(Status.INVALID_REQUEST);
+        response.setProperty("reason", reason);
+        return response;
+    }
+
+    public static Response invalidArgument(String reason) {
+        Response response = new Response(Status.INVALID_ARGUMENT);
+        response.setProperty("reason", reason);
+        return response;
+    }
+
+    public static Response invalidMethod(String method) {
+        Response response = new Response(Status.INVALID_METHOD);
+        response.setProperty("method", method);
+        return response;
+    }
+
+    public static Response fileNotFound(String path) {
+        Response response = new Response(Status.FILE_NOT_FOUND);
+        response.setProperty("fileName", path);
+        return response;
+    }
+
+    public static Response fileAlreadyExists(String path) {
+        Response response = new Response(Status.FILE_ALREADY_EXISTS);
+        response.setProperty("fileName", path);
+        return response;
+    }
+
+    public static Response nonExistentSession(String sessionId) {
+        Response response = new Response(Status.NON_EXISTENT_SESSION);
+        response.setProperty("sessionId", sessionId);
+        return response;
+    }
+
     public static Response directoryInfo(String name, long size) {
         Response response = new Response(Status.SUCCESS);
         response.setProperty("directoryName", name);
