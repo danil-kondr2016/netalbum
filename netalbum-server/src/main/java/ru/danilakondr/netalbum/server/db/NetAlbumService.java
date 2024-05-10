@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.danilakondr.netalbum.api.ImageData;
 import ru.danilakondr.netalbum.server.error.FileAlreadyExistsError;
 import ru.danilakondr.netalbum.server.error.FileNotFoundError;
+import ru.danilakondr.netalbum.server.error.NonExistentSession;
 import ru.danilakondr.netalbum.server.model.ImageFile;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
@@ -30,6 +31,9 @@ public class NetAlbumService {
     @Transactional
     public void removeSession(String sessionId) {
         NetAlbumSession session = dao.getSession(sessionId);
+        if (session == null)
+            throw new NonExistentSession(sessionId);
+
         dao.removeSession(session);
     }
 

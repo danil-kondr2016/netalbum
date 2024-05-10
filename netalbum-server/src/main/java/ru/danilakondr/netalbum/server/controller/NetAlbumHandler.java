@@ -12,6 +12,7 @@ import ru.danilakondr.netalbum.server.error.FileNotFoundError;
 import ru.danilakondr.netalbum.server.error.InvalidRequestError;
 import ru.danilakondr.netalbum.server.SessionIdProvider;
 import ru.danilakondr.netalbum.server.db.NetAlbumService;
+import ru.danilakondr.netalbum.server.error.NonExistentSession;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
 import java.io.IOException;
@@ -88,6 +89,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         catch (InvalidRequestError e) {
             sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, e.getMessage()));
         }
+        catch (NonExistentSession e) {
+            sendResponse(session, Response.withMessage(Status.INVALID_ARGUMENT, "Non-existent session: " + e.getMessage()));
+        }
         catch (IllegalArgumentException e) {
             sendResponse(session, Response.withMessage(Status.INVALID_ARGUMENT, e.getMessage()));
         }
@@ -107,7 +111,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         String id = (String)props.get("sessionId");
         NetAlbumSession s = service.getSession(id);
         if (s == null)
-            throw new IllegalArgumentException("non-existent session: " + id);
+            throw new NonExistentSession(id);
 
         this.sessionId = id;
         this.initiator = true;
@@ -209,7 +213,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         String id = (String)props.get("sessionId");
         NetAlbumSession s = service.getSession(id);
         if (s == null)
-            throw new IllegalArgumentException("non-existent session: " + id);
+            throw new NonExistentSession(id);
 
         this.sessionId = id;
         this.initiator = false;
