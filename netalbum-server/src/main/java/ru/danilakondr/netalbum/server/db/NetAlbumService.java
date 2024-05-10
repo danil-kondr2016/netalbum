@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.danilakondr.netalbum.api.ImageData;
+import ru.danilakondr.netalbum.api.error.FileAlreadyExistsError;
+import ru.danilakondr.netalbum.api.error.FileNotFoundError;
 import ru.danilakondr.netalbum.server.model.ImageFile;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
@@ -38,6 +40,9 @@ public class NetAlbumService {
 
     @Transactional
     public void putImage(String sessionId, ImageData data) {
+        if (dao.getImageFile(sessionId, data.getFileName()) != null)
+            throw new FileAlreadyExistsError(data.getFileName());
+
         ImageFile file = new ImageFile();
         file.setFileName(data.getFileName());
         file.setFirstName(data.getFileName());
@@ -52,6 +57,12 @@ public class NetAlbumService {
 
     public void renameFile(String sessionId, String oldName, String newName) {
         ImageFile file = dao.getImageFile(sessionId, oldName);
+        if (file == null)
+            throw new FileNotFoundError(oldName);
+
+        if (dao.getImageFile(sessionId, newName) != null)
+            throw new FileAlreadyExistsError(newName);
+
         file.setFileName(newName);
         dao.putImageFile(file);
     }
