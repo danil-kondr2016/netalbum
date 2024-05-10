@@ -42,10 +42,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         System.out.println("Connection established");
-        session.sendMessage(new TextMessage("Hello, world!"));
-        session.sendMessage(new TextMessage(session.getAttributes().toString()));
     }
 
     @Override
@@ -87,25 +85,24 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                     break;
                 }
                 default:
-                    sendResponse(session, Response.withMessage(Status.INVALID_METHOD,
-                            req.getMethod().name() + " (not implemented)"));
+                    sendResponse(session, Response.invalidMethod(""));
                     break;
             }
         }
         catch (InvalidRequestError e) {
-            sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, e.getMessage()));
+            sendResponse(session, Response.invalidRequest(e.getMessage()));
         }
         catch (NonExistentSession e) {
-            sendResponse(session, Response.withMessage(Status.INVALID_ARGUMENT, "Non-existent session: " + e.getMessage()));
+            sendResponse(session, Response.nonExistentSession(e.getMessage()));
         }
         catch (IllegalArgumentException e) {
-            sendResponse(session, Response.withMessage(Status.INVALID_ARGUMENT, e.getMessage()));
+            sendResponse(session, Response.invalidArgument(e.getMessage()));
         }
         catch (FileNotFoundError e) {
-            sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "File not found: " + e.getMessage()));
+            sendResponse(session, Response.fileNotFound(e.getMessage()));
         }
         catch (FileAlreadyExistsError e) {
-            sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "File already exists: " + e.getMessage()));
+            sendResponse(session, Response.fileAlreadyExists(e.getMessage()));
         }
     }
 
