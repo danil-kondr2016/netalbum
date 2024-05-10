@@ -1,7 +1,8 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.api.request;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import ru.danilakondr.netalbum.api.data.ImageData;
 
 import java.util.List;
 

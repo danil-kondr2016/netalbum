@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.api.data;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

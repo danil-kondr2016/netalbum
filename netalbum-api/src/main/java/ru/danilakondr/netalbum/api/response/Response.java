@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.api.response;
 
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import ru.danilakondr.netalbum.api.data.Change;
 
 public class Response {
     private static Response SUCCESS = null;

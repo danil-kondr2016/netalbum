@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.api.request;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -9,25 +9,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Request {
-    private RequestType method;
+    private Type method;
     private Map<String, Object> contents;
 
     public Request() {
         this.contents = new HashMap<>();
     }
 
-    public Request(RequestType method) {
+    public Request(Type method) {
         this.method = method;
         this.contents = new HashMap<>();
     }
 
     @JsonGetter("method")
-    public RequestType getMethod() {
+    public Type getMethod() {
         return method;
     }
 
     @JsonSetter("method")
-    public void setMethod(RequestType method) {
+    public void setMethod(Type method) {
         this.method = method;
     }
 
@@ -39,5 +39,18 @@ public class Request {
     @JsonAnySetter
     public void setProperty(String prop, Object value) {
         this.contents.put(prop, value);
+    }
+
+    public enum Type {
+          INIT_SESSION
+        , RESTORE_SESSION
+        , CONNECT_TO_SESSION
+        , DISCONNECT_FROM_SESSION
+        , CLOSE_SESSION
+        , GET_DIRECTORY_INFO
+        , ADD_IMAGES
+        , DOWNLOAD_THUMBNAILS
+        , SYNCHRONIZE
+        ;
     }
 }

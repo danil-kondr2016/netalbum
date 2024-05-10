@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import ru.danilakondr.netalbum.api.*;
+import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ImageData;
+import ru.danilakondr.netalbum.api.request.Request;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,20 +32,20 @@ public class RequestGenerateTest {
 	@Test
 	@DisplayName("Check single-argument request forming (initSession)")
 	void initSession() throws JsonProcessingException {
-		Request req = new Request(RequestType.INIT_SESSION);
+		Request req = new Request(Request.Type.INIT_SESSION);
 		req.setProperty("directoryName", TEST_DIRECTORY_NAME);
 		String x = objectToJson(req);
 		Request req1 = jsonToObject(x, Request.class);
 
 		assertEquals(String.format(Locale.ROOT, "{\"method\":\"INIT_SESSION\",\"directoryName\":\"%s\"}", TEST_DIRECTORY_NAME), x);
-        assertSame(req1.getMethod(), RequestType.INIT_SESSION);
+        assertSame(req1.getMethod(), Request.Type.INIT_SESSION);
 		assertEquals(TEST_DIRECTORY_NAME, req1.getProperties().get("directoryName"));
 	}
 
 	@Test
 	@DisplayName("Check request without contents forming (closeSession)")
 	void closeSession() throws JsonProcessingException {
-		Request req = new Request(RequestType.CLOSE_SESSION);
+		Request req = new Request(Request.Type.CLOSE_SESSION);
 		String x = objectToJson(req);
 		
 		assertEquals("{\"method\":\"CLOSE_SESSION\"}", x);
@@ -61,14 +63,14 @@ public class RequestGenerateTest {
 		data.setThumbnail("THUMB1\r\n".getBytes(StandardCharsets.US_ASCII));
 		list.add(data);
 		
-		Request req = new Request(RequestType.ADD_IMAGES);
+		Request req = new Request(Request.Type.ADD_IMAGES);
 		req.setProperty("images", list);
 		String x = objectToJson(req);
 		
 		assertEquals("{\"method\":\"ADD_IMAGES\",\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}]}", x);
 
 		Request req1 = jsonToObject(x, Request.class);
-		assertSame(req1.getMethod(), RequestType.ADD_IMAGES);
+		assertSame(req1.getMethod(), Request.Type.ADD_IMAGES);
 
 		Map<String, Object> contents = req1.getProperties();
 		assertTrue(contents.containsKey("images"));
@@ -101,7 +103,7 @@ public class RequestGenerateTest {
 		changes.add(first);
 		changes.add(second);
 
-		Request req = new Request(RequestType.SYNCHRONIZE);
+		Request req = new Request(Request.Type.SYNCHRONIZE);
 		req.setProperty("changes", changes);
 		String x = objectToJson(req);
 		

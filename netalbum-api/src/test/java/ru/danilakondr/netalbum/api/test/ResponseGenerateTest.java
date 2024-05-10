@@ -7,8 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.danilakondr.netalbum.api.Response;
-import ru.danilakondr.netalbum.api.Status;
+import ru.danilakondr.netalbum.api.response.Response;
+import ru.danilakondr.netalbum.api.response.Status;
 
 public class ResponseGenerateTest {
 	String objectToJson(Object o) throws JsonProcessingException {

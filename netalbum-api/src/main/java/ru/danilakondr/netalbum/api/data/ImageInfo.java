@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.api.data;
 
 public class ImageInfo {
 	private String fileName;

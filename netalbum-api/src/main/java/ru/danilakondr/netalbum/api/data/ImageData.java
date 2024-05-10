@@ -1,7 +1,4 @@
-package ru.danilakondr.netalbum.api;
-
-import java.util.Base64;
-import java.util.Map;
+package ru.danilakondr.netalbum.api.data;
 
 public class ImageData extends ImageInfo {
 	private byte[] thumbnail;

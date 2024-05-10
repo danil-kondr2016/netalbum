@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.api.response;
 
 public enum Status {
 	  SUCCESS
