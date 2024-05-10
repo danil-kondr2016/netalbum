@@ -13,12 +13,9 @@ import ru.danilakondr.netalbum.api.request.Request;
 import ru.danilakondr.netalbum.api.request.SynchronizeRequest;
 import ru.danilakondr.netalbum.api.response.Response;
 import ru.danilakondr.netalbum.api.response.Status;
-import ru.danilakondr.netalbum.server.error.FileAlreadyExistsError;
-import ru.danilakondr.netalbum.server.error.FileNotFoundError;
-import ru.danilakondr.netalbum.server.error.InvalidRequestError;
+import ru.danilakondr.netalbum.server.error.*;
 import ru.danilakondr.netalbum.server.SessionIdProvider;
 import ru.danilakondr.netalbum.server.db.NetAlbumService;
-import ru.danilakondr.netalbum.server.error.NonExistentSession;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
 import java.io.IOException;
@@ -98,6 +95,18 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         catch (IllegalArgumentException e) {
             sendResponse(session, Response.invalidArgument(e.getMessage()));
         }
+        catch (NotAnInitiatorError e) {
+            sendResponse(session, new Response(Status.NOT_AN_INITIATOR));
+        }
+        catch (NotAViewerError e) {
+            sendResponse(session, new Response(Status.NOT_A_VIEWER));
+        }
+        catch (NotConnectedError e) {
+            sendResponse(session, new Response(Status.CLIENT_NOT_CONNECTED));
+        }
+        catch (AlreadyConnectedError e) {
+            sendResponse(session, new Response(Status.CLIENT_ALREADY_CONNECTED));
+        }
         catch (FileNotFoundError e) {
             sendResponse(session, Response.fileNotFound(e.getMessage()));
         }
@@ -107,6 +116,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleRestoreSession(WebSocketSession session, Request req) throws IOException {
+        if (sessionId != null)
+            throw new AlreadyConnectedError();
+
         Map<String, Object> props = req.getProperties();
         if (!props.containsKey("sessionId"))
             throw new IllegalArgumentException("session id has not been specified");
@@ -124,10 +136,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleSynchronize(WebSocketSession session, SynchronizeRequest req) throws IOException {
         if (sessionId == null)
-            throw new IllegalArgumentException("client has not been connected to session");
-
-        if (!initiator)
-            throw new IllegalArgumentException("you cannot load images in session initiated by not you");
+            throw new NotConnectedError();
 
         List<Change> changes = req.getChanges();
         // Первое. Записать изменения в базу данных.
@@ -143,7 +152,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
         if (sessionId == null)
-            throw new IllegalArgumentException("client has not been connected to session");
+            throw new NotConnectedError();
 
         NetAlbumSession s = service.getSession(sessionId);
         long directorySize = service.getDirectorySize(sessionId);
@@ -153,17 +162,17 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleDownloadThumbnails(WebSocketSession session) throws IOException {
         if (sessionId == null)
-            throw new IllegalArgumentException("client has not been connected to session");
+            throw new NotConnectedError();
 
         sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
     }
 
     private void handleAddImages(WebSocketSession session, AddImagesRequest req) throws IOException {
         if (sessionId == null)
-            throw new IllegalArgumentException("client has not been connected to session");
+            throw new NotConnectedError();
 
         if (!initiator)
-            throw new IllegalArgumentException("you cannot load images in session initiated by not you");
+            throw new NotAnInitiatorError();
 
         List<ImageData> images = req.getImages();
         for (ImageData image : images) {
@@ -175,10 +184,10 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
         if (sessionId == null)
-            throw new IllegalArgumentException("client has not been connected to session");
+            throw new NotConnectedError();
 
         if (!initiator)
-            throw new IllegalArgumentException("you cannot close session which not initiated by you");
+            throw new NotAnInitiatorError();
 
         initiators.remove(sessionId);
         connected.remove(session);
@@ -197,7 +206,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleDisconnectFromSession(WebSocketSession session) throws IOException {
         if (sessionId == null)
-            throw new IllegalArgumentException("client has not been connected to session");
+            throw new NotConnectedError();
 
         if (initiator)
             initiators.remove(sessionId);
@@ -208,7 +217,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleConnectToSession(WebSocketSession session, Request req) throws IOException {
         if (sessionId != null)
-            throw new IllegalArgumentException("client has been connected to session");
+            throw new AlreadyConnectedError();
 
         Map<String, Object> props = req.getProperties();
         if (!props.containsKey("sessionId"))
@@ -233,7 +242,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleInitSession(WebSocketSession session, Request req) throws IOException {
         if (sessionId != null)
-            throw new IllegalArgumentException("client has been connected to session");
+            throw new AlreadyConnectedError();
 
         Map<String, Object> props = req.getProperties();
         if (!props.containsKey("directoryName"))
