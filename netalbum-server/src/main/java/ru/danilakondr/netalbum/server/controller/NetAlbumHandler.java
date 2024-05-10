@@ -3,7 +3,6 @@ package ru.danilakondr.netalbum.server.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
@@ -66,8 +64,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                 AddImagesRequest req1 = mapper.readValue(msg, AddImagesRequest.class);
                 handleAddImages(session, req1);
                 break;
-            case DOWNLOAD_CONTENTS:
-                handleDownloadContents(session);
+            case DOWNLOAD_THUMBNAILS:
+                handleDownloadThumbnails(session);
                 break;
             case GET_DIRECTORY_INFO:
                 handleGetDirectoryInfo(session);
@@ -116,7 +114,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, r);
     }
 
-    private void handleDownloadContents(WebSocketSession session) throws IOException {
+    private void handleDownloadThumbnails(WebSocketSession session) throws IOException {
         if (sessionId == null)
             throw new IllegalArgumentException("client has not been connected to session");
 
