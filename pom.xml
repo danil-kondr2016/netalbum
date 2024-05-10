@@ -8,5 +8,6 @@
   <modules>
   	<module>netalbum-api</module>
   	<module>netalbum-server</module>
+      <module>netalbum-client</module>
   </modules>
 </project>

@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api;
+package ru.danilakondr.netalbum.client;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -8,6 +8,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import net.coobird.thumbnailator.Thumbnails;
+import ru.danilakondr.netalbum.api.data.ImageData;
 
 public class Images {
 	public static ImageData generateImage(File f, String name, int thumbnailWidth, int thumbnailHeight) throws IOException {
