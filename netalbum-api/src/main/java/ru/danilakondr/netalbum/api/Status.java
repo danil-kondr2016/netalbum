@@ -8,5 +8,6 @@ public enum Status {
 	, INVALID_ARGUMENT
 	, SQL_ERROR
 	, EXCEPTION
+	, SESSION_EXITS
 	;
 }

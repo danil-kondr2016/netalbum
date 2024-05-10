@@ -43,6 +43,10 @@ public class Response {
         return response;
     }
 
+    public static Response quit() {
+        return new Response(Status.SESSION_EXITS);
+    }
+
     @JsonGetter("status")
     public Status getStatus() {
         return status;
