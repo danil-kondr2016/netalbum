@@ -149,7 +149,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new IllegalArgumentException("client has not been connected to session");
 
         NetAlbumSession s = service.getSession(sessionId);
-        Response r = Response.directoryInfo(s.getDirectoryName(), 0);
+        long directorySize = service.getDirectorySize(sessionId);
+        Response r = Response.directoryInfo(s.getDirectoryName(), directorySize);
         sendResponse(session, r);
     }
 
