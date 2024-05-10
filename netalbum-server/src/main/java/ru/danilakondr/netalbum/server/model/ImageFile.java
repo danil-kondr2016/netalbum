@@ -9,6 +9,9 @@ public class ImageFile {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="fileId")
 	private long fileId;
+
+	@Column(name="sessionId")
+	private String sessionId;
 	
 	@Column(name="fileName")
 	private String fileName;
@@ -34,6 +37,10 @@ public class ImageFile {
 
 	public String getFileName() {
 		return fileName;
+	}
+
+	public String getSessionId() {
+		return sessionId;
 	}
 
 	public long getFileId() {
@@ -66,6 +73,10 @@ public class ImageFile {
 
 	public void setFileId(long fileId) {
 		this.fileId = fileId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
 
 	public void setThumbnail(byte[] thumbnail) {

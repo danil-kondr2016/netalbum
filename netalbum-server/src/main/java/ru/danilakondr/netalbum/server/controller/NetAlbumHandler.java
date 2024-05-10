@@ -7,17 +7,17 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import ru.danilakondr.netalbum.api.Request;
-import ru.danilakondr.netalbum.api.Response;
-import ru.danilakondr.netalbum.api.Status;
+import ru.danilakondr.netalbum.api.*;
 import ru.danilakondr.netalbum.server.SessionIdProvider;
 import ru.danilakondr.netalbum.server.db.NetAlbumService;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
@@ -63,7 +63,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                 handleCloseSession(session);
                 break;
             case ADD_IMAGES:
-                handleAddImages(session);
+                AddImagesRequest req1 = mapper.readValue(msg, AddImagesRequest.class);
+                handleAddImages(session, req1);
                 break;
             case DOWNLOAD_CONTENTS:
                 handleDownloadContents(session);
@@ -122,14 +123,19 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
     }
 
-    private void handleAddImages(WebSocketSession session) throws IOException {
+    private void handleAddImages(WebSocketSession session, AddImagesRequest req) throws IOException {
         if (sessionId == null)
             throw new IllegalArgumentException("client has not been connected to session");
 
         if (!initiator)
             throw new IllegalArgumentException("you cannot load images in session initiated by not you");
 
-        sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
+        List<ImageData> images = req.getImages();
+        for (ImageData image : images) {
+            service.putImage(sessionId, image);
+        }
+
+        sendResponse(session, Response.success());
     }
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
