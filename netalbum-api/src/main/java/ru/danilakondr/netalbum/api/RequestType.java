@@ -2,6 +2,7 @@ package ru.danilakondr.netalbum.api;
 
 public enum RequestType {
 	  INIT_SESSION
+	, RESTORE_SESSION
 	, CONNECT_TO_SESSION
 	, DISCONNECT_FROM_SESSION
 	, CLOSE_SESSION
