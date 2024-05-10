@@ -12,14 +12,21 @@ import ru.danilakondr.netalbum.api.Response;
 import ru.danilakondr.netalbum.api.Status;
 import ru.danilakondr.netalbum.server.SessionIdProvider;
 import ru.danilakondr.netalbum.server.db.NetAlbumService;
+import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
     private String sessionId;
     private NetAlbumService service;
+    private boolean initiator = false;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private static final Map<String, WebSocketSession> initiators = new HashMap<>();
+    private static final Map<WebSocketSession, String> connected = new HashMap<>();
 
     @Autowired
     public void setService(NetAlbumService service) {
@@ -30,17 +37,21 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         System.out.println("Connection established");
         session.sendMessage(new TextMessage("Hello, world!"));
+        session.sendMessage(new TextMessage(session.getAttributes().toString()));
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String msg = message.getPayload();
-        ObjectMapper mapper = new ObjectMapper();
+
         Request req = mapper.readValue(msg, Request.class);
 
         switch (req.getMethod()) {
             case INIT_SESSION:
                 handleInitSession(session, req);
+                break;
+            case RESTORE_SESSION:
+                handleRestoreSession(session, req);
                 break;
             case CONNECT_TO_SESSION:
                 handleConnectToSession(session, req);
@@ -70,42 +81,119 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         }
     }
 
-    private void handleSynchronize(WebSocketSession session, Request req) {
+    private void handleRestoreSession(WebSocketSession session, Request req) throws IOException {
+        Map<String, Object> props = req.getProperties();
+        if (!props.containsKey("sessionId"))
+            throw new IllegalArgumentException("session id has not been specified");
+
+        String id = (String)props.get("sessionId");
+        NetAlbumSession s = service.getSession(id);
+        if (s == null)
+            throw new IllegalArgumentException("non-existent session: " + id);
+
+        this.sessionId = id;
+        this.initiator = true;
+        sendResponse(session, Response.success());
     }
 
-    private void handleGetDirectoryInfo(WebSocketSession session) {
+    private void handleSynchronize(WebSocketSession session, Request req) throws IOException {
+        if (sessionId == null)
+            throw new IllegalArgumentException("client has not been connected to session");
 
+        if (!initiator)
+            throw new IllegalArgumentException("you cannot load images in session initiated by not you");
+
+        sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
     }
 
-    private void handleDownloadContents(WebSocketSession session) {
+    private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
+        if (sessionId == null)
+            throw new IllegalArgumentException("client has not been connected to session");
 
+        NetAlbumSession s = service.getSession(sessionId);
+        Response r = Response.directoryInfo(s.getDirectoryName(), 0);
+        sendResponse(session, r);
     }
 
-    private void handleAddImages(WebSocketSession session) {
+    private void handleDownloadContents(WebSocketSession session) throws IOException {
+        if (sessionId == null)
+            throw new IllegalArgumentException("client has not been connected to session");
 
+        sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
+    }
+
+    private void handleAddImages(WebSocketSession session) throws IOException {
+        if (sessionId == null)
+            throw new IllegalArgumentException("client has not been connected to session");
+
+        if (!initiator)
+            throw new IllegalArgumentException("you cannot load images in session initiated by not you");
+
+        sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
     }
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
+        if (sessionId == null)
+            throw new IllegalArgumentException("client has not been connected to session");
+
+        if (!initiator)
+            throw new IllegalArgumentException("you cannot close session which not initiated by you");
+
+        initiators.remove(sessionId);
+        connected.remove(session);
+
+        for (WebSocketSession s: connected.keySet()) {
+            if (Objects.equals(sessionId, connected.get(s))) {
+                sendResponse(s, Response.quit());
+                s.close();
+            }
+        }
+
         service.removeSession(sessionId);
         sendResponse(session, Response.success());
         session.close();
     }
 
-    private void handleDisconnectFromSession(WebSocketSession session) {
+    private void handleDisconnectFromSession(WebSocketSession session) throws IOException {
+        if (sessionId == null)
+            throw new IllegalArgumentException("client has not been connected to session");
 
+        if (initiator)
+            initiators.remove(sessionId);
+        connected.remove(session);
+        sendResponse(session, Response.success());
+        session.close();
     }
 
-    private void handleConnectToSession(WebSocketSession session, Request req) {
+    private void handleConnectToSession(WebSocketSession session, Request req) throws IOException {
+        if (sessionId != null)
+            throw new IllegalArgumentException("client has been connected to session");
+
+        Map<String, Object> props = req.getProperties();
+        if (!props.containsKey("sessionId"))
+            throw new IllegalArgumentException("session id has not been specified");
+
+        String id = (String)props.get("sessionId");
+        NetAlbumSession s = service.getSession(id);
+        if (s == null)
+            throw new IllegalArgumentException("non-existent session: " + id);
+
+        this.sessionId = id;
+        this.initiator = false;
+        connected.put(session, id);
+        sendResponse(session, Response.success());
     }
 
     private void sendResponse(WebSocketSession session, Response response) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
         String str = mapper.writeValueAsString(response);
         TextMessage msg = new TextMessage(str);
         session.sendMessage(msg);
     }
 
     private void handleInitSession(WebSocketSession session, Request req) throws IOException {
+        if (sessionId != null)
+            throw new IllegalArgumentException("client has been connected to session");
+
         Map<String, Object> props = req.getProperties();
         if (!props.containsKey("directoryName"))
             throw new IllegalArgumentException("directory name has not been specified");
@@ -113,6 +201,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sessionId = SessionIdProvider.generateSessionId();
         String directoryName = (String) props.get("directoryName");
         service.initSession(sessionId, directoryName);
+        initiator = true;
+        initiators.put(sessionId, session);
+        connected.put(session, sessionId);
 
         Response response = new Response(Status.SUCCESS);
         response.setProperty("sessionId", sessionId);
