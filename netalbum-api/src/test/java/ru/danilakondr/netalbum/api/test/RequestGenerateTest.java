@@ -1,11 +1,10 @@
 package ru.danilakondr.netalbum.api.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,12 +13,18 @@ import org.junit.jupiter.api.Test;
 
 import ru.danilakondr.netalbum.api.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class RequestGenerateTest {
 	private static final String TEST_DIRECTORY_NAME = "testDirectory";
+	ObjectMapper mapper = new ObjectMapper();
 
 	String objectToJson(Object o) throws JsonProcessingException {
-		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(o);
+	}
+
+	public <T> T jsonToObject(String json, Class<T> c) throws JsonProcessingException {
+		return mapper.readValue(json, c);
 	}
 	
 	@Test
@@ -28,8 +33,11 @@ public class RequestGenerateTest {
 		Request req = new Request(RequestType.INIT_SESSION);
 		req.setProperty("directoryName", TEST_DIRECTORY_NAME);
 		String x = objectToJson(req);
+		Request req1 = jsonToObject(x, Request.class);
 
 		assertEquals(String.format(Locale.ROOT, "{\"method\":\"INIT_SESSION\",\"directoryName\":\"%s\"}", TEST_DIRECTORY_NAME), x);
+        assertSame(req1.getMethod(), RequestType.INIT_SESSION);
+		assertEquals(TEST_DIRECTORY_NAME, req1.getProperties().get("directoryName"));
 	}
 
 	@Test
@@ -58,6 +66,24 @@ public class RequestGenerateTest {
 		String x = objectToJson(req);
 		
 		assertEquals("{\"method\":\"ADD_IMAGES\",\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}]}", x);
+
+		Request req1 = jsonToObject(x, Request.class);
+		assertSame(req1.getMethod(), RequestType.ADD_IMAGES);
+
+		Map<String, Object> contents = req1.getProperties();
+		assertTrue(contents.containsKey("images"));
+		assertInstanceOf(List.class, contents.get("images"));
+
+		List<Object> images = (List<Object>) contents.get("images");
+        assertFalse(images.isEmpty());
+		assertInstanceOf(Map.class, images.get(0));
+
+		Map<String, Object> image = (Map<String, Object>) images.get(0);
+		assertEquals("test.raw", image.get("fileName"));
+		assertEquals(8, image.get("fileSize"));
+		assertEquals(1, image.get("width"));
+		assertEquals(8, image.get("height"));
+		assertEquals("VEhVTUIxDQo=", image.get("thumbnail"));
 	}
 	
 	@Test
