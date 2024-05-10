@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api.error;
+package ru.danilakondr.netalbum.server.error;
 
 public class FileNotFoundError extends RuntimeException {
     public FileNotFoundError(String message) {

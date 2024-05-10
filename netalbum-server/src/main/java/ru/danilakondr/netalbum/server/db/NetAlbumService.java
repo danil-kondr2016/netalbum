@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.danilakondr.netalbum.api.ImageData;
-import ru.danilakondr.netalbum.api.error.FileAlreadyExistsError;
-import ru.danilakondr.netalbum.api.error.FileNotFoundError;
+import ru.danilakondr.netalbum.server.error.FileAlreadyExistsError;
+import ru.danilakondr.netalbum.server.error.FileNotFoundError;
 import ru.danilakondr.netalbum.server.model.ImageFile;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
