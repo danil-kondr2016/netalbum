@@ -49,4 +49,10 @@ public class NetAlbumService {
 
         dao.putImageFile(file);
     }
+
+    public void renameFile(String sessionId, String oldName, String newName) {
+        ImageFile file = dao.getImageFile(sessionId, oldName);
+        file.setFileName(newName);
+        dao.putImageFile(file);
+    }
 }
