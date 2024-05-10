@@ -1,6 +1,7 @@
 package ru.danilakondr.netalbum.api;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -45,6 +46,13 @@ public class Response {
 
     public static Response quit() {
         return new Response(Status.SESSION_EXITS);
+    }
+
+    public static Response synchronizing(List<Change> changes) {
+        Response response = new Response(Status.SYNCHRONIZING);
+        response.setProperty("changes", changes);
+
+        return response;
     }
 
     @JsonGetter("status")
