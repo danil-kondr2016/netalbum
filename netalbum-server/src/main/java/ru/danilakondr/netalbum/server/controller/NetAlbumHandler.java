@@ -143,9 +143,13 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         for (Change change: changes) {
             service.renameFile(sessionId, change.getOldName(), change.getNewName());
         }
-        // Второе. Отправить изменения инициатору сессии.
-        WebSocketSession initiatorSession = initiators.get(sessionId);
-        sendResponse(initiatorSession, Response.synchronizing(changes));
+        // Второе. Отправить изменения другим пользователям (в т.ч. инициатору).
+        Response changesResp = Response.synchronizing(changes);
+        for (Map.Entry<WebSocketSession, String> e : connected.entrySet()) {
+            if (e.getValue().equals(sessionId)) {
+                sendResponse(e.getKey(), changesResp);
+            }
+        }
 
         sendResponse(session, Response.success());
     }
