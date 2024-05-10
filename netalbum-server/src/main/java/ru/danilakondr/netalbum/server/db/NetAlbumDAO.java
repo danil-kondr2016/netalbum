@@ -5,7 +5,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import ru.danilakondr.netalbum.api.ImageData;
 import ru.danilakondr.netalbum.server.model.ImageFile;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
