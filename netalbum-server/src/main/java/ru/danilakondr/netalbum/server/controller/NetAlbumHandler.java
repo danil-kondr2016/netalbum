@@ -271,5 +271,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         exception.printStackTrace(System.out);
+        sendResponse(session, Response.withMessage(Status.EXCEPTION, exception.toString()));
+        if (initiator)
+            initiators.remove(sessionId);
+        connected.remove(session);
     }
 }
