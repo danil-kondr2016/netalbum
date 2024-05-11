@@ -47,6 +47,12 @@ public class StartDialog extends JDialog {
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
+    public StartDialog(String defaultURL) {
+        this();
+        if (defaultURL != null)
+            tfServerAddress.setText(defaultURL);
+    }
+
     private void onOK() {
         boolean initiateSessionState = rbInitiateSession.isSelected();
         boolean connectToSessionState = rbConnectToSession.isSelected();
