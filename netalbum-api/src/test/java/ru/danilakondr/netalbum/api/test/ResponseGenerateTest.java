@@ -46,4 +46,14 @@ public class ResponseGenerateTest {
 		assertTrue(x.contains("\"directoryName\":\"testDirectory\""));
 		assertTrue(x.contains("\"directorySize\":8"));
 	}
+
+	@Test
+	@DisplayName("Check response with byte array")
+	void thumbnails() throws JsonProcessingException {
+		Response resp = new Response(Status.SUCCESS);
+		resp.setProperty("thumbnailsZip", new byte[]{'T', 'H', 'U', 'M', 'B', '1', '\r', '\n'});
+
+		String x = objectToJson(resp);
+		assertEquals("{\"status\":\"SUCCESS\",\"thumbnailsZip\":\"VEhVTUIxDQo=\"}", x);
+	}
 }
