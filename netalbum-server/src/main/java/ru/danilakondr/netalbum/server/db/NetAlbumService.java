@@ -10,6 +10,12 @@ import ru.danilakondr.netalbum.server.error.NonExistentSession;
 import ru.danilakondr.netalbum.server.model.ImageFile;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 @Service
 public class NetAlbumService {
     private NetAlbumDAO dao;
@@ -79,5 +85,30 @@ public class NetAlbumService {
         return s.getFiles().stream()
                 .mapToLong(ImageFile::getFileSize)
                 .sum();
+    }
+
+    @Transactional
+    public byte[] generateArchiveWithThumbnails(String sessionId) {
+        NetAlbumSession s = dao.getSession(sessionId);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try (ZipOutputStream out = new ZipOutputStream(os)) {
+            for (ImageFile f : s.getFiles()) {
+                if (f.getFileName() == null)
+                    continue;
+
+                ZipEntry entry = new ZipEntry(f.getFileName());
+                out.putNextEntry(entry);
+                ByteArrayInputStream is = new ByteArrayInputStream(f.getThumbnail());
+                is.transferTo(out);
+                out.closeEntry();
+            }
+
+            out.finish();
+            return os.toByteArray();
+        }
+        catch (IOException e) {
+            e.printStackTrace(System.err);
+            throw new IllegalStateException(e);
+        }
     }
 }
