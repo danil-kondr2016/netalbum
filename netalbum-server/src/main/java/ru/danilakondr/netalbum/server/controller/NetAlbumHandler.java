@@ -168,7 +168,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (sessionId == null)
             throw new NotConnectedError();
 
-        sendResponse(session, Response.withMessage(Status.INVALID_REQUEST, "not implemented"));
+        byte[] zipFile = service.generateArchiveWithThumbnails(sessionId);
+        Response resp = new Response(Status.SUCCESS);
+        resp.setProperty("thumbnailsZip", zipFile);
+
+        sendResponse(session, resp);
     }
 
     private void handleAddImages(WebSocketSession session, AddImagesRequest req) throws IOException {
