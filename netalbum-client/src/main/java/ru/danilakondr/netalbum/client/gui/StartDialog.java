@@ -1,4 +1,6 @@
-package ru.danilakondr.netalbum.client;
+package ru.danilakondr.netalbum.client.gui;
+
+import ru.danilakondr.netalbum.client.SessionIdValidator;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -72,6 +74,10 @@ public class StartDialog extends JDialog {
             JOptionPane.showMessageDialog(null,
                     "Вы выбрали подключение к существующей сессии."
             );
+            String sessionId = tfSessionKey.getText();
+            if (!SessionIdValidator.isSessionIdValid(sessionId)) {
+                JOptionPane.showMessageDialog(null, "Неправильный ключ сессии: "+sessionId, "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
         }
 
         dispose();
