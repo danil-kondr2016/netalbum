@@ -1,5 +1,7 @@
 package ru.danilakondr.netalbum.server.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,15 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String msg = message.getPayload();
-        Request req = mapper.readValue(msg, Request.class);
+        Request req;
+
+        try {
+            req = mapper.readValue(msg, Request.class);
+        }
+        catch (JsonProcessingException e) {
+            sendResponse(session, Response.invalidRequest(e.getMessage()));
+            return;
+        }
 
         try {
             switch (req.getMethod()) {
@@ -159,7 +169,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new NotConnectedError();
 
         byte[] zipFile = service.generateArchiveWithThumbnails(sessionId);
-        Response resp = new Response(Status.SUCCESS);
+        Response resp = new Response(Status.THUMBNAILS_ARCHIVE);
         resp.setProperty("thumbnailsZip", zipFile);
 
         sendResponse(session, resp);
@@ -245,7 +255,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         initiators.put(sessionId, session);
         connected.put(session, sessionId);
 
-        Response response = new Response(Status.SUCCESS);
+        Response response = new Response(Status.SESSION_CREATED);
         response.setProperty("sessionId", sessionId);
         sendResponse(session, response);
     }
