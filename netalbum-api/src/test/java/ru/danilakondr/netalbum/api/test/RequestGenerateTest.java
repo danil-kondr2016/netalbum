@@ -39,7 +39,9 @@ public class RequestGenerateTest {
 
 		assertEquals(String.format(Locale.ROOT, "{\"method\":\"INIT_SESSION\",\"directoryName\":\"%s\"}", TEST_DIRECTORY_NAME), x);
         assertSame(req1.getMethod(), Request.Type.INIT_SESSION);
-		assertEquals(TEST_DIRECTORY_NAME, req1.getProperties().get("directoryName"));
+
+		Request.InitSession req2 = (Request.InitSession)req1;
+		assertEquals(TEST_DIRECTORY_NAME, req2.getDirectoryName());
 	}
 
 	@Test
@@ -71,21 +73,18 @@ public class RequestGenerateTest {
 
 		Request req1 = jsonToObject(x, Request.class);
 		assertSame(req1.getMethod(), Request.Type.ADD_IMAGES);
+		assertSame(req1.getClass(), Request.AddImages.class);
 
-		Map<String, Object> contents = req1.getProperties();
-		assertTrue(contents.containsKey("images"));
-		assertInstanceOf(List.class, contents.get("images"));
+		Request.AddImages req2 = (Request.AddImages) req1;
+		List<ImageData> images = req2.getImages();
+		assertFalse(images.isEmpty());
 
-		List<Object> images = (List<Object>) contents.get("images");
-        assertFalse(images.isEmpty());
-		assertInstanceOf(Map.class, images.get(0));
-
-		Map<String, Object> image = (Map<String, Object>) images.get(0);
-		assertEquals("test.raw", image.get("fileName"));
-		assertEquals(8, image.get("fileSize"));
-		assertEquals(1, image.get("width"));
-		assertEquals(8, image.get("height"));
-		assertEquals("VEhVTUIxDQo=", image.get("thumbnail"));
+		ImageData image = images.get(0);
+		assertEquals("test.raw", image.getFileName());
+		assertEquals(8, image.getFileSize());
+		assertEquals(1, image.getWidth());
+		assertEquals(8, image.getHeight());
+		assertArrayEquals(new byte[]{'T', 'H', 'U', 'M', 'B', '1', '\r', '\n'}, image.getThumbnail());
 	}
 	
 	@Test
