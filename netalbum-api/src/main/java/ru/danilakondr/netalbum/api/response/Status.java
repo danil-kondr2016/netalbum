@@ -15,6 +15,10 @@ public enum Status {
 	, ERROR
 	, EXCEPTION
 	, SESSION_EXITS
+	/* Возврат данных */
+	, SESSION_CREATED
 	, SYNCHRONIZING
+	, DIRECTORY_INFO
+	, THUMBNAILS_ARCHIVE
 	;
 }
