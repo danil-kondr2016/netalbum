@@ -8,9 +8,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.data.ImageData;
-import ru.danilakondr.netalbum.api.request.AddImagesRequest;
 import ru.danilakondr.netalbum.api.request.Request;
-import ru.danilakondr.netalbum.api.request.SynchronizeRequest;
 import ru.danilakondr.netalbum.api.response.Response;
 import ru.danilakondr.netalbum.api.response.Status;
 import ru.danilakondr.netalbum.server.error.*;
@@ -51,13 +49,13 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         try {
             switch (req.getMethod()) {
                 case INIT_SESSION:
-                    handleInitSession(session, req);
+                    handleInitSession(session, (Request.InitSession)req);
                     break;
                 case RESTORE_SESSION:
-                    handleRestoreSession(session, req);
+                    handleRestoreSession(session, (Request.RestoreSession)req);
                     break;
                 case CONNECT_TO_SESSION:
-                    handleConnectToSession(session, req);
+                    handleConnectToSession(session, (Request.ConnectToSession)req);
                     break;
                 case DISCONNECT_FROM_SESSION:
                     handleDisconnectFromSession(session);
@@ -65,22 +63,18 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                 case CLOSE_SESSION:
                     handleCloseSession(session);
                     break;
-                case ADD_IMAGES: {
-                    AddImagesRequest req1 = mapper.readValue(msg, AddImagesRequest.class);
-                    handleAddImages(session, req1);
+                case ADD_IMAGES:
+                    handleAddImages(session, (Request.AddImages)req);
                     break;
-                }
                 case DOWNLOAD_THUMBNAILS:
                     handleDownloadThumbnails(session);
                     break;
                 case GET_DIRECTORY_INFO:
                     handleGetDirectoryInfo(session);
                     break;
-                case SYNCHRONIZE: {
-                    SynchronizeRequest req1 = mapper.readValue(msg, SynchronizeRequest.class);
-                    handleSynchronize(session, req1);
+                case SYNCHRONIZE:
+                    handleSynchronize(session, (Request.Synchronize)req);
                     break;
-                }
                 default:
                     sendResponse(session, Response.invalidMethod(""));
                     break;
@@ -115,15 +109,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         }
     }
 
-    private void handleRestoreSession(WebSocketSession session, Request req) throws IOException {
+    private void handleRestoreSession(WebSocketSession session, Request.RestoreSession req) throws IOException {
         if (sessionId != null)
             throw new AlreadyConnectedError();
 
-        Map<String, Object> props = req.getProperties();
-        if (!props.containsKey("sessionId"))
-            throw new IllegalArgumentException("session id has not been specified");
-
-        String id = (String)props.get("sessionId");
+        String id = req.getSessionId();
         NetAlbumSession s = service.getSession(id);
         if (s == null)
             throw new NonExistentSession(id);
@@ -134,7 +124,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, Response.success());
     }
 
-    private void handleSynchronize(WebSocketSession session, SynchronizeRequest req) throws IOException {
+    private void handleSynchronize(WebSocketSession session, Request.Synchronize req) throws IOException {
         if (sessionId == null)
             throw new NotConnectedError();
 
@@ -175,7 +165,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, resp);
     }
 
-    private void handleAddImages(WebSocketSession session, AddImagesRequest req) throws IOException {
+    private void handleAddImages(WebSocketSession session, Request.AddImages req) throws IOException {
         if (sessionId == null)
             throw new NotConnectedError();
 
@@ -223,15 +213,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         session.close();
     }
 
-    private void handleConnectToSession(WebSocketSession session, Request req) throws IOException {
+    private void handleConnectToSession(WebSocketSession session, Request.ConnectToSession req) throws IOException {
         if (sessionId != null)
             throw new AlreadyConnectedError();
 
-        Map<String, Object> props = req.getProperties();
-        if (!props.containsKey("sessionId"))
-            throw new IllegalArgumentException("session id has not been specified");
-
-        String id = (String)props.get("sessionId");
+        String id = req.getSessionId();
         NetAlbumSession s = service.getSession(id);
         if (s == null)
             throw new NonExistentSession(id);
@@ -248,16 +234,12 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         session.sendMessage(msg);
     }
 
-    private void handleInitSession(WebSocketSession session, Request req) throws IOException {
+    private void handleInitSession(WebSocketSession session, Request.InitSession req) throws IOException {
         if (sessionId != null)
             throw new AlreadyConnectedError();
 
-        Map<String, Object> props = req.getProperties();
-        if (!props.containsKey("directoryName"))
-            throw new IllegalArgumentException("directory name has not been specified");
-
         sessionId = SessionIdProvider.generateSessionId();
-        String directoryName = (String) props.get("directoryName");
+        String directoryName = req.getDirectoryName();
         service.initSession(sessionId, directoryName);
         initiator = true;
         initiators.put(sessionId, session);
