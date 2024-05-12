@@ -14,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 public class Configuration implements Closeable {
     private static final String SESSIONS_SECTION = "sessions";
     private static final String SERVER_SECTION = "server";
+    public static final String THUMBNAILS_SECTION = "thumbnails";
     private File f;
     private Ini ini;
 
@@ -33,6 +34,20 @@ public class Configuration implements Closeable {
 
     public String getDefaultURL() {
         return ini.get(SERVER_SECTION, "address");
+    }
+
+    public int getThumbnailWidth() {
+        String sWidth = ini.get(THUMBNAILS_SECTION, "width");
+        if (sWidth == null)
+            return 640;
+        return Integer.parseInt(sWidth);
+    }
+
+    public int getThumbnailHeight() {
+        String sHeight = ini.get(THUMBNAILS_SECTION, "height");
+        if (sHeight == null)
+            return 480;
+        return Integer.parseInt(sHeight);
     }
 
     public void addSession(String sessionId, String url, String path) {
