@@ -4,12 +4,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.*;
 import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.request.Request;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="status", visible = true)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value=Response.DirectoryInfo.class, name="DIRECTORY_INFO"),
+        @JsonSubTypes.Type(value=Response.Synchronizing.class, name="SYNCHRONIZING"),
+        @JsonSubTypes.Type(value=Response.ThumbnailsArchive.class, name="THUMBNAILS_ARCHIVE"),
+        @JsonSubTypes.Type(value=Response.SessionCreated.class, name="SESSION_CREATED"),
+})
 public class Response {
     private static Response SUCCESS = null;
     private Status status;
@@ -29,6 +34,79 @@ public class Response {
             SUCCESS = new Response(Status.SUCCESS);
 
         return SUCCESS;
+    }
+
+    public static class DirectoryInfo extends Response {
+        private String directoryName;
+        private long directorySize;
+
+        public DirectoryInfo() {
+            super(Status.DIRECTORY_INFO);
+        }
+
+        public String getDirectoryName() {
+            return directoryName;
+        }
+
+        public void setDirectoryName(String directoryName) {
+            this.directoryName = directoryName;
+        }
+
+        public long getDirectorySize() {
+            return directorySize;
+        }
+
+        public void setDirectorySize(long directorySize) {
+            this.directorySize = directorySize;
+        }
+    }
+
+    public static class Synchronizing extends Response {
+        private List<Change> changes;
+
+        public Synchronizing() {
+            super(Status.SYNCHRONIZING);
+        }
+
+        public List<Change> getChanges() {
+            return changes;
+        }
+
+        public void setChanges(List<Change> changes) {
+            this.changes = changes;
+        }
+    }
+
+    public static class ThumbnailsArchive extends Response {
+        private byte[] thumbnailsZip;
+
+        public ThumbnailsArchive() {
+            super(Status.THUMBNAILS_ARCHIVE);
+        }
+
+        public byte[] getThumbnailsZip() {
+            return thumbnailsZip;
+        }
+
+        public void setThumbnailsZip(byte[] thumbnailsZip) {
+            this.thumbnailsZip = thumbnailsZip;
+        }
+    }
+
+    public static class SessionCreated extends Response {
+        private String sessionId;
+
+        public SessionCreated() {
+            super(Status.SESSION_CREATED);
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public void setSessionId(String sessionId) {
+            this.sessionId = sessionId;
+        }
     }
 
     public static Response withMessage(Status status, String message) {
