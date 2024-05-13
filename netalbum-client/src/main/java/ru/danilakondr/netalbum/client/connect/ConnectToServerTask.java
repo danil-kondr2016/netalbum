@@ -6,11 +6,11 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.concurrent.CompletableFuture;
 
-public class NetAlbumServerConnector extends SwingWorker<WebSocket, Void> {
+public class ConnectToServerTask extends SwingWorker<WebSocket, Void> {
     private final URI uri;
-    private final NetAlbumListener listener;
+    private final ResponseListener listener;
 
-    public NetAlbumServerConnector(URI uri, NetAlbumListener listener) {
+    public ConnectToServerTask(URI uri, ResponseListener listener) {
         super();
         this.uri = uri;
         this.listener = listener;
