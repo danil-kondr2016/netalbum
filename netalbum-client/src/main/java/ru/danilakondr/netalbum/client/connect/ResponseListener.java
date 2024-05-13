@@ -9,7 +9,7 @@ import java.util.concurrent.CompletionStage;
 
 import ru.danilakondr.netalbum.api.response.Response;
 
-public class NetAlbumListener implements WebSocket.Listener {
+public class ResponseListener implements WebSocket.Listener {
     private Response response = null;
     private final StringBuilder sb = new StringBuilder();
     private CompletableFuture<?> accumulatedMessage = new CompletableFuture<>();
