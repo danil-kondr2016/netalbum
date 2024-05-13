@@ -18,4 +18,12 @@ public class LocalizedMessages {
     public static String getMessage(String id, Object... args) {
         return MessageFormat.format(bundle.getString(id), args);
     }
+
+    public static String error() {
+        return bundle.getString("error");
+    }
+
+    public static String invalidSessionTypeSelection() {
+        return bundle.getString("invalid_session_type_selection");
+    }
 }
