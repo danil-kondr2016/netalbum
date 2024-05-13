@@ -7,12 +7,12 @@ import ru.danilakondr.netalbum.api.response.Response;
 import javax.swing.*;
 import java.net.http.WebSocket;
 
-public class NetAlbumRequestSender extends SwingWorker<Response, Void> {
-    private final NetAlbumListener listener;
+public class SendRequestTask extends SwingWorker<Response, Void> {
+    private final ResponseListener listener;
     private final WebSocket socket;
     private final Request request;
 
-    public NetAlbumRequestSender(NetAlbumListener listener, WebSocket socket, Request request) {
+    public SendRequestTask(ResponseListener listener, WebSocket socket, Request request) {
         super();
         this.listener = listener;
         this.socket = socket;
