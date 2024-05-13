@@ -1,39 +1,18 @@
-package ru.danilakondr.netalbum.client;
+package ru.danilakondr.netalbum.client.connect;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.http.WebSocket;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import ru.danilakondr.netalbum.api.response.Response;
-import ru.danilakondr.netalbum.api.data.Change;
 
 public class NetAlbumListener implements WebSocket.Listener {
-    private String sessionId = null;
-    private Response.DirectoryInfo directoryInfo = null;
-    private List<Change> changes = null;
-    private byte[] thumbnailsZip = null;
+    private Response response = null;
     private final StringBuilder sb = new StringBuilder();
     private CompletableFuture<?> accumulatedMessage = new CompletableFuture<>();
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public Response.DirectoryInfo getDirectoryInfo() {
-        return directoryInfo;
-    }
-
-    public List<Change> getChanges() {
-        return changes;
-    }
-
-    public byte[] getThumbnailsZip() {
-        return thumbnailsZip;
-    }
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
@@ -57,6 +36,7 @@ public class NetAlbumListener implements WebSocket.Listener {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Response resp = mapper.readValue(strResponse, Response.class);
+            /*
             switch (resp.getStatus()) {
                 case SESSION_CREATED:
                     sessionId = ((Response.SessionCreated) resp).getSessionId();
@@ -89,9 +69,16 @@ public class NetAlbumListener implements WebSocket.Listener {
                 default:
                     throw new RuntimeException(LocalizedMessages.getMessage(resp.getStatus().name()));
             }
+             */
+
+            this.response = resp;
         }
         catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public Response getResponse() {
+        return response;
     }
 }
