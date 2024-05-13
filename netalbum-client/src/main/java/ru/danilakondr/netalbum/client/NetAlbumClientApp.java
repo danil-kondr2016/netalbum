@@ -22,6 +22,11 @@ public class NetAlbumClientApp {
         return new File(ini);
     }
 
+    public enum SessionType {
+        INIT_SESSION,
+        CONNECT_TO_SESSION
+    }
+
     public static void main(String[] args) throws IOException {
         setSystemLookAndFeel();
 
