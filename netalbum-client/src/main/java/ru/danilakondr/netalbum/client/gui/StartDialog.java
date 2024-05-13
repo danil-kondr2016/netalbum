@@ -1,5 +1,7 @@
 package ru.danilakondr.netalbum.client.gui;
 
+import ru.danilakondr.netalbum.client.LocalizedMessages;
+import ru.danilakondr.netalbum.client.NetAlbumClientApp;
 import ru.danilakondr.netalbum.client.SessionIdValidator;
 
 import javax.swing.*;
@@ -15,6 +17,8 @@ public class StartDialog extends JDialog {
     private JRadioButton rbConnectToSession;
     private JTextField tfSessionKey;
     private JTextField tfServerAddress;
+    private NetAlbumClientApp.SessionType sessionType;
+    private String sessionId;
 
     public StartDialog() {
         setContentPane(contentPane);
@@ -61,14 +65,15 @@ public class StartDialog extends JDialog {
 
         if (initiateSessionState == connectToSessionState) {
             JOptionPane.showMessageDialog(null,
-                    "Неправильный выбор типа сессии",
-                    "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    LocalizedMessages.invalidSessionTypeSelection(),
+                    LocalizedMessages.error(), JOptionPane.ERROR_MESSAGE);
             dispose();
             return;
         }
         else if (initiateSessionState) {
             JOptionPane.showMessageDialog(null,
                     "Вы выбрали инициирование сессии.");
+            this.sessionType = NetAlbumClientApp.SessionType.INIT_SESSION;
         }
         else if (connectToSessionState) {
             JOptionPane.showMessageDialog(null,
@@ -76,8 +81,13 @@ public class StartDialog extends JDialog {
             );
             String sessionId = tfSessionKey.getText();
             if (!SessionIdValidator.isSessionIdValid(sessionId)) {
-                JOptionPane.showMessageDialog(null, "Неправильный ключ сессии: "+sessionId, "Ошибка", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        LocalizedMessages.invalidSessionKey(sessionId),
+                        LocalizedMessages.error(), JOptionPane.ERROR_MESSAGE);
             }
+
+            this.sessionType = NetAlbumClientApp.SessionType.CONNECT_TO_SESSION;
+            this.sessionId = sessionId;
         }
 
         dispose();
@@ -87,22 +97,11 @@ public class StartDialog extends JDialog {
         dispose();
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    public String getSessionId() {
+        return sessionId;
+    }
 
-        StartDialog dialog = new StartDialog();
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
+    public NetAlbumClientApp.SessionType getSessionType() {
+        return sessionType;
     }
 }
