@@ -6,6 +6,9 @@ import ru.danilakondr.netalbum.client.SessionIdValidator;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 
 public class StartDialog extends JDialog {
     private JPanel contentPane;
@@ -17,10 +20,17 @@ public class StartDialog extends JDialog {
     private JRadioButton rbConnectToSession;
     private JTextField tfSessionKey;
     private JTextField tfServerAddress;
+    private final JFileChooser dirChooser;
+
     private NetAlbumClientApp.SessionType sessionType;
     private String sessionId;
+    private String urlString;
+    private String directoryPath;
 
     public StartDialog() {
+        dirChooser = new JFileChooser();
+        dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -34,6 +44,38 @@ public class StartDialog extends JDialog {
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
+            }
+        });
+
+        btnSelectFolder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int result = dirChooser.showOpenDialog(StartDialog.this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File f = dirChooser.getSelectedFile();
+                    StartDialog.this.tfFolderPath.setText(f.getAbsolutePath());
+                }
+            }
+        });
+
+        tfFolderPath.addPropertyChangeListener(new PropertyChangeListener() {
+                                                   @Override
+                                                   public void propertyChange(PropertyChangeEvent evt) {
+                                                       if ("text".equals(evt.getPropertyName())) {
+                                                           StartDialog.this.directoryPath = (String)evt.getNewValue();
+                                                       }
+                                                   }
+                                               });
+
+        tfServerAddress.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt == null)
+                    return;
+
+                if ("text".equals(evt.getPropertyName())) {
+                    urlString = (String)evt.getNewValue();
+                }
             }
         });
 
@@ -103,5 +145,13 @@ public class StartDialog extends JDialog {
 
     public NetAlbumClientApp.SessionType getSessionType() {
         return sessionType;
+    }
+
+    public String getDirectoryPath() {
+        return directoryPath;
+    }
+
+    public String getServerAddress() {
+        return urlString;
     }
 }
