@@ -14,6 +14,19 @@ import ru.danilakondr.netalbum.api.request.Request;
         @JsonSubTypes.Type(value=Response.Synchronizing.class, name="SYNCHRONIZING"),
         @JsonSubTypes.Type(value=Response.ThumbnailsArchive.class, name="THUMBNAILS_ARCHIVE"),
         @JsonSubTypes.Type(value=Response.SessionCreated.class, name="SESSION_CREATED"),
+        @JsonSubTypes.Type(value=Response.class, name="SUCCESS"),
+        @JsonSubTypes.Type(value=Response.class, name="INVALID_REQUEST"),
+        @JsonSubTypes.Type(value=Response.class, name="INVALID_METHOD"),
+        @JsonSubTypes.Type(value=Response.class, name="INVALID_ARGUMENT"),
+        @JsonSubTypes.Type(value=Response.class, name="FILE_NOT_FOUND"),
+        @JsonSubTypes.Type(value=Response.class, name="FILE_ALREADY_EXISTS"),
+        @JsonSubTypes.Type(value=Response.class, name="NON_EXISTENT_SESSION"),
+        @JsonSubTypes.Type(value=Response.class, name="NOT_AN_INITIATOR"),
+        @JsonSubTypes.Type(value=Response.class, name="NOT_A_VIEWER"),
+        @JsonSubTypes.Type(value=Response.class, name="CLIENT_NOT_CONNECTED"),
+        @JsonSubTypes.Type(value=Response.class, name="CLIENT_ALREADY_DISCONNECTED"),
+        @JsonSubTypes.Type(value=Response.class, name="ERROR"),
+        @JsonSubTypes.Type(value=Response.class, name="EXCEPTION"),
 })
 public class Response {
     private static Response SUCCESS = null;
