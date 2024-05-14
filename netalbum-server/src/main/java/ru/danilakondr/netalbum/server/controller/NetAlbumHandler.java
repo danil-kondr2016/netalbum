@@ -32,7 +32,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     private final ObjectMapper mapper = new ObjectMapper();
     private static final Map<String, WebSocketSession> initiators = new HashMap<>();
     private static final Map<WebSocketSession, String> connected = new HashMap<>();
-    private final StringBuilder sb = new StringBuilder();
+    private StringBuilder sb = new StringBuilder();
 
     @Autowired
     public void setService(NetAlbumService service) {
@@ -46,13 +46,13 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        sb.append(message.getPayload());
         if (!message.isLast()) {
-            sb.append(message.getPayload());
             return;
         }
 
         String msg = sb.toString();
-        sb.delete(0, sb.length()-1);
+        sb.setLength(0);
 
         Request req;
 
