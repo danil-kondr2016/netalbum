@@ -25,6 +25,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class LoadImagesTask extends SwingWorker<Response, File> {
+    @Override
+    protected Response doInBackground() throws Exception {
+        return null;
+    }
+    /*
     private final File directory;
     private final ResponseListener listener;
     private final WebSocket socket;
@@ -151,4 +156,5 @@ public class LoadImagesTask extends SwingWorker<Response, File> {
             }
         }
     }
+     */
 }

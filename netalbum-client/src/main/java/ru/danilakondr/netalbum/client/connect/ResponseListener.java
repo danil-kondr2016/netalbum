@@ -4,15 +4,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.http.WebSocket;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import ru.danilakondr.netalbum.api.response.Response;
 
 public class ResponseListener implements WebSocket.Listener {
-    private Response response = null;
+    private BlockingQueue<Response> responseQueue;
     private final StringBuilder sb = new StringBuilder();
     private CompletableFuture<?> accumulatedMessage = new CompletableFuture<>();
+
+    public void setResponseQueue(BlockingQueue<Response> responseQueue) {
+        this.responseQueue = responseQueue;
+    }
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
@@ -28,7 +33,6 @@ public class ResponseListener implements WebSocket.Listener {
             return cf;
         }
 
-
         return accumulatedMessage;
     }
 
@@ -36,6 +40,7 @@ public class ResponseListener implements WebSocket.Listener {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Response resp = mapper.readValue(strResponse, Response.class);
+            responseQueue.put(resp);
             /*
             switch (resp.getStatus()) {
                 case SESSION_CREATED:
@@ -71,14 +76,11 @@ public class ResponseListener implements WebSocket.Listener {
             }
              */
 
-            this.response = resp;
         }
         catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-    }
-
-    public Response getResponse() {
-        return response;
     }
 }

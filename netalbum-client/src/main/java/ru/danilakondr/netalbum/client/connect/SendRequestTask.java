@@ -7,7 +7,7 @@ import ru.danilakondr.netalbum.api.response.Response;
 import javax.swing.*;
 import java.net.http.WebSocket;
 
-public class SendRequestTask extends SwingWorker<Response, Void> {
+public class SendRequestTask extends SwingWorker<Void, Void> {
     private final ResponseListener listener;
     private final WebSocket socket;
     private final Request request;
@@ -20,11 +20,11 @@ public class SendRequestTask extends SwingWorker<Response, Void> {
     }
 
     @Override
-    protected Response doInBackground() throws Exception {
+    protected Void doInBackground() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String msg = mapper.writeValueAsString(request);
 
         socket.sendText(msg, true).get();
-        return listener.getResponse();
+        return null;
     }
 }

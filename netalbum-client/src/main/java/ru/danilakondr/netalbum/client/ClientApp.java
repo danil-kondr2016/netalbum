@@ -1,29 +1,36 @@
 package ru.danilakondr.netalbum.client;
 
+import ru.danilakondr.netalbum.api.request.Request;
+import ru.danilakondr.netalbum.api.response.Response;
+import ru.danilakondr.netalbum.api.response.Status;
 import ru.danilakondr.netalbum.client.connect.ConnectToServerTask;
 import ru.danilakondr.netalbum.client.connect.ResponseListener;
+import ru.danilakondr.netalbum.client.connect.SendRequestTask;
 import ru.danilakondr.netalbum.client.gui.StartDialog;
 
 import javax.swing.*;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.WebSocket;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
 public class ClientApp {
     private final Configuration cfg;
-    private final ResponseListener listener;
+    private BlockingQueue<Response> responseQueue;
+    private ResponseListener listener;
     private WebSocket socket;
 
     public ClientApp(Configuration cfg) {
         this.cfg = cfg;
-        this.listener =  new ResponseListener();
+        this.responseQueue = new ArrayBlockingQueue<>(1000);
+        this.listener = new ResponseListener();
+        this.listener.setResponseQueue(responseQueue);
     }
 
     public void run() {
@@ -75,6 +82,30 @@ public class ClientApp {
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
+        // 3. Послать запрос ключа сессии
+        Request.InitSession req1 = new Request.InitSession();
+        req1.setDirectoryName(name);
+
+        SendRequestTask send1 = new SendRequestTask(listener, socket, req1);
+        send1.execute();
+
+        String sessionId;
+        try {
+            Response resp1 = responseQueue.take();
+            if (resp1.getStatus() == Status.SESSION_CREATED) {
+                sessionId = ((Response.SessionCreated) resp1).getSessionId();
+                JOptionPane.showMessageDialog(null, sessionId);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        // 4. СТРОГО для теста: закрыть сессию
+
+        Request req2 = new Request();
+        req2.setMethod(Request.Type.CLOSE_SESSION);
+
+        SendRequestTask send2 = new SendRequestTask(listener, socket, req2);
+        send2.execute();
     }
 
     private static void guiDie(String message) {
