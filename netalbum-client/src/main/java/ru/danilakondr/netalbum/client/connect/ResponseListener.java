@@ -21,7 +21,7 @@ public class ResponseListener implements WebSocket.Listener {
 
         if (last) {
             processResponse(sb.toString());
-            sb.delete(0, sb.length()-1);
+            sb.setLength(0);
             accumulatedMessage.complete(null);
             CompletionStage<?> cf = accumulatedMessage;
             accumulatedMessage = new CompletableFuture<>();
