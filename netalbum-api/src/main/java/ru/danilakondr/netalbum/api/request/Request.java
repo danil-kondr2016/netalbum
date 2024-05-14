@@ -14,7 +14,11 @@ import java.util.Map;
         @JsonSubTypes.Type(value=Request.Synchronize.class, name="SYNCHRONIZE"),
         @JsonSubTypes.Type(value=Request.AddImages.class, name="ADD_IMAGES"),
         @JsonSubTypes.Type(value=Request.ConnectToSession.class, name="CONNECT_TO_SESSION"),
-        @JsonSubTypes.Type(value=Request.RestoreSession.class, name="RESTORE_SESSION")
+        @JsonSubTypes.Type(value=Request.RestoreSession.class, name="RESTORE_SESSION"),
+        @JsonSubTypes.Type(value=Request.class, name="CLOSE_SESSION"),
+        @JsonSubTypes.Type(value=Request.class, name="DISCONNECT_FROM_SESSION"),
+        @JsonSubTypes.Type(value=Request.class, name="GET_DIRECTORY_INFO"),
+        @JsonSubTypes.Type(value=Request.class, name="DOWNLOAD_THUMBNAILS")
 })
 public class Request {
     private Type method;
