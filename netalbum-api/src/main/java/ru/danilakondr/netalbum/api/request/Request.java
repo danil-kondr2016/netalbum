@@ -27,6 +27,10 @@ public class Request {
     public static class InitSession extends Request {
         private String directoryName;
 
+        public InitSession() {
+            super(Type.INIT_SESSION);
+        }
+
         public String getDirectoryName() {
             return directoryName;
         }
@@ -38,6 +42,10 @@ public class Request {
 
     public static class RestoreSession extends Request {
         private String sessionId;
+
+        public RestoreSession() {
+            super(Type.RESTORE_SESSION);
+        }
 
         public String getSessionId() {
             return sessionId;
@@ -51,6 +59,10 @@ public class Request {
     public static class ConnectToSession extends Request {
         private String sessionId;
 
+        public ConnectToSession() {
+            super(Type.CONNECT_TO_SESSION);
+        }
+
         public String getSessionId() {
             return sessionId;
         }
@@ -63,6 +75,10 @@ public class Request {
     public static class Synchronize extends Request {
         private List<Change> changes;
 
+        public Synchronize() {
+            super(Type.SYNCHRONIZE);
+        }
+
         public List<Change> getChanges() {
             return changes;
         }
@@ -74,6 +90,10 @@ public class Request {
 
     public static class AddImages extends Request {
         private List<ImageData> images;
+
+        public AddImages() {
+            super(Type.ADD_IMAGES);
+        }
 
         @JsonSetter("images")
         public void setImages(List<ImageData> data) {
