@@ -6,10 +6,13 @@ import ru.danilakondr.netalbum.client.gui.StartDialog;
 
 import javax.swing.*;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.WebSocket;
+import java.util.concurrent.ExecutionException;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
@@ -50,14 +53,28 @@ public class ClientApp {
         }
     }
 
-    private void initSession(String address, String directoryPath) {
+    private void initSession(String address, String directoryPath)  {
         // 1. Определить внутреннее название папки.
         File directory = new File(directoryPath);
         String name = directory.getName();
-        // 2. Запросить ключ сессии у сервера.
+        // 2. Подключиться.
         URI uri = URI.create(address);
+        JOptionPane optPane = new JOptionPane();
+        optPane.setMessageType(ERROR_MESSAGE);
+        optPane.setMessage("Waiting for " + uri);
+
+        JDialog dlg = optPane.createDialog("Please wait");
+
         ConnectToServerTask connect = new ConnectToServerTask(uri, listener);
-        // 3. Записать информацию о сессии у себя.
+        connect.addPropertyChangeListener(new SwingWorkerCompletionWaiter(dlg));
+        connect.execute();
+        try {
+            socket = connect.get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void guiDie(String message) {
