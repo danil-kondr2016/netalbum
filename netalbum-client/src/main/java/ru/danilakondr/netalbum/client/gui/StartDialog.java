@@ -58,27 +58,6 @@ public class StartDialog extends JDialog {
             }
         });
 
-        tfFolderPath.addPropertyChangeListener(new PropertyChangeListener() {
-                                                   @Override
-                                                   public void propertyChange(PropertyChangeEvent evt) {
-                                                       if ("text".equals(evt.getPropertyName())) {
-                                                           StartDialog.this.directoryPath = (String)evt.getNewValue();
-                                                       }
-                                                   }
-                                               });
-
-        tfServerAddress.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null)
-                    return;
-
-                if ("text".equals(evt.getPropertyName())) {
-                    urlString = (String)evt.getNewValue();
-                }
-            }
-        });
-
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -116,6 +95,8 @@ public class StartDialog extends JDialog {
             JOptionPane.showMessageDialog(null,
                     "Вы выбрали инициирование сессии.");
             this.sessionType = NetAlbumClientApp.SessionType.INIT_SESSION;
+            this.urlString = this.tfServerAddress.getText();
+            this.directoryPath = this.tfFolderPath.getText();
         }
         else if (connectToSessionState) {
             JOptionPane.showMessageDialog(null,
