@@ -2,6 +2,7 @@ package ru.danilakondr.netalbum.client;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.ini4j.Ini;
+import static org.ini4j.Profile.Section;
 import org.ini4j.Wini;
 
 import java.io.Closeable;
@@ -72,6 +73,17 @@ public class Configuration implements Closeable {
     public String getSessionURL(String sessionId, String url) {
         String extId = getUrlHash(url) + "-" + sessionId;
         return ini.get(SESSIONS_SECTION, extId+".url");
+    }
+
+    public boolean containsSessions() {
+        Section sessions = ini.get(SESSIONS_SECTION);
+        if (sessions == null)
+            return false;
+
+        if (sessions.isEmpty())
+            return false;
+
+        return true;
     }
 
     public void save() throws IOException {
