@@ -1,7 +1,6 @@
 package ru.danilakondr.netalbum.server.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,9 +9,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.data.ImageData;
-import ru.danilakondr.netalbum.api.request.Request;
-import ru.danilakondr.netalbum.api.response.Response;
-import ru.danilakondr.netalbum.api.response.Status;
+import ru.danilakondr.netalbum.api.message.Request;
+import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.server.error.*;
 import ru.danilakondr.netalbum.server.SessionIdProvider;
 import ru.danilakondr.netalbum.server.db.NetAlbumService;
@@ -24,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.*;
+
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
     private String sessionId;
@@ -32,7 +32,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     private final ObjectMapper mapper = new ObjectMapper();
     private static final Map<String, WebSocketSession> initiators = new HashMap<>();
     private static final Map<WebSocketSession, String> connected = new HashMap<>();
-    private StringBuilder sb = new StringBuilder();
+    private final StringBuilder sb = new StringBuilder();
 
     @Autowired
     public void setService(NetAlbumService service) {
@@ -60,7 +60,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             req = mapper.readValue(msg, Request.class);
         }
         catch (JsonProcessingException e) {
-            sendResponse(session, Response.invalidRequest(e.getMessage()));
+            Response err = new Response.Error(INVALID_REQUEST);
+            err.setProperty("message", e.getMessage());
+            sendResponse(session, err);
             return;
         }
 
@@ -94,36 +96,46 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                     handleSynchronize(session, (Request.Synchronize)req);
                     break;
                 default:
-                    sendResponse(session, Response.invalidMethod(""));
+                    sendResponse(session, new Response.Error(INVALID_METHOD));
                     break;
             }
         }
         catch (InvalidRequestError e) {
-            sendResponse(session, Response.invalidRequest(e.getMessage()));
+            Response.Error err = new Response.Error(INVALID_REQUEST);
+            err.setProperty("message", e.getMessage());
+            sendResponse(session, err);
         }
         catch (NonExistentSession e) {
-            sendResponse(session, Response.nonExistentSession(e.getMessage()));
+            Response.Error err = new Response.Error(NON_EXISTENT_SESSION);
+            err.setProperty("sessionId", e.getMessage());
+            sendResponse(session, err);
         }
         catch (IllegalArgumentException e) {
-            sendResponse(session, Response.invalidArgument(e.getMessage()));
+            Response.Error err = new Response.Error(INVALID_ARGUMENT);
+            err.setProperty("message", e.getMessage());
+            sendResponse(session, err);
         }
         catch (NotAnInitiatorError e) {
-            sendResponse(session, new Response(Status.NOT_AN_INITIATOR));
+            sendResponse(session, new Response.Error(NOT_AN_INITIATOR));
         }
         catch (NotAViewerError e) {
-            sendResponse(session, new Response(Status.NOT_A_VIEWER));
+            sendResponse(session, new Response.Error(NOT_A_VIEWER));
         }
         catch (NotConnectedError e) {
-            sendResponse(session, new Response(Status.CLIENT_NOT_CONNECTED));
+            sendResponse(session, new Response.Error(CLIENT_NOT_CONNECTED));
         }
         catch (AlreadyConnectedError e) {
-            sendResponse(session, new Response(Status.CLIENT_ALREADY_CONNECTED));
+            sendResponse(session, new Response.Error(CLIENT_ALREADY_CONNECTED));
         }
         catch (FileNotFoundError e) {
-            sendResponse(session, Response.fileNotFound(e.getMessage()));
+            Response.Error err = new Response.Error(FILE_NOT_FOUND);
+            err.setProperty("fileName", e.getMessage());
+            sendResponse(session, err);
         }
         catch (FileAlreadyExistsError e) {
-            sendResponse(session, Response.fileAlreadyExists(e.getMessage()));
+            Response.Error err = new Response.Error(FILE_ALREADY_EXISTS);
+            err.setProperty("fileName", e.getMessage());
+            sendResponse(session, err);
         }
     }
 
@@ -152,7 +164,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             service.renameFile(sessionId, change.getOldName(), change.getNewName());
         }
         // Второе. Отправить изменения другим пользователям (в т.ч. инициатору).
-        Response changesResp = Response.synchronizing(changes);
+        Response changesResp = new Response.Synchronizing(changes);
         for (Map.Entry<WebSocketSession, String> e : connected.entrySet()) {
             if (e.getValue().equals(sessionId)) {
                 sendResponse(e.getKey(), changesResp);
@@ -168,7 +180,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
         NetAlbumSession s = service.getSession(sessionId);
         long directorySize = service.getDirectorySize(sessionId);
-        Response r = Response.directoryInfo(s.getDirectoryName(), directorySize);
+        Response r = new Response.DirectoryInfo(s.getDirectoryName(), directorySize);
         sendResponse(session, r);
     }
 
@@ -177,8 +189,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new NotConnectedError();
 
         byte[] zipFile = service.generateArchiveWithThumbnails(sessionId);
-        Response resp = new Response(Status.THUMBNAILS_ARCHIVE);
-        resp.setProperty("thumbnailsZip", zipFile);
+        Response resp = new Response.ThumbnailsArchive(zipFile);
 
         sendResponse(session, resp);
     }
@@ -210,14 +221,13 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
         for (WebSocketSession s: connected.keySet()) {
             if (Objects.equals(sessionId, connected.get(s))) {
-                sendResponse(s, Response.quit());
+                sendResponse(s, new Response(Response.Type.SESSION_EXITS));
                 s.close();
             }
         }
 
         service.removeSession(sessionId);
         sendResponse(session, Response.success());
-        session.close();
     }
 
     private void handleDisconnectFromSession(WebSocketSession session) throws IOException {
@@ -228,7 +238,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             initiators.remove(sessionId);
         connected.remove(session);
         sendResponse(session, Response.success());
-        session.close();
     }
 
     private void handleConnectToSession(WebSocketSession session, Request.ConnectToSession req) throws IOException {
@@ -263,15 +272,18 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         initiators.put(sessionId, session);
         connected.put(session, sessionId);
 
-        Response response = new Response(Status.SESSION_CREATED);
-        response.setProperty("sessionId", sessionId);
+        Response response = new Response.SessionCreated(sessionId);
         sendResponse(session, response);
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         exception.printStackTrace(System.out);
-        sendResponse(session, Response.withMessage(Status.EXCEPTION, exception.toString()));
+
+        Response resp = new Response.Error(EXCEPTION);
+        resp.setProperty("message", exception.toString());
+        sendResponse(session, resp);
+
         if (initiator)
             initiators.remove(sessionId);
         connected.remove(session);
