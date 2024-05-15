@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.api.request;
+package ru.danilakondr.netalbum.api.message;
 
 import com.fasterxml.jackson.annotation.*;
 import ru.danilakondr.netalbum.api.data.Change;

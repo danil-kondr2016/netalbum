@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.data.ImageData;
-import ru.danilakondr.netalbum.api.request.Request;
+import ru.danilakondr.netalbum.api.message.Request;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +29,7 @@ public class RequestGenerateTest {
 	}
 	
 	@Test
-	@DisplayName("Check single-argument request forming (initSession)")
+	@DisplayName("Check single-argument message forming (initSession)")
 	void initSession() throws JsonProcessingException {
 		Request req = new Request(Request.Type.INIT_SESSION);
 		req.setProperty("directoryName", TEST_DIRECTORY_NAME);
@@ -45,7 +44,7 @@ public class RequestGenerateTest {
 	}
 
 	@Test
-	@DisplayName("Check request without contents forming (closeSession)")
+	@DisplayName("Check message without contents forming (closeSession)")
 	void closeSession() throws JsonProcessingException {
 		Request req = new Request(Request.Type.CLOSE_SESSION);
 		String x = objectToJson(req);
@@ -54,7 +53,7 @@ public class RequestGenerateTest {
 	}
 	
 	@Test
-	@DisplayName("Check request with array of arguments (addImages)")
+	@DisplayName("Check message with array of arguments (addImages)")
 	void addSingleImage() throws JsonProcessingException {
 		ImageData data = new ImageData();
 		ArrayList<ImageData> list = new ArrayList<>();
@@ -88,7 +87,7 @@ public class RequestGenerateTest {
 	}
 	
 	@Test
-	@DisplayName("Check request with nullable fields (synchronize)")
+	@DisplayName("Check message with nullable fields (synchronize)")
 	void synchronize() throws JsonProcessingException {
 		Change first = new Change();
 		first.setOldName("test1.png");
