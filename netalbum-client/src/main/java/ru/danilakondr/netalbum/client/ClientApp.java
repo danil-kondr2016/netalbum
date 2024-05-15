@@ -22,15 +22,12 @@ import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
 public class ClientApp {
     private final Configuration cfg;
-    private BlockingQueue<Response> responseQueue;
-    private ResponseListener listener;
+    private final ResponseListener listener;
     private WebSocket socket;
 
     public ClientApp(Configuration cfg) {
         this.cfg = cfg;
-        this.responseQueue = new ArrayBlockingQueue<>(1000);
         this.listener = new ResponseListener();
-        this.listener.setResponseQueue(responseQueue);
     }
 
     public void run() {
@@ -91,7 +88,7 @@ public class ClientApp {
 
         String sessionId;
         try {
-            Response resp1 = responseQueue.take();
+            Response resp1 = listener.getResponse();
             if (resp1.getStatus() == Status.SESSION_CREATED) {
                 sessionId = ((Response.SessionCreated) resp1).getSessionId();
                 JOptionPane.showMessageDialog(null, sessionId);

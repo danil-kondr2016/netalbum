@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.http.WebSocket;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -11,12 +12,12 @@ import java.util.concurrent.CompletionStage;
 import ru.danilakondr.netalbum.api.response.Response;
 
 public class ResponseListener implements WebSocket.Listener {
-    private BlockingQueue<Response> responseQueue;
+    private final BlockingQueue<Response> responseQueue = new ArrayBlockingQueue<>(1000);
     private final StringBuilder sb = new StringBuilder();
     private CompletableFuture<?> accumulatedMessage = new CompletableFuture<>();
 
-    public void setResponseQueue(BlockingQueue<Response> responseQueue) {
-        this.responseQueue = responseQueue;
+    public Response getResponse() throws InterruptedException {
+        return responseQueue.take();
     }
 
     @Override
