@@ -8,6 +8,47 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Класс-держатель запроса. Используется для формирования запроса на стороне
+ * клиента и получения ответа на стороне сервера.
+ *
+ * <h2> Типы запросов </h2>
+ * <h3> {@code INIT_SESSION} </h3>
+ * <p> Инициализация сессии. Содержит поле {@code directoryName} (имя папки).
+ * <p> В ответ сервер посылает ответ типа {@code SESSION_CREATED}.
+ * <h3> {@code CONNECT_TO_SESSION} </h3>
+ * <p> Подключение к сессии как просмотрщик. Содержит поле {@code sessionId}.
+ * <p> В ответ сервер может послать ответ типа {@code SUCCESS}, если подключение
+ * произошло успешно, или ответ типа {@code NON_EXISTENT_SESSION}, если сессия
+ * не существует.
+ * <h3> {@code RESTORE_SESSION} </h3>
+ * <p> Подключение к сессии как инициатор. Содержит поле {@code sessionId}.
+ * <p> В ответ сервер может послать ответ типа {@code SUCCESS}, если подключение
+ * произошло успешно, или ответ типа {@code NON_EXISTENT_SESSION}, если сессия
+ * не существует.
+ * <h3> {@code DISCONNECT_FROM_SESSION} </h3>
+ * <p> Отключение от сессии.
+ * <h3> {@code CLOSE_SESSION} </h3>
+ * <p> Закрытие сессии.
+ * <p> Сервер посылает всем просмотрщикам ответ {@code SESSION_EXITS},
+ * инициатору отправляется {@code SUCCESS}. Вся информация о сессии удаляется
+ * полностью.
+ * <h3> {@code GET_DIRECTORY_INFO} </h3>
+ * <p> Получение информации о папке.
+ * <p> В ответ сервер посылает ответ типа {@code DIRECTORY_INFO}.
+ * <h3> {@code DOWNLOAD_THUMBNAILS} </h3>
+ * <p> Скачивание уменьшенных картинок.
+ * <p> В ответ сервер посылает ответ типа {@code THUMBNAILS_ARCHIVE}.
+ * <h3> {@code ADD_IMAGES} </h3>
+ * <p> Добавление изображений. Содержит поле {@code images}, представляющее
+ * собой массив данных об изображениях в виде объектов.
+ * <p> В ответ сервер возвращает {@code SUCCESS}.
+ * <h3> {@code SYNCHRONIZE} </h3>
+ * <p> Синхронизация. Содержит поле {@code changes}, представляющее собой массив
+ * изменений в виде объектов.
+ * <p> В ответ сервер рассылает сообщение {@code SYNCHRONIZING}, содержащее
+ * копию массива изменений из запроса, отправивишему отправляет {@code SUCCESS}.
+ */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="method", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(value=Request.InitSession.class, name="INIT_SESSION"),
