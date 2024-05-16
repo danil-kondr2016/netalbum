@@ -7,6 +7,58 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.*;
 import ru.danilakondr.netalbum.api.data.Change;
 
+/**
+ * Класс-держатель ответа. Используется для формирования ответа на стороне
+ * сервера и получения ответа на стороне клиента.
+ *
+ * <h2> Формат ответа </h2>
+ * <p> Ответ содержит поле {@code type}, обозначающее тип ответа, произвольные
+ * поля и поля, определённые типом ответа.
+ *
+ * <h2> Типы ответов </h2>
+ * <h3> {@code SUCCESS} </h3>
+ * <p> Возвращается при успешном завершении методов {@code CONNECT_TO_SESSION},
+ * {@code DISCONNECT_FROM_SESSION}, {@code RESTORE_SESSION}, {@code ADD_IMAGES}.
+ * <h3> {@code ERROR} </h3>
+ * <p> Возвращается при произвольной ошибке. Содержит поле {@code status},
+ * которое обозначает код ошибки.
+ * <h4> Коды ошибок </h4>
+ * <table>
+ *     <thead><tr><th>Код ошибки</th><th>Значение ошибки</th></tr></thead>
+ *     <tbody>
+ *         <tr><td>{@code INVALID_REQUEST}</td><td>Неправильный запрос</td></tr>
+ *         <tr><td>{@code FILE_NOT_FOUND}</td><td>Файл не найден</td></tr>
+ *         <tr><td>{@code FILE_ALREADY_EXISTS}</td><td>Файл уже существует</td></tr>
+ *         <tr><td>{@code NON_EXISTENT_SESSION}</td><td>Несуществующая сессия</td></tr>
+ *         <tr><td>{@code NOT_AN_INITIATOR}</td><td>Клиент не является инициатором</td></tr>
+ *         <tr><td>{@code NOT_A_VIEWER}</td><td>Клиент не является просмотрщиком</td></tr>
+ *         <tr><td>{@code CLIENT_NOT_CONNECTED}</td><td>Клиент не подключён</td></tr>
+ *         <tr><td>{@code CLIENT_ALREADY_CONNECTED}</td><td>Клиент уже подключён</td></tr>
+ *         <tr><td>{@code EXCEPTION}</td><td>Исключение</td></tr>
+ *     </tbody>
+ * </table>
+ * <h3> {@code SESSION_CREATED} </h3>
+ * <p> Возвращается при успешном создании сессии. Содержит поле
+ * {@code sessionId}, в котором записан 40-символьный идентификатор сессии в
+ * формате base16.
+ * <h3> {@code DIRECTORY_INFO} </h3>
+ * <p> Возвращается в ответ на запрос {@code GET_DIRECTORY_INFO}. Содержит поля
+ * {@code directoryName} (имя папки) и {@code directorySize} (размер папки).
+ * <h3> {@code THUMBNAILS_ARCHIVE} </h3>
+ * <p> Возвращается в ответ на запрос {@code DOWNLOAD_THUMBNAILS}. Содержит поле
+ * {@code thumbnailsZip}, содержащее zip-архив с уменьшенными картинками,
+ * который закодирован в формате base64.
+ * <h3> {@code SYNCHRONIZING} </h3>
+ * <p> Посылается сервером при отправке запроса {@code SYNCHRONIZE}. Содержит
+ * список изменений.
+ * <h3> {@code SESSION_EXITS} </h3>
+ * <p> Посылается сервером при закрытии сессии.
+ *
+ * @author Данила А. Кондратенко
+ * @see Request
+ * @see Response.Error
+ * @see Change
+ */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="type", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(value=Response.DirectoryInfo.class, name="DIRECTORY_INFO"),
@@ -140,6 +192,28 @@ public class Response {
         }
     }
 
+    /**
+     * Класс-держатель ответа типа {@code ERROR}.
+     * <h2>Коды ошибок</h2>
+     * <h3>{@code INVALID_REQUEST}</h3>
+     * <p>Неверный запрос. Содержит поле {@code message}.
+     * <h3>{@code FILE_NOT_FOUND}</h3>
+     * <p>Файл не найден. Содержит поле {@code fileName}.
+     * <h3>{@code FILE_ALREADY_EXISTS}</h3>
+     * <p>Файл уже существует. Содержит поле {@code fileName}.
+     * <h3>{@code NON_EXISTENT_SESSION}</h3>
+     * <p>Несуществующая сессия. Содержит поле {@code sessionId}.
+     * <h3>{@code NOT_AN_INITIATOR}</h3>
+     * <p>Клиент не является инициатором сессии.
+     * <h3>{@code NOT_A_VIEWER}</h3>
+     * <p>Клиент не является просмотрщиком.
+     * <h3>{@code CLIENT_NOT_CONNECTED}</h3>
+     * <p>Клиент не подключён.
+     * <h3>{@code CLIENT_ALREADY_CONNECTED}</h3>
+     * <p>Клиент уже подключён.
+     * <h3>{@code EXCEPTION}</h3>
+     * <p>Исключение. Содержит поле {@code message}.
+     */
     public static class Error extends Response {
         private Status status;
 
