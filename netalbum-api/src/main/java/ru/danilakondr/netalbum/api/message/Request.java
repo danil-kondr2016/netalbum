@@ -39,9 +39,9 @@ import java.util.Map;
  * <h3> {@code DOWNLOAD_THUMBNAILS} </h3>
  * <p> Скачивание уменьшенных картинок.
  * <p> В ответ сервер посылает ответ типа {@code THUMBNAILS_ARCHIVE}.
- * <h3> {@code ADD_IMAGES} </h3>
- * <p> Добавление изображений. Содержит поле {@code images}, представляющее
- * собой массив данных об изображениях в виде объектов.
+ * <h3> {@code ADD_IMAGE} </h3>
+ * <p> Добавление изображений. Содержит поле {@code image}, представляющее
+ * собой данные об изображении в виде объекта.
  * <p> В ответ сервер возвращает {@code SUCCESS}.
  * <h3> {@code SYNCHRONIZE} </h3>
  * <p> Синхронизация. Содержит поле {@code changes}, представляющее собой массив
@@ -58,7 +58,7 @@ import java.util.Map;
 @JsonSubTypes({
         @JsonSubTypes.Type(value=Request.InitSession.class, name="INIT_SESSION"),
         @JsonSubTypes.Type(value=Request.Synchronize.class, name="SYNCHRONIZE"),
-        @JsonSubTypes.Type(value=Request.AddImages.class, name="ADD_IMAGES"),
+        @JsonSubTypes.Type(value=Request.AddImage.class, name="ADD_IMAGE"),
         @JsonSubTypes.Type(value=Request.ConnectToSession.class, name="CONNECT_TO_SESSION"),
         @JsonSubTypes.Type(value=Request.RestoreSession.class, name="RESTORE_SESSION"),
         @JsonSubTypes.Type(value=Request.class, name="CLOSE_SESSION"),
@@ -139,22 +139,22 @@ public class Request {
         }
     }
 
-    @JsonPropertyOrder({"method","images"})
-    public static class AddImages extends Request {
-        private List<ImageData> images;
+    @JsonPropertyOrder({"method","image"})
+    public static class AddImage extends Request {
+        private ImageData image;
 
-        public AddImages() {
-            super(Type.ADD_IMAGES);
+        public AddImage() {
+            super(Type.ADD_IMAGE);
         }
 
-        @JsonSetter("images")
-        public void setImages(List<ImageData> data) {
-            this.images = data;
+        @JsonSetter("image")
+        public void setImage(ImageData data) {
+            this.image = data;
         }
 
-        @JsonGetter("images")
-        public List<ImageData> getImages() {
-            return images;
+        @JsonGetter("image")
+        public ImageData getImage() {
+            return image;
         }
     }
 
@@ -192,7 +192,7 @@ public class Request {
         , DISCONNECT_FROM_SESSION
         , CLOSE_SESSION
         , GET_DIRECTORY_INFO
-        , ADD_IMAGES
+        , ADD_IMAGE
         , DOWNLOAD_THUMBNAILS
         , SYNCHRONIZE
         ;

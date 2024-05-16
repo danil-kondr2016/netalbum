@@ -55,35 +55,32 @@ public class RequestGenerateTest {
 	@Test
 	@DisplayName("Check message with array of arguments (addImages)")
 	void addSingleImage() throws JsonProcessingException {
-		ImageData data = new ImageData();
-		ArrayList<ImageData> list = new ArrayList<>();
-		data.setFileName("test.raw");
-		data.setFileSize(8);
-		data.setWidth(1);
-		data.setHeight(8);
-		data.setThumbnail("THUMB1\r\n".getBytes(StandardCharsets.US_ASCII));
-		list.add(data);
-		
-		Request req = new Request(Request.Type.ADD_IMAGES);
-		req.setProperty("images", list);
+		ImageData original = new ImageData();
+		original.setFileName("test.raw");
+		original.setFileSize(8);
+		original.setWidth(1);
+		original.setHeight(8);
+		original.setThumbnail("THUMB1\r\n".getBytes(StandardCharsets.US_ASCII));
+
+		Request.AddImage req = new Request.AddImage();
+		req.setImage(original);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"ADD_IMAGES\",\"images\":[{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}]}", x);
+		assertEquals("{\"method\":\"ADD_IMAGES\",\"image\":{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}}", x);
 
 		Request req1 = jsonToObject(x, Request.class);
-		assertSame(req1.getMethod(), Request.Type.ADD_IMAGES);
-		assertSame(req1.getClass(), Request.AddImages.class);
+		assertSame(req1.getMethod(), Request.Type.ADD_IMAGE);
+		assertSame(req1.getClass(), Request.AddImage.class);
 
-		Request.AddImages req2 = (Request.AddImages) req1;
-		List<ImageData> images = req2.getImages();
-		assertFalse(images.isEmpty());
+		Request.AddImage req2 = (Request.AddImage) req1;
+		ImageData received = req2.getImage();
+        assertNotNull(received);
 
-		ImageData image = images.get(0);
-		assertEquals("test.raw", image.getFileName());
-		assertEquals(8, image.getFileSize());
-		assertEquals(1, image.getWidth());
-		assertEquals(8, image.getHeight());
-		assertArrayEquals(new byte[]{'T', 'H', 'U', 'M', 'B', '1', '\r', '\n'}, image.getThumbnail());
+		assertEquals(original.getFileName(), received.getFileName());
+		assertEquals(original.getFileSize(), received.getFileSize());
+		assertEquals(original.getWidth(), received.getWidth());
+		assertEquals(original.getHeight(), received.getHeight());
+		assertArrayEquals(original.getThumbnail(), received.getThumbnail());
 	}
 	
 	@Test
