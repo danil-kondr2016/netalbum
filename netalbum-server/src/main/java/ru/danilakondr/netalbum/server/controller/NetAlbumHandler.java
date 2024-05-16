@@ -237,14 +237,15 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new NotAnInitiatorError();
 
         for (WebSocketSession s: connected.keySet()) {
-            if (Objects.equals(sessionId, connected.get(s))) {
+            if (Objects.equals(sessionId, connected.get(s)) && s != session) {
                 sendResponse(s, new Response(Response.Type.SESSION_EXITS));
                 s.close();
             }
         }
 
-        sendResponse(session, Response.success());
+        sendResponse(session, new Response(Response.Type.SUCCESS));
         removeClient(session);
+        session.close();
     }
 
     private void handleDisconnectFromSession(WebSocketSession session) throws IOException {
@@ -257,6 +258,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         connected.remove(session);
         sendResponse(session, Response.success());
         removeClient(session);
+        session.close();
     }
 
     private void handleConnectToSession(WebSocketSession session, Request.ConnectToSession req) throws IOException {
