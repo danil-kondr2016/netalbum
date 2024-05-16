@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.*;
 import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ImageInfo;
 
 /**
  * Класс-держатель ответа. Используется для формирования ответа на стороне
@@ -18,7 +19,7 @@ import ru.danilakondr.netalbum.api.data.Change;
  * <h2> Типы ответов </h2>
  * <h3> {@code SUCCESS} </h3>
  * <p> Возвращается при успешном завершении методов {@code CONNECT_TO_SESSION},
- * {@code DISCONNECT_FROM_SESSION}, {@code RESTORE_SESSION}, {@code ADD_IMAGES}.
+ * {@code DISCONNECT_FROM_SESSION}, {@code RESTORE_SESSION}.
  * <h3> {@code ERROR} </h3>
  * <p> Возвращается при произвольной ошибке. Содержит поле {@code status},
  * которое обозначает код ошибки.
@@ -51,6 +52,9 @@ import ru.danilakondr.netalbum.api.data.Change;
  * <h3> {@code SYNCHRONIZING} </h3>
  * <p> Посылается сервером при отправке запроса {@code SYNCHRONIZE}. Содержит
  * список изменений.
+ * <h3> {@code IMAGE_ADDED} </h3>
+ * <p> Посылается сервером при отправке запроса {@code ADD_IMAGE}. Содержит
+ * данные об отправленном изображении.
  * <h3> {@code SESSION_EXITS} </h3>
  * <p> Посылается сервером при закрытии сессии.
  *
@@ -65,6 +69,7 @@ import ru.danilakondr.netalbum.api.data.Change;
         @JsonSubTypes.Type(value=Response.Synchronizing.class, name="SYNCHRONIZING"),
         @JsonSubTypes.Type(value=Response.ThumbnailsArchive.class, name="THUMBNAILS_ARCHIVE"),
         @JsonSubTypes.Type(value=Response.SessionCreated.class, name="SESSION_CREATED"),
+        @JsonSubTypes.Type(value=Response.ImageAdded.class, name="IMAGE_ADDED"),
         @JsonSubTypes.Type(value=Response.class, name="SUCCESS"),
         @JsonSubTypes.Type(value=Response.Error.class, name="ERROR"),
         @JsonSubTypes.Type(value=Response.class, name="SESSION_EXITS"),
@@ -77,7 +82,7 @@ public class Response {
         SESSION_CREATED,
         DIRECTORY_INFO,
         THUMBNAILS_ARCHIVE,
-        SYNCHRONIZING,
+        SYNCHRONIZING, IMAGE_ADDED,
     }
     private static Response SUCCESS = null;
     private Type type;
@@ -271,5 +276,27 @@ public class Response {
     @JsonAnySetter
     public void setProperty(String prop, Object value) {
         this.contents.put(prop, value);
+    }
+
+    @JsonPropertyOrder({"type", "image"})
+    public static class ImageAdded extends Response {
+        private ImageInfo image;
+
+        public ImageAdded() {
+            super(Type.IMAGE_ADDED);
+        }
+
+        public ImageAdded(ImageInfo image) {
+            super(Type.IMAGE_ADDED);
+            this.image = image;
+        }
+
+        public ImageInfo getImage() {
+            return image;
+        }
+
+        public void setImage(ImageInfo image) {
+            this.image = image;
+        }
     }
 }
