@@ -48,6 +48,11 @@ import java.util.Map;
  * изменений в виде объектов.
  * <p> В ответ сервер рассылает сообщение {@code SYNCHRONIZING}, содержащее
  * копию массива изменений из запроса, отправивишему отправляет {@code SUCCESS}.
+ *
+ * @author Данила А. Кондратенко
+ * @see Response
+ * @see Change
+ * @see ImageData
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="method", visible = true)
 @JsonSubTypes({
