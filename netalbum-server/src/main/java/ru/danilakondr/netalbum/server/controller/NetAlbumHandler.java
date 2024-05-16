@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -133,6 +134,33 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         }
     }
 
+    private void putInitiator(WebSocketSession session, String sessionId) {
+        this.sessionId = sessionId;
+        this.initiator = true;
+
+        initiators.put(sessionId, session);
+        connected.put(session, sessionId);
+    }
+
+    private void putViewer(WebSocketSession session, String sessionId) {
+        this.sessionId = sessionId;
+        this.initiator = false;
+
+        connected.put(session, sessionId);
+    }
+
+    private void removeClient(WebSocketSession session) {
+        try {
+            if (initiator)
+                initiators.remove(sessionId);
+            initiator = false;
+            sessionId = null;
+
+            connected.remove(session);
+        }
+        catch (Exception ignored) {}
+    }
+
     private void handleRestoreSession(WebSocketSession session, Request.RestoreSession req) throws IOException {
         if (sessionId != null)
             throw new AlreadyConnectedError();
@@ -142,9 +170,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (s == null)
             throw new NonExistentSession(id);
 
-        this.sessionId = id;
-        this.initiator = true;
-        initiators.put(sessionId, session);
+        putInitiator(session, id);
         sendResponse(session, Response.success());
     }
 
@@ -210,9 +236,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (!initiator)
             throw new NotAnInitiatorError();
 
-        initiators.remove(sessionId);
-        connected.remove(session);
-
         for (WebSocketSession s: connected.keySet()) {
             if (Objects.equals(sessionId, connected.get(s))) {
                 sendResponse(s, new Response(Response.Type.SESSION_EXITS));
@@ -220,8 +243,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             }
         }
 
-        service.removeSession(sessionId);
         sendResponse(session, Response.success());
+        removeClient(session);
     }
 
     private void handleDisconnectFromSession(WebSocketSession session) throws IOException {
@@ -230,8 +253,10 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
         if (initiator)
             initiators.remove(sessionId);
+
         connected.remove(session);
         sendResponse(session, Response.success());
+        removeClient(session);
     }
 
     private void handleConnectToSession(WebSocketSession session, Request.ConnectToSession req) throws IOException {
@@ -243,9 +268,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (s == null)
             throw new NonExistentSession(id);
 
-        this.sessionId = id;
-        this.initiator = false;
-        connected.put(session, id);
+        putViewer(session, id);
         sendResponse(session, Response.success());
     }
 
@@ -259,14 +282,12 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (sessionId != null)
             throw new AlreadyConnectedError();
 
-        sessionId = SessionIdProvider.generateSessionId();
+        String id = SessionIdProvider.generateSessionId();
         String directoryName = req.getDirectoryName();
-        service.initSession(sessionId, directoryName);
-        initiator = true;
-        initiators.put(sessionId, session);
-        connected.put(session, sessionId);
+        service.initSession(id, directoryName);
+        putInitiator(session, id);
 
-        Response response = new Response.SessionCreated(sessionId);
+        Response response = new Response.SessionCreated(id);
         sendResponse(session, response);
     }
 
@@ -278,8 +299,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         resp.setProperty("message", exception.toString());
         sendResponse(session, resp);
 
-        if (initiator)
-            initiators.remove(sessionId);
-        connected.remove(session);
+        removeClient(session);
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        removeClient(session);
     }
 }
