@@ -1,11 +1,8 @@
 package ru.danilakondr.netalbum.client;
 
-import ru.danilakondr.netalbum.api.request.Request;
-import ru.danilakondr.netalbum.api.response.Response;
-import ru.danilakondr.netalbum.api.response.Status;
-import ru.danilakondr.netalbum.client.connect.ConnectToServerTask;
-import ru.danilakondr.netalbum.client.connect.ResponseListener;
-import ru.danilakondr.netalbum.client.connect.SendRequestTask;
+import ru.danilakondr.netalbum.api.message.Request;
+import ru.danilakondr.netalbum.api.message.Response;
+import ru.danilakondr.netalbum.client.connect.NetAlbumService;
 import ru.danilakondr.netalbum.client.gui.StartDialog;
 
 import javax.swing.*;
@@ -13,21 +10,15 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.WebSocket;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
 public class ClientApp {
     private final Configuration cfg;
-    private final ResponseListener listener;
-    private WebSocket socket;
+    private final NetAlbumService service = new NetAlbumService();
 
     public ClientApp(Configuration cfg) {
         this.cfg = cfg;
-        this.listener = new ResponseListener();
     }
 
     public void run() {
@@ -63,46 +54,55 @@ public class ClientApp {
         String name = directory.getName();
         // 2. Подключиться.
         URI uri = URI.create(address);
-        JOptionPane optPane = new JOptionPane();
-        optPane.setMessageType(ERROR_MESSAGE);
-        optPane.setMessage("Waiting for " + uri);
 
-        JDialog dlg = optPane.createDialog("Please wait");
-
-        ConnectToServerTask connect = new ConnectToServerTask(uri, listener);
-        connect.addPropertyChangeListener(new SwingWorkerCompletionWaiter(dlg));
-        connect.execute();
+        service.connectTo(uri);
         try {
-            socket = connect.get();
+            service.waitUntilConnected();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
         }
-        // 3. Послать запрос ключа сессии
+
         Request.InitSession req1 = new Request.InitSession();
         req1.setDirectoryName(name);
-
-        SendRequestTask send1 = new SendRequestTask(listener, socket, req1);
-        send1.execute();
+        service.putRequest(req1);
 
         String sessionId;
         try {
-            Response resp1 = listener.getResponse();
-            if (resp1.getStatus() == Status.SESSION_CREATED) {
+            Response resp1 = service.getResponse();
+            if (resp1.getType() == Response.Type.SESSION_CREATED) {
                 sessionId = ((Response.SessionCreated) resp1).getSessionId();
-                JOptionPane.showMessageDialog(null, sessionId);
+                JOptionPane.showMessageDialog(null,
+                        "Session ID: " + sessionId + "\r\n" +
+                                "Directory name: " + name);
+            }
+            else {
+                StringBuilder msg = new StringBuilder();
+                msg.append(resp1.getType()).append("\r\n");
+                msg.append(((Response.Error)resp1).getStatus());
+                JOptionPane.showMessageDialog(null, msg, "Error", ERROR_MESSAGE);
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        // 4. СТРОГО для теста: закрыть сессию
 
+        closeSession();
+    }
+
+    private void closeSession() {
         Request req2 = new Request();
         req2.setMethod(Request.Type.CLOSE_SESSION);
+        service.putRequest(req2);
 
-        SendRequestTask send2 = new SendRequestTask(listener, socket, req2);
-        send2.execute();
+        try {
+            Response resp3 = service.getResponse();
+            if (resp3 != null)
+                JOptionPane.showMessageDialog(null, resp3.getType());
+
+            service.disconnect();
+            System.exit(0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void guiDie(String message) {
@@ -125,5 +125,10 @@ public class ClientApp {
         Configuration cfg = new Configuration(getNetalbumIni());
         ClientApp app = new ClientApp(cfg);
         app.run();
+    }
+
+    public enum SessionType {
+        INIT_SESSION,
+        CONNECT_TO_SESSION
     }
 }

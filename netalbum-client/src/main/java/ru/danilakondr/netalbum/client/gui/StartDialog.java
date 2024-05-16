@@ -3,16 +3,14 @@ package ru.danilakondr.netalbum.client.gui;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import ru.danilakondr.netalbum.client.ClientApp;
 import ru.danilakondr.netalbum.client.LocalizedMessages;
-import ru.danilakondr.netalbum.client.NetAlbumClientApp;
 import ru.danilakondr.netalbum.client.SessionIdValidator;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 
 public class StartDialog extends JDialog {
@@ -27,7 +25,7 @@ public class StartDialog extends JDialog {
     private JTextField tfServerAddress;
     private final JFileChooser dirChooser;
 
-    private NetAlbumClientApp.SessionType sessionType;
+    private ClientApp.SessionType sessionType;
     private String sessionId;
     private String urlString;
     private String directoryPath;
@@ -98,7 +96,7 @@ public class StartDialog extends JDialog {
         } else if (initiateSessionState) {
             JOptionPane.showMessageDialog(null,
                     "Вы выбрали инициирование сессии.");
-            this.sessionType = NetAlbumClientApp.SessionType.INIT_SESSION;
+            this.sessionType = ClientApp.SessionType.INIT_SESSION;
             this.urlString = this.tfServerAddress.getText();
             this.directoryPath = this.tfFolderPath.getText();
         } else if (connectToSessionState) {
@@ -112,7 +110,7 @@ public class StartDialog extends JDialog {
                         LocalizedMessages.error(), JOptionPane.ERROR_MESSAGE);
             }
 
-            this.sessionType = NetAlbumClientApp.SessionType.CONNECT_TO_SESSION;
+            this.sessionType = ClientApp.SessionType.CONNECT_TO_SESSION;
             this.sessionId = sessionId;
         }
 
@@ -127,7 +125,7 @@ public class StartDialog extends JDialog {
         return sessionId;
     }
 
-    public NetAlbumClientApp.SessionType getSessionType() {
+    public ClientApp.SessionType getSessionType() {
         return sessionType;
     }
 
