@@ -66,10 +66,12 @@ import java.util.Map;
         @JsonSubTypes.Type(value=Request.class, name="GET_DIRECTORY_INFO"),
         @JsonSubTypes.Type(value=Request.class, name="DOWNLOAD_THUMBNAILS")
 })
+@JsonPropertyOrder({"method"})
 public class Request {
     private Type method;
     private final Map<String, Object> contents;
 
+    @JsonPropertyOrder({"method","directoryName"})
     public static class InitSession extends Request {
         private String directoryName;
 
@@ -86,6 +88,7 @@ public class Request {
         }
     }
 
+    @JsonPropertyOrder({"method","sessionId"})
     public static class RestoreSession extends Request {
         private String sessionId;
 
@@ -102,6 +105,7 @@ public class Request {
         }
     }
 
+    @JsonPropertyOrder({"method","sessionId"})
     public static class ConnectToSession extends Request {
         private String sessionId;
 
@@ -118,6 +122,7 @@ public class Request {
         }
     }
 
+    @JsonPropertyOrder({"method","changes"})
     public static class Synchronize extends Request {
         private List<Change> changes;
 
@@ -134,6 +139,7 @@ public class Request {
         }
     }
 
+    @JsonPropertyOrder({"method","images"})
     public static class AddImages extends Request {
         private List<ImageData> images;
 

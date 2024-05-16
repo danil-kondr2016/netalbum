@@ -1,5 +1,8 @@
 package ru.danilakondr.netalbum.api.data;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({"fileName", "fileSize", "width", "height"})
 public class ImageInfo {
 	private String fileName;
 	private long fileSize;

@@ -69,6 +69,7 @@ import ru.danilakondr.netalbum.api.data.Change;
         @JsonSubTypes.Type(value=Response.Error.class, name="ERROR"),
         @JsonSubTypes.Type(value=Response.class, name="SESSION_EXITS"),
 })
+@JsonPropertyOrder({"type"})
 public class Response {
     public enum Type {
         SUCCESS, ERROR,
@@ -98,6 +99,7 @@ public class Response {
         return SUCCESS;
     }
 
+    @JsonPropertyOrder({"type", "directoryName", "directorySize"})
     public static class DirectoryInfo extends Response {
         private String directoryName;
         private long directorySize;
@@ -129,6 +131,7 @@ public class Response {
         }
     }
 
+    @JsonPropertyOrder({"type", "changes"})
     public static class Synchronizing extends Response {
         private List<Change> changes;
 
@@ -150,6 +153,7 @@ public class Response {
         }
     }
 
+    @JsonPropertyOrder({"type", "thumbnailsZip"})
     public static class ThumbnailsArchive extends Response {
         private byte[] thumbnailsZip;
 
@@ -171,6 +175,7 @@ public class Response {
         }
     }
 
+    @JsonPropertyOrder({"type", "sessionId"})
     public static class SessionCreated extends Response {
         private String sessionId;
 
@@ -214,6 +219,7 @@ public class Response {
      * <h3>{@code EXCEPTION}</h3>
      * <p>Исключение. Содержит поле {@code message}.
      */
+    @JsonPropertyOrder({"type", "status"})
     public static class Error extends Response {
         private Status status;
 

@@ -1,5 +1,7 @@
 package ru.danilakondr.netalbum.api.data;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 /**
  * Класс-держатель данных изображения. Содержит поля:
  * <ul>
@@ -12,6 +14,7 @@ package ru.danilakondr.netalbum.api.data;
  *
  * @author Данила А. Кондратенко
  */
+@JsonPropertyOrder({"fileName", "fileSize", "width", "height", "thumbnail"})
 public class ImageData extends ImageInfo {
 	private byte[] thumbnail;
 	
