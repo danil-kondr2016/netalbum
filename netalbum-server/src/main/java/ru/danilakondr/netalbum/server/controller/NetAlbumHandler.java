@@ -96,23 +96,17 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                     handleSynchronize(session, (Request.Synchronize)req);
                     break;
                 default:
-                    sendResponse(session, new Response.Error(INVALID_METHOD));
+                    sendResponse(session, new Response.Error(INVALID_REQUEST));
                     break;
             }
         }
-        catch (InvalidRequestError e) {
+        catch (IllegalArgumentException e) {
             Response.Error err = new Response.Error(INVALID_REQUEST);
             err.setProperty("message", e.getMessage());
             sendResponse(session, err);
-        }
-        catch (NonExistentSession e) {
+        } catch (NonExistentSession e) {
             Response.Error err = new Response.Error(NON_EXISTENT_SESSION);
             err.setProperty("sessionId", e.getMessage());
-            sendResponse(session, err);
-        }
-        catch (IllegalArgumentException e) {
-            Response.Error err = new Response.Error(INVALID_ARGUMENT);
-            err.setProperty("message", e.getMessage());
             sendResponse(session, err);
         }
         catch (NotAnInitiatorError e) {

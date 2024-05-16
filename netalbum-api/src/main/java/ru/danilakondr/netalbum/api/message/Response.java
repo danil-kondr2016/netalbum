@@ -145,8 +145,6 @@ public class Response {
 
         public enum Status {
             INVALID_REQUEST,
-            INVALID_METHOD,
-            INVALID_ARGUMENT,
             FILE_NOT_FOUND,
             FILE_ALREADY_EXISTS,
             NON_EXISTENT_SESSION,
