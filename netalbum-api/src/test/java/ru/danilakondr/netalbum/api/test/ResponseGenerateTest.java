@@ -20,7 +20,7 @@ public class ResponseGenerateTest {
 		Response resp = new Response(Response.Type.SUCCESS);
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"status\":\"SUCCESS\"}", x);
+		assertEquals("{\"type\":\"SUCCESS\"}", x);
 	}
 	
 	@Test
@@ -30,13 +30,13 @@ public class ResponseGenerateTest {
 		resp.setProperty("message", "Database has not been designed");
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"status\":\"ERROR\",\"message\":\"Database has not been designed\"}", x);
+		assertEquals("{\"type\":\"ERROR\",\"message\":\"Database has not been designed\"}", x);
 	}
 	
 	@Test
 	@DisplayName("Check success response with some body (directoryInfo)")
 	void directoryInfo() throws JsonProcessingException {
-		Response resp = new Response(Response.Type.SUCCESS);
+		Response resp = new Response(Response.Type.DIRECTORY_INFO);
 		resp.setProperty("directoryName", "testDirectory");
 		resp.setProperty("directorySize", 8);
 
@@ -49,10 +49,10 @@ public class ResponseGenerateTest {
 	@Test
 	@DisplayName("Check response with byte array")
 	void thumbnails() throws JsonProcessingException {
-		Response resp = new Response(Response.Type.SUCCESS);
+		Response resp = new Response(Response.Type.THUMBNAILS_ARCHIVE);
 		resp.setProperty("thumbnailsZip", new byte[]{'T', 'H', 'U', 'M', 'B', '1', '\r', '\n'});
 
 		String x = objectToJson(resp);
-		assertEquals("{\"status\":\"SUCCESS\",\"thumbnailsZip\":\"VEhVTUIxDQo=\"}", x);
+		assertEquals("{\"type\":\"THUMBNAILS_ARCHIVE\",\"thumbnailsZip\":\"VEhVTUIxDQo=\"}", x);
 	}
 }
