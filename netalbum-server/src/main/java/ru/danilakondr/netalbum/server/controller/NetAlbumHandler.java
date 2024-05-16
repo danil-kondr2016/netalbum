@@ -84,8 +84,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                 case CLOSE_SESSION:
                     handleCloseSession(session);
                     break;
-                case ADD_IMAGES:
-                    handleAddImages(session, (Request.AddImages)req);
+                case ADD_IMAGE:
+                    handleAddImage(session, (Request.AddImage)req);
                     break;
                 case DOWNLOAD_THUMBNAILS:
                     handleDownloadThumbnails(session);
@@ -214,19 +214,17 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, resp);
     }
 
-    private void handleAddImages(WebSocketSession session, Request.AddImages req) throws IOException {
+    private void handleAddImage(WebSocketSession session, Request.AddImage req) throws IOException {
         if (sessionId == null)
             throw new NotConnectedError();
 
         if (!initiator)
             throw new NotAnInitiatorError();
 
-        List<ImageData> images = req.getImages();
-        for (ImageData image : images) {
-            service.putImage(sessionId, image);
-        }
+        ImageData image = req.getImage();
+        service.putImage(sessionId, image);
 
-        sendResponse(session, Response.success());
+        sendResponse(session, new Response.ImageAdded(image));
     }
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
