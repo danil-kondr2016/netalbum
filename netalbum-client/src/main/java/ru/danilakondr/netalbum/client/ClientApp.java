@@ -15,7 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
-import ru.danilakondr.netalbum.client.connect.LoadImagesTask;
+import ru.danilakondr.netalbum.client.connect.ImageLoader;
 
 public class ClientApp {
     private final Configuration cfg;
@@ -69,60 +69,59 @@ public class ClientApp {
 
         Request.InitSession req1 = new Request.InitSession();
         req1.setDirectoryName(name);
-        service.putRequest(req1);
+        
+        service.subscribe(new Flow.Subscriber<Response>() {
+            private Flow.Subscription subscription;
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
 
-        try {
-            Response resp1 = service.getResponse();
-            if (resp1.getType() == Response.Type.SESSION_CREATED) {
-                sessionId = ((Response.SessionCreated) resp1).getSessionId();
-                JOptionPane.showMessageDialog(null,
-                        "Session ID: " + sessionId + "\r\n" +
-                                "Directory name: " + name);
-                
-                cfg.addSession(sessionId, address, directoryPath);
-                this.address = address;
-                
-                loadImages(directory);
+            @Override
+            public void onNext(Response item) {
+                if (item.getType() == Response.Type.SESSION_CREATED) {
+                    sessionId = ((Response.SessionCreated) item).getSessionId();
+                    JOptionPane.showMessageDialog(null,
+                            "Session ID: " + sessionId + "\r\n" +
+                                    "Directory name: " + name);
+
+                    cfg.addSession(sessionId, address, directoryPath);
+                    ClientApp.this.address = address;
+
+                    loadImages(directory);
+                }
+                else if (item.getType() == Response.Type.ERROR) {
+                    StringBuilder msg = new StringBuilder();
+                    msg.append(item.getType()).append("\r\n");
+                    msg.append(((Response.Error)item).getStatus());
+                    JOptionPane.showMessageDialog(null, msg, "Error", ERROR_MESSAGE);
+                }
+                subscription.request(1);
             }
-            else {
-                StringBuilder msg = new StringBuilder();
-                msg.append(resp1.getType()).append("\r\n");
-                msg.append(((Response.Error)resp1).getStatus());
-                JOptionPane.showMessageDialog(null, msg, "Error", ERROR_MESSAGE);
+
+            @Override
+            public void onError(Throwable throwable) {
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
+            @Override
+            public void onComplete() {
+            }
+            
+        });
+        
+        service.putRequest(req1);
     }
     
     private void loadImages(File directory) {
-        ProgressMonitor monitor = new ProgressMonitor(null, "Loading images...", "", 0, 100);
-        monitor.setMillisToDecideToPopup(0);
-        monitor.setMillisToPopup(0);
-        
-        LoadImagesTask task = new LoadImagesTask(service, monitor, directory);
-        task.execute();
+        ImageLoader loader = new ImageLoader(service, directory);
+        loader.execute();
     }
 
     private void closeSession() {
         Request req2 = new Request();
         req2.setMethod(Request.Type.CLOSE_SESSION);
         service.putRequest(req2);
-
-        try {
-            Response resp3 = service.getResponse();
-            if (resp3 != null)
-                JOptionPane.showMessageDialog(null, resp3.getType());
-            
-            cfg.removeSession(sessionId, address);
-            this.sessionId = null;
-            this.address = null;
-
-            service.disconnect();
-            System.exit(0);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static void guiDie(String message) {
@@ -142,8 +141,6 @@ public class ClientApp {
     }
 
     public static void main(String[] args) throws IOException {
-        Logger.getLogger(LoadImagesTask.class.getName()).setLevel(Level.INFO);
-
         Configuration cfg = new Configuration(getNetalbumIni());
         ClientApp app = new ClientApp(cfg);
         app.run();
