@@ -32,7 +32,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     private final ObjectMapper mapper = new ObjectMapper();
     private static final Map<String, WebSocketSession> initiators = new HashMap<>();
     private static final Map<WebSocketSession, String> connected = new HashMap<>();
-    private final StringBuilder sb = new StringBuilder();
 
     @Autowired
     public void setService(NetAlbumService service) {
