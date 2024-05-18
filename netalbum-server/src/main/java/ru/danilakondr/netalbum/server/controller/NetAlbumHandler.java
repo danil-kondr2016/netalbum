@@ -77,7 +77,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                     handleCloseSession(session);
                     break;
                 case ADD_IMAGE:
-                    System.out.println("Message received: ADD_IMAGE");
                     handleAddImage(session, (Request.AddImage)req);
                     break;
                 case DOWNLOAD_THUMBNAILS:
