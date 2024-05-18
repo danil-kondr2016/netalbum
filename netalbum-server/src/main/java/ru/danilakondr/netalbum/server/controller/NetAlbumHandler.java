@@ -135,34 +135,40 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void putInitiator(WebSocketSession session, String sessionId) {
-        this.sessionId = sessionId;
-        this.initiator = true;
-
         initiators.put(sessionId, session);
         connected.put(session, sessionId);
     }
 
     private void putViewer(WebSocketSession session, String sessionId) {
-        this.sessionId = sessionId;
-        this.initiator = false;
-
         connected.put(session, sessionId);
     }
-
-    private void removeClient(WebSocketSession session) {
-        try {
-            if (initiator)
-                initiators.remove(sessionId);
-            initiator = false;
-            sessionId = null;
-
-            connected.remove(session);
+    
+    private boolean isConnected(WebSocketSession session) {
+        return connected.containsKey(session);
+    }
+    
+    private boolean isInitiator(WebSocketSession session) {
+        boolean isConnected = this.isConnected(session);
+        if (isConnected) {
+            String sessionId = connected.get(session);
+            return initiators.containsKey(sessionId);
         }
-        catch (Exception ignored) {}
+        return false;
+    }
+    
+    private void removeClient(WebSocketSession session) {
+        if (!connected.containsKey(session))
+            return;
+        
+        String sessionId = connected.get(session);
+        if (initiators.containsKey(sessionId))
+            initiators.remove(sessionId);
+
+        connected.remove(session);
     }
 
     private void handleRestoreSession(WebSocketSession session, Request.RestoreSession req) throws IOException {
-        if (sessionId != null)
+        if (isConnected(session))
             throw new AlreadyConnectedError();
 
         String id = req.getSessionId();
@@ -175,8 +181,10 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleSynchronize(WebSocketSession session, Request.Synchronize req) throws IOException {
-        if (sessionId == null)
+        if (!isConnected(session))
             throw new NotConnectedError();
+        
+        String sessionId = connected.get(session);
 
         List<Change> changes = req.getChanges();
         // Первое. Записать изменения в базу данных.
@@ -195,9 +203,10 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
-        if (sessionId == null)
+        if (!isConnected(session))
             throw new NotConnectedError();
 
+        String sessionId = connected.get(session);
         NetAlbumSession s = service.getSession(sessionId);
         long directorySize = service.getDirectorySize(sessionId);
         Response r = new Response.DirectoryInfo(s.getDirectoryName(), directorySize);
@@ -205,9 +214,10 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleDownloadThumbnails(WebSocketSession session) throws IOException {
-        if (sessionId == null)
+        if (!isConnected(session))
             throw new NotConnectedError();
 
+        String sessionId = connected.get(session);
         byte[] zipFile = service.generateArchiveWithThumbnails(sessionId);
         Response resp = new Response.ThumbnailsArchive(zipFile);
 
@@ -215,10 +225,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleAddImage(WebSocketSession session, Request.AddImage req) throws IOException {
-        if (sessionId == null)
+        if (!isConnected(session))
             throw new NotConnectedError();
 
-        if (!initiator)
+        String sessionId = connected.get(session);
+        if (!isInitiator(session))
             throw new NotAnInitiatorError();
         
         System.out.printf("Adding image: %s%n", req.getImage().getFileName());
@@ -234,10 +245,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
-        if (sessionId == null)
+        if (!isConnected(session))
             throw new NotConnectedError();
 
-        if (!initiator)
+        String sessionId = connected.get(session);
+        if (!isInitiator(session))
             throw new NotAnInitiatorError();
 
         for (WebSocketSession s: connected.keySet()) {
@@ -247,26 +259,23 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             }
         }
 
+        service.removeSession(sessionId);
         sendResponse(session, new Response(Response.Type.SUCCESS));
         removeClient(session);
         session.close();
     }
 
     private void handleDisconnectFromSession(WebSocketSession session) throws IOException {
-        if (sessionId == null)
+        if (!isConnected(session))
             throw new NotConnectedError();
 
-        if (initiator)
-            initiators.remove(sessionId);
-
-        connected.remove(session);
         sendResponse(session, Response.success());
         removeClient(session);
         session.close();
     }
 
     private void handleConnectToSession(WebSocketSession session, Request.ConnectToSession req) throws IOException {
-        if (sessionId != null)
+        if (isConnected(session))
             throw new AlreadyConnectedError();
 
         String id = req.getSessionId();
@@ -285,7 +294,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void handleInitSession(WebSocketSession session, Request.InitSession req) throws IOException {
-        if (sessionId != null)
+        if (isConnected(session))
             throw new AlreadyConnectedError();
 
         String id = SessionIdProvider.generateSessionId();
