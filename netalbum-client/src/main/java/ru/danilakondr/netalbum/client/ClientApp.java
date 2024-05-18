@@ -1,6 +1,5 @@
 package ru.danilakondr.netalbum.client;
 
-import ru.danilakondr.netalbum.api.data.ImageInfo;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.NetAlbumService;
@@ -12,8 +11,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.Flow;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import ru.danilakondr.netalbum.client.connect.LoadImagesTask;
 
 public class ClientApp {
     private final Configuration cfg;
@@ -23,36 +25,6 @@ public class ClientApp {
 
     public ClientApp(Configuration cfg) {
         this.cfg = cfg;
-        service.subscribe(new Flow.Subscriber<Response>() {
-            private Flow.Subscription subscription;
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
-            }
-
-            @Override
-            public void onNext(Response item) {
-                if (item.getType() == Response.Type.IMAGE_ADDED) {
-                    ImageInfo info = ((Response.ImageAdded)item).getImage();
-                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                            null,
-                            info.getFileName()
-                    ));
-                }
-                subscription.request(1);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
     }
 
     public void run() {
@@ -88,7 +60,6 @@ public class ClientApp {
         String name = directory.getName();
         // 2. Подключиться.
         URI uri = URI.create(address);
-
         service.connectTo(uri);
         try {
             service.waitUntilConnected();
@@ -100,7 +71,6 @@ public class ClientApp {
         req1.setDirectoryName(name);
         service.putRequest(req1);
 
-        String sessionId;
         try {
             Response resp1 = service.getResponse();
             if (resp1.getType() == Response.Type.SESSION_CREATED) {
@@ -111,7 +81,8 @@ public class ClientApp {
                 
                 cfg.addSession(sessionId, address, directoryPath);
                 this.address = address;
-                this.sessionId = sessionId;
+                
+                loadImages(directory);
             }
             else {
                 StringBuilder msg = new StringBuilder();
@@ -122,7 +93,15 @@ public class ClientApp {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
+    }
+    
+    private void loadImages(File directory) {
+        ProgressMonitor monitor = new ProgressMonitor(null, "Loading images...", "", 0, 100);
+        monitor.setMillisToDecideToPopup(0);
+        monitor.setMillisToPopup(0);
+        
+        LoadImagesTask task = new LoadImagesTask(service, monitor, directory);
+        task.execute();
     }
 
     private void closeSession() {
@@ -163,6 +142,8 @@ public class ClientApp {
     }
 
     public static void main(String[] args) throws IOException {
+        Logger.getLogger(LoadImagesTask.class.getName()).setLevel(Level.INFO);
+
         Configuration cfg = new Configuration(getNetalbumIni());
         ClientApp app = new ClientApp(cfg);
         app.run();
