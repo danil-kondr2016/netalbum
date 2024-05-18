@@ -22,14 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import ru.danilakondr.netalbum.api.data.ImageInfo;
 
 import static ru.danilakondr.netalbum.api.message.Response.Error.Status.*;
 
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
-    private String sessionId;
     private NetAlbumService service;
-    private boolean initiator = false;
     private final ObjectMapper mapper = new ObjectMapper();
     private static final Map<String, WebSocketSession> initiators = new HashMap<>();
     private static final Map<WebSocketSession, String> connected = new HashMap<>();
@@ -224,7 +223,12 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         ImageData image = req.getImage();
         service.putImage(sessionId, image);
 
-        sendResponse(session, new Response.ImageAdded(image));
+        ImageInfo imgInfo = new ImageInfo();
+        imgInfo.setFileName(image.getFileName());
+        imgInfo.setFileSize(image.getFileSize());
+        imgInfo.setWidth(image.getWidth());
+        imgInfo.setHeight(image.getHeight());
+        sendResponse(session, new Response.ImageAdded(imgInfo));
     }
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
