@@ -84,6 +84,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                     handleCloseSession(session);
                     break;
                 case ADD_IMAGE:
+                    System.out.println("Message received: ADD_IMAGE");
                     handleAddImage(session, (Request.AddImage)req);
                     break;
                 case DOWNLOAD_THUMBNAILS:
@@ -219,7 +220,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
         if (!initiator)
             throw new NotAnInitiatorError();
-
+        
+        System.out.printf("Adding image: %s%n", req.getImage().getFileName());
         ImageData image = req.getImage();
         service.putImage(sessionId, image);
 
@@ -308,6 +310,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.printf("Closed session %s %d %s%n", session, status.getCode(), status.getReason());
         removeClient(session);
     }
 }
