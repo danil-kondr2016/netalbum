@@ -46,14 +46,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        sb.append(message.getPayload());
-        if (!message.isLast()) {
-            return;
-        }
-
-        String msg = sb.toString();
-        sb.setLength(0);
-
+        String msg = message.getPayload();
         Request req;
 
         try {
