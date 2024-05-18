@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.Flow;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import ru.danilakondr.netalbum.client.connect.ImageLoader;
