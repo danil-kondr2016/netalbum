@@ -39,9 +39,7 @@ public class NetAlbumService extends SubmissionPublisher<Response>
     }
 
     public void waitUntilConnected() throws InterruptedException {
-        System.out.println("Start waiting");
         connectionLatch.await();
-        System.out.println("Stop waiting");
     }
 
     public void putRequest(Request req) {
