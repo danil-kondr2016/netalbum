@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 
 public class NetAlbumService extends SubmissionPublisher<Response>
         implements WebSocket.Listener {
-    private final BlockingQueue<Response> responses = new SynchronousQueue<>();
     private final CountDownLatch connectionLatch = new CountDownLatch(1);
     private final ExecutorService service;
     private volatile boolean connected = false;
@@ -69,10 +68,6 @@ public class NetAlbumService extends SubmissionPublisher<Response>
         });
     }
 
-    public Response getResponse() throws InterruptedException {
-        return responses.take();
-    }
-
     private final StringBuilder sb = new StringBuilder();
     private CompletableFuture<?> accumulatedMessage = new CompletableFuture<>();
 
@@ -112,13 +107,10 @@ public class NetAlbumService extends SubmissionPublisher<Response>
         ObjectMapper mapper = new ObjectMapper();
         try {
             Response resp = mapper.readValue(strResponse, Response.class);
-            responses.put(resp);
             submit(resp);
         }
         catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
