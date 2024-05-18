@@ -37,7 +37,7 @@ public class RequestGenerateTest {
 		Request req1 = jsonToObject(x, Request.class);
 
 		assertEquals(String.format(Locale.ROOT, "{\"method\":\"INIT_SESSION\",\"directoryName\":\"%s\"}", TEST_DIRECTORY_NAME), x);
-        assertSame(req1.getMethod(), Request.Type.INIT_SESSION);
+                assertSame(req1.getMethod(), Request.Type.INIT_SESSION);
 
 		Request.InitSession req2 = (Request.InitSession)req1;
 		assertEquals(TEST_DIRECTORY_NAME, req2.getDirectoryName());
@@ -66,7 +66,7 @@ public class RequestGenerateTest {
 		req.setImage(original);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"ADD_IMAGES\",\"image\":{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}}", x);
+		assertEquals("{\"method\":\"ADD_IMAGE\",\"image\":{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}}", x);
 
 		Request req1 = jsonToObject(x, Request.class);
 		assertSame(req1.getMethod(), Request.Type.ADD_IMAGE);
@@ -74,7 +74,7 @@ public class RequestGenerateTest {
 
 		Request.AddImage req2 = (Request.AddImage) req1;
 		ImageData received = req2.getImage();
-        assertNotNull(received);
+                assertNotNull(received);
 
 		assertEquals(original.getFileName(), received.getFileName());
 		assertEquals(original.getFileSize(), received.getFileSize());
