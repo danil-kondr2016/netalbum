@@ -10,7 +10,8 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.concurrent.*;
 
-public class NetAlbumService implements WebSocket.Listener {
+public class NetAlbumService extends SubmissionPublisher<Response>
+        implements WebSocket.Listener {
     private final BlockingQueue<Response> responses = new SynchronousQueue<>();
     private final CountDownLatch latch = new CountDownLatch(1);
     private final ExecutorService service;
@@ -18,6 +19,7 @@ public class NetAlbumService implements WebSocket.Listener {
     private WebSocket socket;
 
     public NetAlbumService() {
+        super(Executors.newSingleThreadExecutor(), 1000);
         this.service = Executors.newFixedThreadPool(50);
     }
 
@@ -94,6 +96,7 @@ public class NetAlbumService implements WebSocket.Listener {
         try {
             Response resp = mapper.readValue(strResponse, Response.class);
             responses.put(resp);
+            submit(resp);
         }
         catch (JsonProcessingException e) {
             throw new IllegalStateException(e);

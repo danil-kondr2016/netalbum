@@ -1,5 +1,6 @@
 package ru.danilakondr.netalbum.client;
 
+import ru.danilakondr.netalbum.api.data.ImageInfo;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.NetAlbumService;
@@ -10,15 +11,48 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.Flow;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
 public class ClientApp {
     private final Configuration cfg;
     private final NetAlbumService service = new NetAlbumService();
+    
+    private String sessionId, address;
 
     public ClientApp(Configuration cfg) {
         this.cfg = cfg;
+        service.subscribe(new Flow.Subscriber<Response>() {
+            private Flow.Subscription subscription;
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(Response item) {
+                if (item.getType() == Response.Type.IMAGE_ADDED) {
+                    ImageInfo info = ((Response.ImageAdded)item).getImage();
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            null,
+                            info.getFileName()
+                    ));
+                }
+                subscription.request(1);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
     }
 
     public void run() {
@@ -27,8 +61,8 @@ public class ClientApp {
         }
 
         String defaultURL = cfg.getDefaultURL();
-        StartDialog startDlg = new StartDialog(defaultURL);
-        startDlg.pack();
+        StartDialog startDlg = new StartDialog(null, true);
+        startDlg.setServerAddress(defaultURL);
         startDlg.setVisible(true);
 
         switch (startDlg.getSessionType()) {
@@ -74,6 +108,10 @@ public class ClientApp {
                 JOptionPane.showMessageDialog(null,
                         "Session ID: " + sessionId + "\r\n" +
                                 "Directory name: " + name);
+                
+                cfg.addSession(sessionId, address, directoryPath);
+                this.address = address;
+                this.sessionId = sessionId;
             }
             else {
                 StringBuilder msg = new StringBuilder();
@@ -85,7 +123,6 @@ public class ClientApp {
             throw new RuntimeException(e);
         }
 
-        closeSession();
     }
 
     private void closeSession() {
@@ -97,6 +134,10 @@ public class ClientApp {
             Response resp3 = service.getResponse();
             if (resp3 != null)
                 JOptionPane.showMessageDialog(null, resp3.getType());
+            
+            cfg.removeSession(sessionId, address);
+            this.sessionId = null;
+            this.address = null;
 
             service.disconnect();
             System.exit(0);
