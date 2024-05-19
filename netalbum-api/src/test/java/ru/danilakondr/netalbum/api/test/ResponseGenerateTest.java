@@ -20,7 +20,7 @@ public class ResponseGenerateTest {
 		Response resp = new Response(Response.Type.SUCCESS);
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"type\":\"SUCCESS\"}", x);
+		assertEquals("{\"type\":\"RESPONSE\",\"answer\":\"SUCCESS\"}", x);
 	}
 	
 	@Test
@@ -30,7 +30,7 @@ public class ResponseGenerateTest {
 		resp.setProperty("message", "Database has not been designed");
 		String x = objectToJson(resp);
 		
-		assertEquals("{\"type\":\"ERROR\",\"message\":\"Database has not been designed\"}", x);
+		assertEquals("{\"type\":\"RESPONSE\",\"answer\":\"ERROR\",\"message\":\"Database has not been designed\"}", x);
 	}
 	
 	@Test
@@ -53,6 +53,6 @@ public class ResponseGenerateTest {
 		resp.setProperty("thumbnailsZip", new byte[]{'T', 'H', 'U', 'M', 'B', '1', '\r', '\n'});
 
 		String x = objectToJson(resp);
-		assertEquals("{\"type\":\"THUMBNAILS_ARCHIVE\",\"thumbnailsZip\":\"VEhVTUIxDQo=\"}", x);
+		assertEquals("{\"type\":\"RESPONSE\",\"answer\":\"THUMBNAILS_ARCHIVE\",\"thumbnailsZip\":\"VEhVTUIxDQo=\"}", x);
 	}
 }

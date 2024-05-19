@@ -31,13 +31,13 @@ public class RequestGenerateTest {
 	@Test
 	@DisplayName("Check single-argument message forming (initSession)")
 	void initSession() throws JsonProcessingException {
-		Request req = new Request(Request.Type.INIT_SESSION);
+		Request req = new Request(Request.Method.INIT_SESSION);
 		req.setProperty("directoryName", TEST_DIRECTORY_NAME);
 		String x = objectToJson(req);
 		Request req1 = jsonToObject(x, Request.class);
 
-		assertEquals(String.format(Locale.ROOT, "{\"method\":\"INIT_SESSION\",\"directoryName\":\"%s\"}", TEST_DIRECTORY_NAME), x);
-                assertSame(req1.getMethod(), Request.Type.INIT_SESSION);
+		assertEquals(String.format(Locale.ROOT, "{\"type\":\"REQUEST\",\"method\":\"INIT_SESSION\",\"directoryName\":\"%s\"}", TEST_DIRECTORY_NAME), x);
+                assertSame(req1.getMethod(), Request.Method.INIT_SESSION);
 
 		Request.InitSession req2 = (Request.InitSession)req1;
 		assertEquals(TEST_DIRECTORY_NAME, req2.getDirectoryName());
@@ -46,10 +46,10 @@ public class RequestGenerateTest {
 	@Test
 	@DisplayName("Check message without contents forming (closeSession)")
 	void closeSession() throws JsonProcessingException {
-		Request req = new Request(Request.Type.CLOSE_SESSION);
+		Request req = new Request(Request.Method.CLOSE_SESSION);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"CLOSE_SESSION\"}", x);
+		assertEquals("{\"type\":\"REQUEST\",\"method\":\"CLOSE_SESSION\"}", x);
 	}
 	
 	@Test
@@ -66,10 +66,10 @@ public class RequestGenerateTest {
 		req.setImage(original);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"ADD_IMAGE\",\"image\":{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}}", x);
+		assertEquals("{\"type\":\"REQUEST\",\"method\":\"ADD_IMAGE\",\"image\":{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}}", x);
 
 		Request req1 = jsonToObject(x, Request.class);
-		assertSame(req1.getMethod(), Request.Type.ADD_IMAGE);
+		assertSame(req1.getMethod(), Request.Method.ADD_IMAGE);
 		assertSame(req1.getClass(), Request.AddImage.class);
 
 		Request.AddImage req2 = (Request.AddImage) req1;
@@ -98,10 +98,10 @@ public class RequestGenerateTest {
 		changes.add(first);
 		changes.add(second);
 
-		Request req = new Request(Request.Type.SYNCHRONIZE);
+		Request req = new Request(Request.Method.SYNCHRONIZE);
 		req.setProperty("changes", changes);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"method\":\"SYNCHRONIZE\",\"changes\":[{\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"oldName\":\"test2.png\",\"newName\":null}]}", x);
+		assertEquals("{\"type\":\"REQUEST\",\"method\":\"SYNCHRONIZE\",\"changes\":[{\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"oldName\":\"test2.png\",\"newName\":null}]}", x);
 	}
 }
