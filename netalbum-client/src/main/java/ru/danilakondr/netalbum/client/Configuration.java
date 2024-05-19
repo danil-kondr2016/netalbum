@@ -9,8 +9,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class Configuration implements Closeable {
     private static final String SESSIONS_SECTION = "sessions";
@@ -33,7 +31,7 @@ public class Configuration implements Closeable {
         return DigestUtils.sha256Hex(url.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String getDefaultURL() {
+    public String getServerAddress() {
         return ini.get(SERVER_SECTION, "address");
     }
 
