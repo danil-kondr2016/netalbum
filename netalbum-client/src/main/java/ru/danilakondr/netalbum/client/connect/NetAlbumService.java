@@ -36,9 +36,6 @@ public class NetAlbumService extends SubmissionPublisher<Message>
                     .buildAsync(uri, NetAlbumService.this);
             cfWebSocket.join();
             connectionLatch.countDown();
-            
-            Message msg = new Message(Message.Type.CONNECTION_ESTABLISHED);
-            msg.setProperty("url", uri);
         });
     }
 
