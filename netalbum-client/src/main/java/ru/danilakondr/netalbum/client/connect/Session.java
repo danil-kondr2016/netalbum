@@ -9,12 +9,11 @@ import java.io.File;
 import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.Flow;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import ru.danilakondr.netalbum.api.message.Message;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
-import static ru.danilakondr.netalbum.api.message.Response.Type.CLIENT_DISCONNECTED;
-import static ru.danilakondr.netalbum.api.message.Response.Type.SESSION_CLOSED;
 import ru.danilakondr.netalbum.client.LocalizedMessages;
 
 /**
@@ -166,39 +165,104 @@ public class Session {
     public boolean isConnected() {
         return connected;
     }
+
+    private static class Listener implements Flow.Subscriber<Message> {
+        private Flow.Subscription subscription;
+        private final Session session;
+        private final BiConsumer<Session, Message> consumer;
+        private final boolean oneShot;
+        
+        public Listener(Session s, BiConsumer<Session, Message> consumer) {
+            this.session = s;
+            this.consumer = consumer;
+            this.oneShot = false;
+        }
+        
+        public Listener(Session s, BiConsumer<Session, Message> consumer, boolean oneShot) {
+            this.session = s;
+            this.consumer = consumer;
+            this.oneShot = oneShot;
+        }
+        
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            this.subscription = subscription;
+            subscription.request(1);
+        }
+
+        @Override
+        public void onNext(Message item) {
+            consumer.accept(session, item);
+            if (!oneShot)
+                subscription.request(1);
+            else
+                subscription.cancel();
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            throwable.printStackTrace(System.err);
+        }
+
+        @Override
+        public void onComplete() {
+        }
+    }
     
     public void addOnCloseListener(Consumer<Session> listener) {
-        service.subscribe(new Flow.Subscriber<Message>() {
-            private Flow.Subscription subscription;
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                this.subscription = subscription;
-                subscription.request(1);
+        service.subscribe(new Listener(this, (s, item) -> {
+            switch (item.getType()) {
+                case RESPONSE:
+                    Response resp = (Response)item;
+                    switch (resp.getAnswerType()) {
+                        case CLIENT_DISCONNECTED:
+                        case SESSION_CLOSED:
+                            listener.accept(Session.this);
+                            break;
+                    }
+                    break;
             }
+        }));
+    }
+    
+    public void addOnConnectedListener(Consumer<Session> listener) {
+        service.subscribe(new Listener(this, (s, item) -> {
+            switch (item.getType()) {
+                case RESPONSE:
+                    Response resp = (Response)item;
+                    switch (resp.getAnswerType()) {
+                        case SESSION_CREATED:
+                        case SESSION_RESTORED:
+                        case VIEWER_CONNECTED:
+                            listener.accept(Session.this);
+                            break;
+                    }
+                    break;
+            }
+        }));
+    }
 
-            @Override
-            public void onNext(Message item) {
-                switch (item.getType()) {
-                    case RESPONSE:
-                        Response resp = (Response)item;
-                        switch (resp.getAnswerType()) {
-                            case CLIENT_DISCONNECTED:
-                            case SESSION_CLOSED:
-                                listener.accept(Session.this);
-                                break;
-                        }
-                        break;
-                }
-                subscription.request(1);
+    public void addOnResponseListener(Response.Type type, Consumer<Session> listener) {
+        service.subscribe(new Listener(this, (s, item) -> {
+            switch (item.getType()) {
+                case RESPONSE:
+                    Response resp = (Response)item;
+                    if (resp.getAnswerType() == type)
+                        listener.accept(Session.this);
+                    break;
             }
-            
-            @Override
-            public void onError(Throwable throwable) {
+        }));
+    }
+    
+    public void addOnResponseListener(Response.Type type, Consumer<Session> listener, boolean oneShot) {
+        service.subscribe(new Listener(this, (s, item) -> {
+            switch (item.getType()) {
+                case RESPONSE:
+                    Response resp = (Response)item;
+                    if (resp.getAnswerType() == type)
+                        listener.accept(Session.this);
+                    break;
             }
-
-            @Override
-            public void onComplete() {
-            }
-        });
+        }, oneShot));
     }
 }
