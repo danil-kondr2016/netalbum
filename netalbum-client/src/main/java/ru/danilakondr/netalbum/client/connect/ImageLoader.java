@@ -137,7 +137,10 @@ public class ImageLoader {
     private void loadImage(File file) {
         try {
             Request.AddImage addImage = new Request.AddImage();
-            String name = directory.toPath().relativize(file.toPath()).toString();
+            String name = directory.toPath()
+                    .relativize(file.toPath())
+                    .toString()
+                    .replace(File.separatorChar, '/');
 
             ImageData imgData = Images.generateImage(file, name, 640, 480);
             addImage.setImage(imgData);
