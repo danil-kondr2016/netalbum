@@ -245,7 +245,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
         for (WebSocketSession s: connected.keySet()) {
             if (Objects.equals(sessionId, connected.get(s)) && s != session) {
-                sendResponse(s, new Response(Response.Type.SESSION_EXITS));
+                sendResponse(s, new Response(Response.Type.SESSION_CLOSED));
                 s.close();
             }
         }
