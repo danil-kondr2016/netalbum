@@ -52,7 +52,6 @@ public class Session {
             }
             
             private void onConnectionEstablished(Message item) {
-                setUrl(Objects.toString(item.getProperty("uri")));
             }
 
             @Override
