@@ -19,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import ru.danilakondr.netalbum.api.data.ImageData;
+import ru.danilakondr.netalbum.api.message.Message;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.Images;
@@ -46,23 +47,25 @@ public class ImageLoader {
     
     private int nTotal = 0;
     private int nProcessed = 0;
-    private final Flow.Subscriber<Response> imgTaskSubscriber = new Flow.Subscriber<Response>() {
+    private final Flow.Subscriber<Message> imgTaskSubscriber = new Flow.Subscriber<Message>() {
         private Flow.Subscription subscription;
         
         @Override
         public void onSubscribe(Flow.Subscription subscription) {
-            System.out.printf("Subscribed (%s)%n", subscription);
-            
             this.subscription = subscription;
             subscription.request(1);
         }
 
         @Override
-        public void onNext(Response item) {
+        public void onNext(Message item) {
             subscription.request(1);
+            if (item.getType() != Message.Type.RESPONSE)
+                return;
+            
+            Response resp = (Response)item;
 
-            if (item.getType() == Response.Type.IMAGE_ADDED) {
-                Response.ImageAdded imgAdded = (Response.ImageAdded)item;
+            if (resp.getAnswerType() == Response.Type.IMAGE_ADDED) {
+                Response.ImageAdded imgAdded = (Response.ImageAdded)resp;
                 
                 nProcessed++;
                 EventQueue.invokeLater(() -> {
@@ -73,7 +76,7 @@ public class ImageLoader {
                     }
                 });
             }
-            else if (item.getType() == Response.Type.ERROR) {
+            else if (resp.getAnswerType() == Response.Type.ERROR) {
                 subscription.cancel();
             }
         }

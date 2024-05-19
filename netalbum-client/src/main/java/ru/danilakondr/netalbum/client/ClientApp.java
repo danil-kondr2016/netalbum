@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.concurrent.Flow;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import ru.danilakondr.netalbum.api.message.Message;
 import ru.danilakondr.netalbum.client.connect.ImageLoader;
 
 public class ClientApp {
@@ -30,7 +31,7 @@ public class ClientApp {
             // TODO предложить пользователю восстановить сессии
         }
 
-        String defaultURL = cfg.getDefaultURL();
+        String defaultURL = cfg.getServerAddress();
         StartDialog startDlg = new StartDialog(null, true);
         startDlg.setServerAddress(defaultURL);
         startDlg.setVisible(true);
@@ -68,7 +69,7 @@ public class ClientApp {
         Request.InitSession req1 = new Request.InitSession();
         req1.setDirectoryName(name);
         
-        service.subscribe(new Flow.Subscriber<Response>() {
+        service.subscribe(new Flow.Subscriber<Message>() {
             private Flow.Subscription subscription;
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
@@ -77,9 +78,16 @@ public class ClientApp {
             }
 
             @Override
-            public void onNext(Response item) {
-                if (item.getType() == Response.Type.SESSION_CREATED) {
-                    sessionId = ((Response.SessionCreated) item).getSessionId();
+            public void onNext(Message item) {
+                subscription.request(1);
+
+                if (item.getType() != Message.Type.RESPONSE)
+                    return;
+                
+                Response resp = (Response)item;
+                
+                if (resp.getAnswerType() == Response.Type.SESSION_CREATED) {
+                    sessionId = ((Response.SessionCreated) resp).getSessionId();
                     JOptionPane.showMessageDialog(null,
                             "Session ID: " + sessionId + "\r\n" +
                                     "Directory name: " + name);
@@ -89,13 +97,12 @@ public class ClientApp {
 
                     loadImages(directory);
                 }
-                else if (item.getType() == Response.Type.ERROR) {
+                else if (resp.getAnswerType() == Response.Type.ERROR) {
                     StringBuilder msg = new StringBuilder();
-                    msg.append(item.getType()).append("\r\n");
-                    msg.append(((Response.Error)item).getStatus());
+                    msg.append(resp.getAnswerType()).append("\r\n");
+                    msg.append(((Response.Error)resp).getStatus());
                     JOptionPane.showMessageDialog(null, msg, "Error", ERROR_MESSAGE);
                 }
-                subscription.request(1);
             }
 
             @Override
@@ -118,7 +125,7 @@ public class ClientApp {
 
     private void closeSession() {
         Request req2 = new Request();
-        req2.setMethod(Request.Type.CLOSE_SESSION);
+        req2.setMethod(Request.Method.CLOSE_SESSION);
         service.putRequest(req2);
     }
 

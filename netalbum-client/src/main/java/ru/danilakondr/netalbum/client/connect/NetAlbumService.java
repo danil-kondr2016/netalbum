@@ -11,8 +11,9 @@ import java.net.http.WebSocket;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ru.danilakondr.netalbum.api.message.Message;
 
-public class NetAlbumService extends SubmissionPublisher<Response>
+public class NetAlbumService extends SubmissionPublisher<Message>
         implements WebSocket.Listener {
     private final CountDownLatch connectionLatch = new CountDownLatch(1);
     private final ExecutorService service;
@@ -35,6 +36,9 @@ public class NetAlbumService extends SubmissionPublisher<Response>
                     .buildAsync(uri, NetAlbumService.this);
             cfWebSocket.join();
             connectionLatch.countDown();
+            
+            Message msg = new Message(Message.Type.CONNECTION_ESTABLISHED);
+            msg.setProperty("url", uri);
         });
     }
 
@@ -65,7 +69,7 @@ public class NetAlbumService extends SubmissionPublisher<Response>
             }
         });
     }
-
+    
     private final StringBuilder sb = new StringBuilder();
     private CompletableFuture<?> accumulatedMessage = new CompletableFuture<>();
 
@@ -98,9 +102,15 @@ public class NetAlbumService extends SubmissionPublisher<Response>
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
         System.out.printf("Closed %d %s%n", statusCode, reason);
         connected = false;
+        
+        Message msg = new Message(Message.Type.CONNECTION_CLOSED);
+        msg.setProperty("statusCode", statusCode);
+        msg.setProperty("reason", reason);
+        submit(msg);
+        
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
-
+    
     private void processResponse(String strResponse) {
         ObjectMapper mapper = new ObjectMapper();
         try {
