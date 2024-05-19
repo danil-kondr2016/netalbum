@@ -55,8 +55,14 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
  * <h3> {@code IMAGE_ADDED} </h3>
  * <p> Посылается сервером при отправке запроса {@code ADD_IMAGE}. Содержит
  * данные об отправленном изображении.
- * <h3> {@code SESSION_EXITS} </h3>
- * <p> Посылается сервером при закрытии сессии.
+ * <h3> {@code SESSION_CLOSED} </h3>
+ * <p> Посылается сервером при закрытии сессии каждому, кто к ней подключён.
+ * <h3> {@code SESSION_RESTORED} </h3>
+ * <p> Посылается сервером при успешном восстановлении сессии.
+ * <h3> {@code VIEWER_CONNECTED} </h3>
+ * <p> Посылается сервером при успешном подключении просмотрщика к сессии.
+ * <h3> {@code CLIENT_DISCONNECTED} </h3>
+ * <p> Посылается сервером при успешном отключении от сессии.
  *
  * @author Данила А. Кондратенко
  * @see Request
@@ -72,14 +78,20 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
         @JsonSubTypes.Type(value=Response.ImageAdded.class, name="IMAGE_ADDED"),
         @JsonSubTypes.Type(value=Response.class, name="SUCCESS"),
         @JsonSubTypes.Type(value=Response.Error.class, name="ERROR"),
-        @JsonSubTypes.Type(value=Response.class, name="SESSION_EXITS"),
+        @JsonSubTypes.Type(value=Response.class, name="SESSION_CLOSED"),
+        @JsonSubTypes.Type(value=Response.class, name="SESSION_RESTORED"),
+        @JsonSubTypes.Type(value=Response.class, name="VIEWER_CONNECTED"),
+        @JsonSubTypes.Type(value=Response.class, name="CLIENT_DISCONNECTED"),
 })
 @JsonPropertyOrder({"type","answer"})
 public class Response extends Message {
     public enum Type {
         SUCCESS, ERROR,
-        SESSION_EXITS,
         SESSION_CREATED,
+        SESSION_CLOSED,
+        SESSION_RESTORED,
+        VIEWER_CONNECTED,
+        CLIENT_DISCONNECTED,
         DIRECTORY_INFO,
         THUMBNAILS_ARCHIVE,
         SYNCHRONIZING, IMAGE_ADDED,
