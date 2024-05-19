@@ -168,7 +168,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new NonExistentSession(id);
 
         putInitiator(session, id);
-        sendResponse(session, Response.success());
+        Response resp = new Response(Response.Type.SESSION_RESTORED);
+        resp.setProperty("sessionId", id);
+        sendResponse(session, resp);
     }
 
     private void handleSynchronize(WebSocketSession session, Request.Synchronize req) throws IOException {
@@ -189,8 +191,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                 sendResponse(e.getKey(), changesResp);
             }
         }
-
-        sendResponse(session, Response.success());
     }
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
@@ -251,7 +251,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         }
 
         service.removeSession(sessionId);
-        sendResponse(session, new Response(Response.Type.SUCCESS));
+        sendResponse(session, new Response(Response.Type.SESSION_CLOSED));
         removeClient(session);
         session.close();
     }
@@ -260,7 +260,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (!isConnected(session))
             throw new NotConnectedError();
 
-        sendResponse(session, Response.success());
+        sendResponse(session, new Response(Response.Type.CLIENT_DISCONNECTED));
         removeClient(session);
         session.close();
     }
@@ -275,7 +275,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new NonExistentSession(id);
 
         putViewer(session, id);
-        sendResponse(session, Response.success());
+        Response resp = new Response(Response.Type.VIEWER_CONNECTED);
+        resp.setProperty("sessionId", id);
+        sendResponse(session, resp);
     }
 
     private void sendResponse(WebSocketSession session, Response response) throws IOException {
