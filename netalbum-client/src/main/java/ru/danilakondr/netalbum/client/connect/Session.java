@@ -9,9 +9,11 @@ import java.io.File;
 import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.Flow;
+import java.util.function.Consumer;
 import ru.danilakondr.netalbum.api.message.Message;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
+import static ru.danilakondr.netalbum.api.message.Response.Type.CLIENT_DISCONNECTED;
 import static ru.danilakondr.netalbum.api.message.Response.Type.SESSION_CLOSED;
 import ru.danilakondr.netalbum.client.LocalizedMessages;
 
@@ -156,5 +158,44 @@ public class Session {
     public void setPath(String path) {
         pcs.firePropertyChange("path", this.path, path);
         this.path = path;
+    }
+    
+    public boolean isConnected() {
+        return connected;
+    }
+    
+    public void addOnCloseListener(Consumer<Session> listener) {
+        service.subscribe(new Flow.Subscriber<Message>() {
+            private Flow.Subscription subscription;
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                this.subscription = subscription;
+                subscription.request(1);
+            }
+
+            @Override
+            public void onNext(Message item) {
+                switch (item.getType()) {
+                    case RESPONSE:
+                        Response resp = (Response)item;
+                        switch (resp.getAnswerType()) {
+                            case CLIENT_DISCONNECTED:
+                            case SESSION_CLOSED:
+                                listener.accept(Session.this);
+                                break;
+                        }
+                        break;
+                }
+                subscription.request(1);
+            }
+            
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
     }
 }

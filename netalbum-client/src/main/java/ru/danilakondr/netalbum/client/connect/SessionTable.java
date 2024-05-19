@@ -129,6 +129,7 @@ public class SessionTable implements TableModel {
     
     public void addSession(Session session) {
         sessionList.add(session);
+        session.addOnCloseListener(s -> SessionTable.this.removeSession(s));
         notifyAboutAdd(sessionList.size() - 1);
     }
     
