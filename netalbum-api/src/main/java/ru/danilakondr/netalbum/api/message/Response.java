@@ -63,7 +63,7 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
  * @see Response.Error
  * @see Change
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="type", visible = true)
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="answer", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(value=Response.DirectoryInfo.class, name="DIRECTORY_INFO"),
         @JsonSubTypes.Type(value=Response.Synchronizing.class, name="SYNCHRONIZING"),
@@ -74,8 +74,8 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
         @JsonSubTypes.Type(value=Response.Error.class, name="ERROR"),
         @JsonSubTypes.Type(value=Response.class, name="SESSION_EXITS"),
 })
-@JsonPropertyOrder({"type"})
-public class Response {
+@JsonPropertyOrder({"type","answer"})
+public class Response extends Message {
     public enum Type {
         SUCCESS, ERROR,
         SESSION_EXITS,
@@ -85,16 +85,15 @@ public class Response {
         SYNCHRONIZING, IMAGE_ADDED,
     }
     private static Response SUCCESS = null;
-    private Type type;
-    private final Map<String, Object> contents;
+    private Type answerType;
 
     public Response() {
-        this.contents = new HashMap<>();
+        super(Message.Type.RESPONSE);
     }
 
     public Response(Type type) {
-        this.type = type;
-        this.contents = new HashMap<>();
+        super(Message.Type.RESPONSE);
+        this.answerType = type;
     }
 
     public static Response success() {
@@ -104,7 +103,7 @@ public class Response {
         return SUCCESS;
     }
 
-    @JsonPropertyOrder({"type", "directoryName", "directorySize"})
+    @JsonPropertyOrder({"type", "answer", "directoryName", "directorySize"})
     public static class DirectoryInfo extends Response {
         private String directoryName;
         private long directorySize;
@@ -136,7 +135,7 @@ public class Response {
         }
     }
 
-    @JsonPropertyOrder({"type", "changes"})
+    @JsonPropertyOrder({"type", "answer", "changes"})
     public static class Synchronizing extends Response {
         private List<Change> changes;
 
@@ -158,7 +157,7 @@ public class Response {
         }
     }
 
-    @JsonPropertyOrder({"type", "thumbnailsZip"})
+    @JsonPropertyOrder({"type", "answer", "thumbnailsZip"})
     public static class ThumbnailsArchive extends Response {
         private byte[] thumbnailsZip;
 
@@ -180,7 +179,7 @@ public class Response {
         }
     }
 
-    @JsonPropertyOrder({"type", "sessionId"})
+    @JsonPropertyOrder({"type", "answer", "sessionId"})
     public static class SessionCreated extends Response {
         private String sessionId;
 
@@ -224,7 +223,7 @@ public class Response {
      * <h3>{@code EXCEPTION}</h3>
      * <p>Исключение. Содержит поле {@code message}.
      */
-    @JsonPropertyOrder({"type", "status"})
+    @JsonPropertyOrder({"type", "answer", "status"})
     public static class Error extends Response {
         private Status status;
 
@@ -258,27 +257,17 @@ public class Response {
         }
     }
 
-    @JsonGetter("type")
-    public Type getType() {
-        return type;
+    @JsonGetter("answer")
+    public Type getAnswerType() {
+        return answerType;
     }
 
-    @JsonSetter("type")
-    public void setType(Type type) {
-        this.type = type;
+    @JsonSetter("answer")
+    public void setAnswerType(Type type) {
+        this.answerType = type;
     }
 
-    @JsonAnyGetter
-    public Map<String, Object> getProperties() {
-        return contents;
-    }
-
-    @JsonAnySetter
-    public void setProperty(String prop, Object value) {
-        this.contents.put(prop, value);
-    }
-
-    @JsonPropertyOrder({"type", "image"})
+    @JsonPropertyOrder({"type", "answer", "image"})
     public static class ImageAdded extends Response {
         private ImageInfo image;
 

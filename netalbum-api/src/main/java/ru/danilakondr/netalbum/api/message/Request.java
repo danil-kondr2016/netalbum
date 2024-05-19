@@ -66,17 +66,16 @@ import java.util.Map;
         @JsonSubTypes.Type(value=Request.class, name="GET_DIRECTORY_INFO"),
         @JsonSubTypes.Type(value=Request.class, name="DOWNLOAD_THUMBNAILS")
 })
-@JsonPropertyOrder({"method"})
-public class Request {
-    private Type method;
-    private final Map<String, Object> contents;
+@JsonPropertyOrder({"type", "method"})
+public class Request extends Message {
+    private Method method;
 
-    @JsonPropertyOrder({"method","directoryName"})
+    @JsonPropertyOrder({"type","method","directoryName"})
     public static class InitSession extends Request {
         private String directoryName;
 
         public InitSession() {
-            super(Type.INIT_SESSION);
+            super(Method.INIT_SESSION);
         }
 
         public String getDirectoryName() {
@@ -88,12 +87,12 @@ public class Request {
         }
     }
 
-    @JsonPropertyOrder({"method","sessionId"})
+    @JsonPropertyOrder({"type","method","sessionId"})
     public static class RestoreSession extends Request {
         private String sessionId;
 
         public RestoreSession() {
-            super(Type.RESTORE_SESSION);
+            super(Method.RESTORE_SESSION);
         }
 
         public String getSessionId() {
@@ -105,12 +104,12 @@ public class Request {
         }
     }
 
-    @JsonPropertyOrder({"method","sessionId"})
+    @JsonPropertyOrder({"type","method","sessionId"})
     public static class ConnectToSession extends Request {
         private String sessionId;
 
         public ConnectToSession() {
-            super(Type.CONNECT_TO_SESSION);
+            super(Method.CONNECT_TO_SESSION);
         }
 
         public String getSessionId() {
@@ -122,12 +121,12 @@ public class Request {
         }
     }
 
-    @JsonPropertyOrder({"method","changes"})
+    @JsonPropertyOrder({"type","method","changes"})
     public static class Synchronize extends Request {
         private List<Change> changes;
 
         public Synchronize() {
-            super(Type.SYNCHRONIZE);
+            super(Method.SYNCHRONIZE);
         }
 
         public List<Change> getChanges() {
@@ -139,12 +138,12 @@ public class Request {
         }
     }
 
-    @JsonPropertyOrder({"method","image"})
+    @JsonPropertyOrder({"type","method","image"})
     public static class AddImage extends Request {
         private ImageData image;
 
         public AddImage() {
-            super(Type.ADD_IMAGE);
+            super(Method.ADD_IMAGE);
         }
 
         @JsonSetter("image")
@@ -159,33 +158,23 @@ public class Request {
     }
 
     public Request() {
-        this.contents = new HashMap<>();
+        super(Message.Type.REQUEST);
     }
 
-    public Request(Type method) {
+    public Request(Method method) {
+        super(Message.Type.REQUEST);
         this.method = method;
-        this.contents = new HashMap<>();
     }
 
-    public Type getMethod() {
+    public Method getMethod() {
         return method;
     }
 
-    public void setMethod(Type method) {
+    public void setMethod(Method method) {
         this.method = method;
     }
 
-    @JsonAnyGetter
-    public Map<String, Object> getProperties() {
-        return contents;
-    }
-
-    @JsonAnySetter
-    public void setProperty(String prop, Object value) {
-        this.contents.put(prop, value);
-    }
-
-    public enum Type {
+    public enum Method {
           INIT_SESSION
         , RESTORE_SESSION
         , CONNECT_TO_SESSION
