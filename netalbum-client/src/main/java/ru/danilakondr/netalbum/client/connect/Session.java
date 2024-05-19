@@ -89,6 +89,7 @@ public class Session {
     }
     
     public void init(URI uri, String directoryName) {
+        setUrl(uri.toString());
         service.connectTo(uri);
         
         Request.InitSession req = new Request.InitSession();
@@ -97,6 +98,7 @@ public class Session {
     }
     
     public void restore(URI uri, String sessionId) {
+        setUrl(uri.toString());
         service.connectTo(uri);
         
         Request.RestoreSession req = new Request.RestoreSession();
@@ -105,6 +107,7 @@ public class Session {
     }
     
     public void connect(URI uri, String sessionId) {
+        setUrl(uri.toString());
         service.connectTo(uri);
         
         Request.ConnectToSession req = new Request.ConnectToSession();
@@ -126,6 +129,7 @@ public class Session {
         if (!directory.isDirectory())
             throw new IllegalArgumentException(LocalizedMessages.notADirectoryError(directory));
         
+        setPath(directory.getAbsolutePath());
         ImageLoader loader = new ImageLoader(service, directory);
         loader.execute();
     }
