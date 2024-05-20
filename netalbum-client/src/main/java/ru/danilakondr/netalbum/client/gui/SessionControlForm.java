@@ -5,20 +5,17 @@
 package ru.danilakondr.netalbum.client.gui;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.List;
 import javax.swing.JFileChooser;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.plaf.basic.BasicListUI;
-import ru.danilakondr.netalbum.client.Configuration;
+import javax.swing.JOptionPane;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
+import ru.danilakondr.netalbum.client.NetAlbumPreferences;
+import ru.danilakondr.netalbum.client.SessionInfo;
 
 /**
  *
@@ -26,7 +23,7 @@ import ru.danilakondr.netalbum.api.message.Response;
  */
 public class SessionControlForm extends javax.swing.JFrame {
     private final SessionTable sessionTable = new SessionTable();
-    private Configuration cfg;
+    private NetAlbumPreferences cfg;
     
     /**
      * Creates new form SessionControlForm
@@ -35,7 +32,7 @@ public class SessionControlForm extends javax.swing.JFrame {
         initComponents();
     }
     
-    public void setConfiguration(Configuration cfg) {
+    public void setConfiguration(NetAlbumPreferences cfg) {
         this.cfg = cfg;
     }
 
@@ -57,6 +54,11 @@ public class SessionControlForm extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         jToolBar1.setRollover(true);
 
@@ -143,59 +145,27 @@ public class SessionControlForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnCloseSessionsActionPerformed
 
-    private static final String NETALBUM_CONF_FALLBACK =
-            System.getProperty("user.home")
-                    + File.separator
-                    + "/netalbum.ini";
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        if (cfg.hasInitiatedSessions()) {
+            int x = JOptionPane.showConfirmDialog(null, 
+                    "Имеются незавершённые сессии. Восстановить их?", 
+                    "Восстановление сессий", 
+                    YES_NO_OPTION, 
+                    ERROR_MESSAGE);
 
-    private static File getNetalbumIni() {
-        // 1. Проверка системного свойства "netalbum.ini"
-        String ini = System.getProperty("netalbum.ini", NETALBUM_CONF_FALLBACK);
-        return new File(ini);
-    }
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
+            if (x == JOptionPane.YES_OPTION) {
+                List<SessionInfo> sessions = cfg.getInitiatedSessions();
+                for (SessionInfo sessionInfo : sessions) {
+                    Session session = new Session();
+                    session.addOnConnectedListener(s -> sessionTable.addSession(s));
+                    session.addOnCloseListener(s -> sessionTable.removeSession(s));
+                    sessionInfo.setPath(sessionInfo.getPath());
+                    session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SessionControlForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SessionControlForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SessionControlForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SessionControlForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    SessionControlForm form = new SessionControlForm();
-                    Configuration cfg = new Configuration(getNetalbumIni());
-                    form.setConfiguration(cfg);
-                    form.setVisible(true);
-                } catch (IOException ex) {
-                    Logger.getLogger(SessionControlForm.class.getName()).log(Level.SEVERE, null, ex);
-                    ex.printStackTrace(System.err);
-                }
-            }
-        });
-    }
+        
+    }//GEN-LAST:event_formWindowOpened
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseSessions;
