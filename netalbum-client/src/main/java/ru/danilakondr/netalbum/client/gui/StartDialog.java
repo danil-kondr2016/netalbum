@@ -4,12 +4,9 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
-import java.io.File;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import ru.danilakondr.netalbum.client.ClientApp;
 import ru.danilakondr.netalbum.client.LocalizedMessages;
-import ru.danilakondr.netalbum.client.SessionIdValidator;
 
 /**
  *
@@ -17,9 +14,6 @@ import ru.danilakondr.netalbum.client.SessionIdValidator;
  */
 public class StartDialog extends javax.swing.JDialog {
     private ClientApp.SessionType sessionType;
-    private String sessionId;
-    private String urlString;
-    private String directoryPath;
     /**
      * Creates new form StartDialog
      */
@@ -39,15 +33,8 @@ public class StartDialog extends javax.swing.JDialog {
 
         btngrpSessionVariant = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        tfServerUri = new javax.swing.JTextField();
         rbInitiateSession = new javax.swing.JRadioButton();
-        jLabel2 = new javax.swing.JLabel();
-        tfFolderPath = new javax.swing.JTextField();
-        btnSelectFolder = new javax.swing.JButton();
         rbConnectToSession = new javax.swing.JRadioButton();
-        jLabel3 = new javax.swing.JLabel();
-        tfSessionKey = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         btnOk = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
@@ -58,26 +45,13 @@ public class StartDialog extends javax.swing.JDialog {
         jPanel1.setToolTipText("");
         jPanel1.setName(""); // NOI18N
 
-        jLabel1.setText("Адрес сервера");
-
         btngrpSessionVariant.add(rbInitiateSession);
         rbInitiateSession.setSelected(true);
         rbInitiateSession.setText("Инициировать сессию");
 
-        jLabel2.setText("Путь к папке");
-
-        btnSelectFolder.setText("Выбрать папку");
-        btnSelectFolder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSelectFolderActionPerformed(evt);
-            }
-        });
-
-        rbConnectToSession.setText("Подключиться к сессии");
-
-        jLabel3.setText("Ключ сессии");
-
-        tfSessionKey.setText("jTextField1");
+        btngrpSessionVariant.add(rbConnectToSession);
+        rbConnectToSession.setText("Смотреть подключённые папки");
+        rbConnectToSession.setToolTipText("");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -86,45 +60,18 @@ public class StartDialog extends javax.swing.JDialog {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(rbConnectToSession, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(rbInitiateSession, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfServerUri))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfFolderPath, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSelectFolder, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tfSessionKey)))
+                    .addComponent(rbConnectToSession, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                    .addComponent(rbInitiateSession, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(tfServerUri)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(rbInitiateSession)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(tfFolderPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSelectFolder))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(rbConnectToSession)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(tfSessionKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         btnOk.setText("ОК");
@@ -186,17 +133,6 @@ public class StartDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnSelectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectFolderActionPerformed
-        JFileChooser dirChooser = new JFileChooser();
-        dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        
-        int result = dirChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File f = dirChooser.getSelectedFile();
-            tfFolderPath.setText(f.getAbsolutePath());
-        }
-    }//GEN-LAST:event_btnSelectFolderActionPerformed
-
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
         boolean initiateSessionState = rbInitiateSession.isSelected();
         boolean connectToSessionState = rbConnectToSession.isSelected();
@@ -208,24 +144,9 @@ public class StartDialog extends javax.swing.JDialog {
             dispose();
             return;
         } else if (initiateSessionState) {
-            JOptionPane.showMessageDialog(null,
-                    "Вы выбрали инициирование сессии.");
             this.sessionType = ClientApp.SessionType.INIT_SESSION;
-            this.urlString = this.tfServerUri.getText();
-            this.directoryPath = this.tfFolderPath.getText();
         } else if (connectToSessionState) {
-            JOptionPane.showMessageDialog(null,
-                    "Вы выбрали подключение к существующей сессии."
-            );
-            String sessionId = tfSessionKey.getText();
-            if (!SessionIdValidator.isSessionIdValid(sessionId)) {
-                JOptionPane.showMessageDialog(null,
-                        LocalizedMessages.invalidSessionKey(sessionId),
-                        LocalizedMessages.error(), JOptionPane.ERROR_MESSAGE);
-            }
-
             this.sessionType = ClientApp.SessionType.CONNECT_TO_SESSION;
-            this.sessionId = sessionId;
         }
 
         dispose();
@@ -235,41 +156,17 @@ public class StartDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
-    public String getSessionId() {
-        return sessionId;
-    }
-
     public ClientApp.SessionType getSessionType() {
         return sessionType;
-    }
-
-    public String getDirectoryPath() {
-        return directoryPath;
-    }
-
-    public String getServerAddress() {
-        return urlString;
-    }
-    
-    public void setServerAddress(String address) {
-        this.urlString = address;
-        this.tfServerUri.setText(address);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
-    private javax.swing.JButton btnSelectFolder;
     private javax.swing.ButtonGroup btngrpSessionVariant;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton rbConnectToSession;
     private javax.swing.JRadioButton rbInitiateSession;
-    private javax.swing.JTextField tfFolderPath;
-    private javax.swing.JTextField tfServerUri;
-    private javax.swing.JTextField tfSessionKey;
     // End of variables declaration//GEN-END:variables
 }

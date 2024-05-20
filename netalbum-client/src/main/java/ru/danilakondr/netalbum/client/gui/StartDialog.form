@@ -67,25 +67,8 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="rbConnectToSession" max="32767" attributes="0"/>
+                      <Component id="rbConnectToSession" pref="352" max="32767" attributes="0"/>
                       <Component id="rbInitiateSession" max="32767" attributes="0"/>
-                      <Group type="102" attributes="0">
-                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="tfServerUri" max="32767" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jLabel2" min="-2" pref="76" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="tfFolderPath" min="-2" pref="289" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="btnSelectFolder" pref="118" max="32767" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jLabel3" min="-2" pref="76" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="tfSessionKey" max="32767" attributes="0"/>
-                      </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -94,39 +77,16 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="tfServerUri" max="32767" attributes="0"/>
-                      <Component id="jLabel1" max="32767" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
                   <Component id="rbInitiateSession" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="tfFolderPath" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnSelectFolder" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="rbConnectToSession" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="tfSessionKey" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JLabel" name="jLabel1">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="&#x410;&#x434;&#x440;&#x435;&#x441; &#x441;&#x435;&#x440;&#x432;&#x435;&#x440;&#x430;"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="tfServerUri">
-        </Component>
         <Component class="javax.swing.JRadioButton" name="rbInitiateSession">
           <Properties>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
@@ -136,34 +96,13 @@
             <Property name="text" type="java.lang.String" value="&#x418;&#x43d;&#x438;&#x446;&#x438;&#x438;&#x440;&#x43e;&#x432;&#x430;&#x442;&#x44c; &#x441;&#x435;&#x441;&#x441;&#x438;&#x44e;"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel2">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="&#x41f;&#x443;&#x442;&#x44c; &#x43a; &#x43f;&#x430;&#x43f;&#x43a;&#x435;"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="tfFolderPath">
-        </Component>
-        <Component class="javax.swing.JButton" name="btnSelectFolder">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="&#x412;&#x44b;&#x431;&#x440;&#x430;&#x442;&#x44c; &#x43f;&#x430;&#x43f;&#x43a;&#x443;"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSelectFolderActionPerformed"/>
-          </Events>
-        </Component>
         <Component class="javax.swing.JRadioButton" name="rbConnectToSession">
           <Properties>
-            <Property name="text" type="java.lang.String" value="&#x41f;&#x43e;&#x434;&#x43a;&#x43b;&#x44e;&#x447;&#x438;&#x442;&#x44c;&#x441;&#x44f; &#x43a; &#x441;&#x435;&#x441;&#x441;&#x438;&#x438;"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JLabel" name="jLabel3">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="&#x41a;&#x43b;&#x44e;&#x447; &#x441;&#x435;&#x441;&#x441;&#x438;&#x438;"/>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JTextField" name="tfSessionKey">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="jTextField1"/>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="btngrpSessionVariant"/>
+            </Property>
+            <Property name="text" type="java.lang.String" value="&#x421;&#x43c;&#x43e;&#x442;&#x440;&#x435;&#x442;&#x44c; &#x43f;&#x43e;&#x434;&#x43a;&#x43b;&#x44e;&#x447;&#x451;&#x43d;&#x43d;&#x44b;&#x435; &#x43f;&#x430;&#x43f;&#x43a;&#x438;"/>
+            <Property name="toolTipText" type="java.lang.String" value=""/>
           </Properties>
         </Component>
       </SubComponents>
