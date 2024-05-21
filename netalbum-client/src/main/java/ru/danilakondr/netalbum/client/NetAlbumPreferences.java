@@ -29,7 +29,7 @@ public class NetAlbumPreferences {
     public NetAlbumPreferences() { 
         prefs = Preferences.userNodeForPackage(NetAlbumPreferences.class);
         thumbnails = prefs.node("thumbnails");
-        initiatedSessions = prefs.node("initiatedSessions");
+        initiatedSessions = prefs.node("initiated_sessions");
         server = prefs.node("server");
     }
     
@@ -86,8 +86,7 @@ public class NetAlbumPreferences {
         initiatedSessions.node(urlHash).putInt("count", n);
         
         n = initiatedSessions.getInt("count", 0);
-        if (n > 0)
-            initiatedSessions.putInt("count", n + 1);
+        initiatedSessions.putInt("count", n + 1);
         
         sync(initiatedSessions);
     }
@@ -98,9 +97,8 @@ public class NetAlbumPreferences {
         
         int n = initiatedSessions.node(urlHash).getInt("count", 0);
         n--;
-        if (n > 0)
-            initiatedSessions.node(urlHash).putInt("count", n);
-        else {
+        initiatedSessions.node(urlHash).putInt("count", n > 0 ? n : 0);
+        if (n == 0) {
             try {
                 initiatedSessions.node(urlHash).removeNode();
             } catch (BackingStoreException ex) {
@@ -110,8 +108,8 @@ public class NetAlbumPreferences {
         }
         
         n = initiatedSessions.getInt("count", 0);
-        if (n > 0)
-            initiatedSessions.putInt("count", n - 1);
+        n--;
+        initiatedSessions.putInt("count", n > 0 ? n : 0);
         
         sync(initiatedSessions);
     }
@@ -124,10 +122,14 @@ public class NetAlbumPreferences {
             for (String server: servers) {
                 String[] sessions = initiatedSessions.node(server).keys();
                 for (String session: sessions) {
+                    if ("count".equals(session))
+                        continue;
+                    
                     SessionInfo info = new SessionInfo();
                     info.setUrl(initiatedSessions.node("servers").get(server, ""));
                     info.setSessionId(session);
                     info.setPath(initiatedSessions.node(server).get(session, ""));
+                    lstSessions.add(info);
                 }
             }
             
