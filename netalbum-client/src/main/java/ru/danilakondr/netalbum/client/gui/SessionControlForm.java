@@ -52,13 +52,15 @@ public class SessionControlForm extends javax.swing.JFrame {
         jTable1 = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                formWindowOpened(evt);
-            }
-        });
 
         jToolBar1.setRollover(true);
 
@@ -88,6 +90,30 @@ public class SessionControlForm extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTable1);
 
         jMenu1.setText("Файл");
+
+        jMenuItem1.setText("Создать сессию");
+        jMenu1.add(jMenuItem1);
+
+        jMenuItem2.setText("Открыть сессию");
+        jMenu1.add(jMenuItem2);
+        jMenu1.add(jSeparator1);
+
+        jMenuItem3.setText("Настройки");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
+        jMenu1.add(jSeparator2);
+
+        jMenuItem4.setText("Закрыть все сессии");
+        jMenu1.add(jMenuItem4);
+
+        jMenuItem5.setText("Выход");
+        jMenuItem5.setToolTipText("");
+        jMenu1.add(jMenuItem5);
+
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
@@ -145,34 +171,36 @@ public class SessionControlForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnCloseSessionsActionPerformed
 
-    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        if (cfg.hasInitiatedSessions()) {
-            int x = JOptionPane.showConfirmDialog(null, 
-                    "Имеются незавершённые сессии. Восстановить их?", 
-                    "Восстановление сессий", 
-                    YES_NO_OPTION, 
-                    ERROR_MESSAGE);
-
-            if (x == JOptionPane.YES_OPTION) {
-                List<SessionInfo> sessions = cfg.getInitiatedSessions();
-                for (SessionInfo sessionInfo : sessions) {
-                    Session session = new Session();
-                    session.addOnConnectedListener(s -> sessionTable.addSession(s));
-                    session.addOnCloseListener(s -> sessionTable.removeSession(s));
-                    sessionInfo.setPath(sessionInfo.getPath());
-                    session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
-                }
-            }
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        ConfigDialog dlg = new ConfigDialog(this, true, cfg);
+        dlg.setVisible(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    
+    public void restoreSessions() {
+        List<SessionInfo> sessions = cfg.getInitiatedSessions();
+        for (SessionInfo sessionInfo : sessions) {
+            Session session = new Session();
+            session.addOnResponseListener(Response.Type.SESSION_RESTORED, s -> sessionTable.addSession(s));
+            session.addOnCloseListener(s -> sessionTable.removeSession(s));
+            session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
+            session.setPath(sessionInfo.getPath());
+            session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
         }
-        
-    }//GEN-LAST:event_formWindowOpened
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseSessions;
     private javax.swing.JButton btnInitSession;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JTable jTable1;
     private javax.swing.JToolBar jToolBar1;
     // End of variables declaration//GEN-END:variables
