@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.io.IOException;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static javax.swing.JOptionPane.YES_NO_OPTION;
 import ru.danilakondr.netalbum.client.gui.SessionControlForm;
 
 public class ClientApp {
@@ -48,6 +49,18 @@ public class ClientApp {
             SessionControlForm form = new SessionControlForm();
             form.setConfiguration(cfg);
             form.setVisible(true);
+            
+            if (cfg.hasInitiatedSessions()) {
+                int x = JOptionPane.showConfirmDialog(null, 
+                        "Имеются незавершённые сессии. Восстановить их?", 
+                        "Восстановление сессий", 
+                        YES_NO_OPTION, 
+                        ERROR_MESSAGE);
+
+                if (x == JOptionPane.YES_OPTION) {
+                    form.restoreSessions();
+                }
+            }
         });
     }
 

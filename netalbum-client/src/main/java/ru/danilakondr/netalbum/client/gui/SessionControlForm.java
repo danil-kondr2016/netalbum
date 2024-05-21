@@ -155,8 +155,15 @@ public class SessionControlForm extends javax.swing.JFrame {
         
         Session session = new Session();
         session.addOnConnectedListener(s -> sessionTable.addSession(s));
+        session.addOnConnectedListener(s -> cfg.addInitiatedSession(
+                serverAddress, 
+                s.getSessionId(), 
+                directory.getAbsolutePath()));
         session.addOnCloseListener(s -> sessionTable.removeSession(s));
-        session.addOnResponseListener(Response.Type.SESSION_CREATED, (s) -> s.loadImages(directory), true);
+        session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
+        session.addOnResponseListener(Response.Type.SESSION_CREATED, (s) -> {
+            s.loadImages(directory);
+        }, true);
         session.init(serverUri, directory.getName());
     }//GEN-LAST:event_btnInitSessionActionPerformed
 
