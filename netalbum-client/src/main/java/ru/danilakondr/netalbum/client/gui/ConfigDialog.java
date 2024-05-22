@@ -50,7 +50,7 @@ public class ConfigDialog extends javax.swing.JDialog {
         setTitle("Параметры");
         setModal(true);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Параметры сервера"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.serverProperties"), new Object[] {}))); // NOI18N
 
         jLabel1.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.serverAddress"), new Object[] {})); // NOI18N
 
@@ -75,7 +75,7 @@ public class ConfigDialog extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Параметры уменьшенных картинок"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.thumbnailProperties"), new Object[] {}))); // NOI18N
 
         jLabel2.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.width"), new Object[] {})); // NOI18N
 
@@ -129,21 +129,21 @@ public class ConfigDialog extends javax.swing.JDialog {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        btnApply.setText("Применить");
+        btnApply.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("button.Apply"), new Object[] {})); // NOI18N
         btnApply.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnApplyActionPerformed(evt);
             }
         });
 
-        btnCancel.setText("Отмена");
+        btnCancel.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("button.Cancel"), new Object[] {})); // NOI18N
         btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCancelActionPerformed(evt);
             }
         });
 
-        btnOK.setText("OK");
+        btnOK.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("button.OK"), new Object[] {})); // NOI18N
         btnOK.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnOKActionPerformed(evt);
