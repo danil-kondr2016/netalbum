@@ -51,14 +51,14 @@ public class SessionControlForm extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
+        fileMenu = new javax.swing.JMenu();
+        miInitSession = new javax.swing.JMenuItem();
+        miOpenSession = new javax.swing.JMenuItem();
+        javax.swing.JPopupMenu.Separator jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        miPreferences = new javax.swing.JMenuItem();
+        javax.swing.JPopupMenu.Separator jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        miCloseAllSessions = new javax.swing.JMenuItem();
+        miExit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -89,32 +89,42 @@ public class SessionControlForm extends javax.swing.JFrame {
         jTable1.setModel(sessionTable);
         jScrollPane1.setViewportView(jTable1);
 
-        jMenu1.setText("Файл");
+        fileMenu.setText("Файл");
 
-        jMenuItem1.setText("Создать сессию");
-        jMenu1.add(jMenuItem1);
-
-        jMenuItem2.setText("Открыть сессию");
-        jMenu1.add(jMenuItem2);
-        jMenu1.add(jSeparator1);
-
-        jMenuItem3.setText("Настройки");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        miInitSession.setText("Создать сессию");
+        miInitSession.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
+                miInitSessionActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem3);
-        jMenu1.add(jSeparator2);
+        fileMenu.add(miInitSession);
 
-        jMenuItem4.setText("Закрыть все сессии");
-        jMenu1.add(jMenuItem4);
+        miOpenSession.setText("Открыть сессию");
+        fileMenu.add(miOpenSession);
+        fileMenu.add(jSeparator1);
 
-        jMenuItem5.setText("Выход");
-        jMenuItem5.setToolTipText("");
-        jMenu1.add(jMenuItem5);
+        miPreferences.setText("Настройки");
+        miPreferences.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miPreferencesActionPerformed(evt);
+            }
+        });
+        fileMenu.add(miPreferences);
+        fileMenu.add(jSeparator2);
 
-        jMenuBar1.add(jMenu1);
+        miCloseAllSessions.setText("Закрыть все сессии");
+        miCloseAllSessions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCloseAllSessionsActionPerformed(evt);
+            }
+        });
+        fileMenu.add(miCloseAllSessions);
+
+        miExit.setText("Выход");
+        miExit.setToolTipText("");
+        fileMenu.add(miExit);
+
+        jMenuBar1.add(fileMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -140,7 +150,7 @@ public class SessionControlForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnInitSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitSessionActionPerformed
+    private File selectFolder() {
         JFileChooser dirChooser = new JFileChooser();
         dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         
@@ -148,8 +158,13 @@ public class SessionControlForm extends javax.swing.JFrame {
         File directory;
         if (result == JFileChooser.APPROVE_OPTION) {
             directory = dirChooser.getSelectedFile();
-        } else return;
-        
+            return directory;
+        } else {
+            return null;
+        }
+    }
+    
+    private void initSession(File directory) {
         String serverAddress = cfg.getServerAddress();
         URI serverUri = URI.create(serverAddress);
         
@@ -165,6 +180,14 @@ public class SessionControlForm extends javax.swing.JFrame {
             s.loadImages(directory);
         }, true);
         session.init(serverUri, directory.getName());
+    }
+    
+    private void btnInitSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInitSessionActionPerformed
+        File directory = selectFolder();
+        if (directory == null)
+            return;
+        
+        initSession(directory);
     }//GEN-LAST:event_btnInitSessionActionPerformed
 
     private void btnCloseSessionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseSessionsActionPerformed
@@ -178,10 +201,33 @@ public class SessionControlForm extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnCloseSessionsActionPerformed
 
-    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    private void miPreferencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miPreferencesActionPerformed
         ConfigDialog dlg = new ConfigDialog(this, true, cfg);
         dlg.setVisible(true);
-    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    }//GEN-LAST:event_miPreferencesActionPerformed
+
+    private void miInitSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miInitSessionActionPerformed
+        File directory = selectFolder();
+        if (directory == null)
+            return;
+        
+        initSession(directory);
+    }//GEN-LAST:event_miInitSessionActionPerformed
+
+    private void miCloseAllSessionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCloseAllSessionsActionPerformed
+        int x = JOptionPane.showConfirmDialog(this, 
+                "Вы действительно хотите закрыть все сессии?", 
+                "Внимание",
+                YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        
+        if (x == JOptionPane.NO_OPTION)
+            return;
+        
+        for (int i = 0; i < sessionTable.getRowCount(); i++) {
+            Session s = sessionTable.getSessionAt(i);
+            s.close();
+        }
+    }//GEN-LAST:event_miCloseAllSessionsActionPerformed
     
     public void restoreSessions() {
         List<SessionInfo> sessions = cfg.getInitiatedSessions();
@@ -198,17 +244,15 @@ public class SessionControlForm extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCloseSessions;
     private javax.swing.JButton btnInitSession;
-    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JTable jTable1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JMenuItem miCloseAllSessions;
+    private javax.swing.JMenuItem miExit;
+    private javax.swing.JMenuItem miInitSession;
+    private javax.swing.JMenuItem miOpenSession;
+    private javax.swing.JMenuItem miPreferences;
     // End of variables declaration//GEN-END:variables
 }
