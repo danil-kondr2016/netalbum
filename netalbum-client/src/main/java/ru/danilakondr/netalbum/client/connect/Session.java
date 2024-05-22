@@ -8,6 +8,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.util.Objects;
+import java.util.ResourceBundle;
 import java.util.concurrent.Flow;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -21,6 +22,22 @@ import ru.danilakondr.netalbum.client.LocalizedMessages;
  * @author danko
  */
 public class Session {
+    public enum Type {
+        INIT_SESSION("session.InitSession"),
+        CONNECT_TO_SESSION("session.ConnectToSession"),
+        ;
+        
+        private final String strId;
+        
+        private Type(String id) {
+            this.strId = id;
+        }
+        
+        public String getLocalizedName() {
+            return ResourceBundle.getBundle("ru/danilakondr/netalbum/client/connect/Strings").getString(strId);
+        }
+    }
+    
     private final NetAlbumService service;
     private final PropertyChangeSupport pcs;
     private boolean connected = false;
@@ -69,18 +86,22 @@ public class Session {
                         connected = true;
                         Response.SessionCreated sc = (Response.SessionCreated)resp;
                         setSessionId(sc.getSessionId());
+                        setSessionType(Type.INIT_SESSION);
                         break;
                     case SESSION_RESTORED:
                         connected = true;
                         setSessionId(Objects.toString(resp.getProperty("sessionId")));
+                        setSessionType(Type.INIT_SESSION);
                         break;
                     case VIEWER_CONNECTED:
                         connected = true;
                         setSessionId(Objects.toString(resp.getProperty("sessionId")));
+                        setSessionType(Type.CONNECT_TO_SESSION);
                         break;
                     case CLIENT_DISCONNECTED:
                     case SESSION_CLOSED:
                         connected = false;
+                        setSessionType(null);
                         break;
                 }
             }
@@ -134,6 +155,7 @@ public class Session {
     }
     
     private String url, sessionId, path;
+    private Type type;
     
     public String getUrl() {
         return url;
@@ -145,6 +167,10 @@ public class Session {
     
     public String getPath() {
         return path;
+    }
+    
+    public Type getSessionType() {
+        return type;
     }
     
     public void setUrl(String url) {
@@ -160,6 +186,10 @@ public class Session {
     public void setPath(String path) {
         pcs.firePropertyChange("path", this.path, path);
         this.path = path;
+    }
+    
+    public void setSessionType(Type type) {
+        this.type = type;
     }
     
     public boolean isConnected() {

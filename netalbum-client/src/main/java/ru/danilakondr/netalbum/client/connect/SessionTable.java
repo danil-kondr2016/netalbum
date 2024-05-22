@@ -6,6 +6,7 @@ package ru.danilakondr.netalbum.client.connect;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -14,8 +15,12 @@ import javax.swing.table.AbstractTableModel;
  */
 public class SessionTable extends AbstractTableModel {
     private final List<Session> sessionList;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("ru/danilakondr/netalbum/client/connect/Strings");
     private static final String[] COLUMN_NAMES = new String[]{
-        "URL-адрес сервера", "Ключ сессии", "Путь к папке с фотографиями"
+        bundle.getString("sessionTable.URL"),
+        bundle.getString("sessionTable.sessionKey"),
+        bundle.getString("sessionTable.folderPath"),
+        bundle.getString("sessionTable.connectionType")
     };
     
     public SessionTable() {
@@ -30,7 +35,7 @@ public class SessionTable extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -57,6 +62,11 @@ public class SessionTable extends AbstractTableModel {
                 return sessionList.get(rowIndex).getSessionId();
             case 2:
                 return sessionList.get(rowIndex).getPath();
+            case 3:
+                Session.Type t = sessionList.get(rowIndex).getSessionType();
+                if (t == null)
+                    return "";
+                return t.getLocalizedName();
             default:
                 throw new ArrayIndexOutOfBoundsException();
         }
