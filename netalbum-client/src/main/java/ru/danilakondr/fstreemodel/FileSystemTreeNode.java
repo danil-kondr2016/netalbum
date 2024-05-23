@@ -48,6 +48,7 @@ public abstract class FileSystemTreeNode {
 
     public abstract boolean isFile();
 
+    @Override
     public int hashCode() {
         return location.hashCode();
     }
@@ -60,6 +61,7 @@ public abstract class FileSystemTreeNode {
      * @return <code>true</code> if the two nodes represent the same
      *         file system location, <code>false</code> otherwise.
      */
+    @Override
     public boolean equals(Object obj) {
         if (null == obj || !(obj instanceof FileSystemTreeNode)) {
             return false;
@@ -69,6 +71,7 @@ public abstract class FileSystemTreeNode {
         return location.equals(other.location);
     }
 
+    @Override
     public String toString() {
         return location.getName();
     }
@@ -96,15 +99,18 @@ public abstract class FileSystemTreeNode {
             super(location);
         }
 
+        @Override
         public boolean isFile() {
             return false;
         }
 
+        @Override
         public FileSystemTreeNode getChildAt(int index) {
             loadChildren();
             return FileSystemTreeNode.create(children[index]);
         }
 
+        @Override
         public int getChildCount() {
             loadChildren();
             return children.length;
@@ -123,14 +129,17 @@ public abstract class FileSystemTreeNode {
             super(location);
         }
 
+        @Override
         public boolean isFile() {
             return true;
         }
 
+        @Override
         public FileSystemTreeNode getChildAt(int index) {
             throw new NotAFolderException(location);
         }
 
+        @Override
         public int getChildCount() {
             throw new NotAFolderException(location);
         }

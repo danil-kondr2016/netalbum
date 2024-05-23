@@ -13,6 +13,7 @@ import java.util.Comparator;
 public class FileComparator implements Comparator {
     public static final Comparator INSTANCE = new FileComparator();
 
+    @Override
     public int compare(Object o1, Object o2) {
         if (null == o1 && null == o2) {
             return 0;

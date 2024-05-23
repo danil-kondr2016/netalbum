@@ -34,8 +34,9 @@ public class NotAFolderException extends RuntimeException {
         return offendingFile;
     }
 
+    @Override
     public String getMessage() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         if (null != super.getMessage()) {
             buffer.append(super.getMessage());
             buffer.append(": ");

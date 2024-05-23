@@ -25,25 +25,30 @@ public class FileSystemTreeModel implements TreeModel {
      * @return The root {@link FileSystemTreeNode FileSystemTreeNode} of this
      * model.
      */
+    @Override
     public Object getRoot() {
         return root;
     }
 
+    @Override
     public int getChildCount(Object parent) {
         checkNodeType(parent);
         return ((FileSystemTreeNode) parent).getChildCount();
     }
 
+    @Override
     public boolean isLeaf(Object node) {
         checkNodeType(node);
         return ((FileSystemTreeNode) node).isFile();
     }
 
+    @Override
     public Object getChild(Object parent, int index) {
         checkNodeType(parent);
         return ((FileSystemTreeNode) parent).getChildAt(index);
     }
 
+    @Override
     public int getIndexOfChild(Object parent, Object child) {
         if (null == parent || null == child) {
             return -1;
@@ -69,6 +74,7 @@ public class FileSystemTreeModel implements TreeModel {
      * @param path
      * @param newValue
      */
+    @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
     }
 
@@ -77,6 +83,7 @@ public class FileSystemTreeModel implements TreeModel {
      *
      * @param l
      */
+    @Override
     public void addTreeModelListener(TreeModelListener l) {
     }
 
@@ -85,6 +92,7 @@ public class FileSystemTreeModel implements TreeModel {
      *
      * @param l
      */
+    @Override
     public void removeTreeModelListener(TreeModelListener l) {
     }
 
