@@ -35,7 +35,7 @@ public abstract class FileSystemTreeNode {
     /**
      * Returns the node at the specified index.
      * <p>The child {@link File File} instances are returned in order,
-     * according to {@link FileComparator FileComparator}.</p>
+     * according to {@link PathComparator PathComparator}.</p>
      *
      * @param index Must be <code>0 <= index <= {@link #getChildCount() getChildCount() - 1}</code>
      * @return A {@link FileSystemTreeNode FileSystemTreeNode} instance
@@ -120,7 +120,7 @@ public abstract class FileSystemTreeNode {
             if (null != children) return;
 
             children = location.listFiles();
-            Arrays.sort(children, FileComparator.INSTANCE);
+            Arrays.sort(children, PathComparator.INSTANCE);
         }
     }
 

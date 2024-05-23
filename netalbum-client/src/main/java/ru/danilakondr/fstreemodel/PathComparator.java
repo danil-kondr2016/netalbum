@@ -12,8 +12,8 @@ import java.nio.file.Path;
  * everything in {@link String#CASE_INSENSITIVE_ORDER CASE_INSENSITIVE_ORDER}.
  * </p>
  */
-public class FileComparator implements Comparator<Path> {
-    public static final Comparator INSTANCE = new FileComparator();
+public class PathComparator implements Comparator<Path> {
+    public static final Comparator INSTANCE = new PathComparator();
 
     @Override
     public int compare(Path p1, Path p2) {
