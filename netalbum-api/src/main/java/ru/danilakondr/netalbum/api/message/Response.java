@@ -43,8 +43,12 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
  * {@code sessionId}, в котором записан 40-символьный идентификатор сессии в
  * формате base16.
  * <h3> {@code DIRECTORY_INFO} </h3>
- * <p> Возвращается в ответ на запрос {@code GET_DIRECTORY_INFO}. Содержит поля
- * {@code directoryName} (имя папки) и {@code directorySize} (размер папки).
+ * <p> Возвращается в ответ на запрос {@code GET_DIRECTORY_INFO}. Содержит поля:
+ * <ul>
+ * <li>{@code directoryName} - название папки;
+ * <li>{@code directorySize} - размер папки;
+ * <lI>{@code imageCount} - количество изображений.
+ * </ul>
  * <h3> {@code THUMBNAILS_ARCHIVE} </h3>
  * <p> Возвращается в ответ на запрос {@code DOWNLOAD_THUMBNAILS}. Содержит поле
  * {@code thumbnailsZip}, содержащее zip-архив с уменьшенными картинками,
@@ -115,10 +119,11 @@ public class Response extends Message {
         return SUCCESS;
     }
 
-    @JsonPropertyOrder({"type", "answer", "directoryName", "directorySize"})
+    @JsonPropertyOrder({"type", "answer", "directoryName", "directorySize", "imageCount"})
     public static class DirectoryInfo extends Response {
         private String directoryName;
         private long directorySize;
+        private long imageCount;
 
         public DirectoryInfo() {
             super(Type.DIRECTORY_INFO);
@@ -128,6 +133,11 @@ public class Response extends Message {
             this();
             this.directoryName = directoryName;
             this.directorySize = directorySize;
+        }
+        
+        public DirectoryInfo(String directoryName, long directorySize, long imageCount) {
+            this(directoryName, directorySize);
+            this.imageCount = imageCount;
         }
 
         public String getDirectoryName() {
@@ -144,6 +154,14 @@ public class Response extends Message {
 
         public void setDirectorySize(long directorySize) {
             this.directorySize = directorySize;
+        }
+
+        public long getImageCount() {
+            return imageCount;
+        }
+
+        public void setImageCount(long imageCount) {
+            this.imageCount = imageCount;
         }
     }
 
