@@ -1,7 +1,5 @@
 package ru.danilakondr.netalbum.client;
 
-import ru.danilakondr.netalbum.client.gui.StartDialog;
-
 import javax.swing.*;
 
 import java.io.IOException;
@@ -18,18 +16,7 @@ public class ClientApp {
     }
 
     public void run() {     
-        StartDialog startDlg = new StartDialog(null, true);
-        startDlg.setVisible(true);
-        
-        switch (startDlg.getSessionType()) {
-            case INIT_SESSION:
-                sessionControl();
-                break;
-            case CONNECT_TO_SESSION:
-                break;
-            default:
-                System.exit(0);
-        }
+        sessionControl();
     }
 
     private static void guiDie(String message) {
