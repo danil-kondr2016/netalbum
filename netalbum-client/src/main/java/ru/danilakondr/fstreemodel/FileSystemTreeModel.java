@@ -3,7 +3,7 @@ package ru.danilakondr.fstreemodel;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
-import java.io.File;
+import java.nio.file.Path;
 
 /**
  * {@link TreeModel TreeModel} implementation that <strong>does not</strong>
@@ -14,7 +14,7 @@ import java.io.File;
 public class FileSystemTreeModel implements TreeModel {
     private final FileSystemTreeNode root;
 
-    public FileSystemTreeModel(File root) {
+    public FileSystemTreeModel(Path root) {
         this.root = FileSystemTreeNode.create(root);
     }
 

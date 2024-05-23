@@ -1,15 +1,19 @@
 package ru.danilakondr.fstreemodel;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  * A tree node that is based on the underlying file system.
  */
 public abstract class FileSystemTreeNode {
-    protected final File location;
+    protected final Path location;
 
-    private FileSystemTreeNode(File location) {
+    private FileSystemTreeNode(Path location) {
         this.location = location;
     }
 
@@ -18,12 +22,12 @@ public abstract class FileSystemTreeNode {
      *
      * @return The {#link File File} instance behind this node.
      */
-    public File getFile() {
+    public Path getPath() {
         return location;
     }
 
     /**
-     * Returns the number of child {@link File File} instances under this
+     * Returns the number of child {@link Path Path} instances under this
      * node.
      *
      * @return The number of child folders and files under this node.
@@ -34,7 +38,7 @@ public abstract class FileSystemTreeNode {
 
     /**
      * Returns the node at the specified index.
-     * <p>The child {@link File File} instances are returned in order,
+     * <p>The child {@link Path Path} instances are returned in order,
      * according to {@link PathComparator PathComparator}.</p>
      *
      * @param index Must be <code>0 <= index <= {@link #getChildCount() getChildCount() - 1}</code>
@@ -73,7 +77,7 @@ public abstract class FileSystemTreeNode {
 
     @Override
     public String toString() {
-        return location.getName();
+        return location.getFileName().toString();
     }
 
     /**
@@ -84,8 +88,8 @@ public abstract class FileSystemTreeNode {
      *                 attached.
      * @return A {@link FileSystemTreeNode FileSystemTreeNode} instance.
      */
-    public static FileSystemTreeNode create(File location) {
-        if (location.isDirectory()) {
+    public static FileSystemTreeNode create(Path location) {
+        if (Files.isDirectory(location)) {
             return new DirectoryTreeNode(location);
         } else {
             return new FileTreeNode(location);
@@ -93,9 +97,9 @@ public abstract class FileSystemTreeNode {
     }
 
     private static final class DirectoryTreeNode extends FileSystemTreeNode {
-        private File[] children;
+        private Path[] children;
 
-        public DirectoryTreeNode(File location) {
+        public DirectoryTreeNode(Path location) {
             super(location);
         }
 
@@ -119,13 +123,17 @@ public abstract class FileSystemTreeNode {
         private synchronized void loadChildren() {
             if (null != children) return;
 
-            children = location.listFiles();
-            Arrays.sort(children, PathComparator.INSTANCE);
+            try {
+                children = Files.walk(location).toArray(n -> new Path[n]);
+                Arrays.sort(children, PathComparator.INSTANCE);
+            } catch (IOException ex) {
+                children = new Path[0];
+            }
         }
     }
 
     private static final class FileTreeNode extends FileSystemTreeNode {
-        public FileTreeNode(File location) {
+        public FileTreeNode(Path location) {
             super(location);
         }
 

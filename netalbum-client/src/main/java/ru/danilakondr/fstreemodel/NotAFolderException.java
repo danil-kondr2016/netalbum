@@ -1,36 +1,37 @@
 package ru.danilakondr.fstreemodel;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Thrown when an operation that should be executed on folders is attempted
  * on a file {@link FileSystemTreeNode FileSystemTreeNode}.
  */
 public class NotAFolderException extends RuntimeException {
-    private final File offendingFile;
+    private final Path offendingFile;
 
-    public NotAFolderException(File offendingFile) {
+    public NotAFolderException(Path offendingFile) {
         this.offendingFile = offendingFile;
     }
 
-    public NotAFolderException(String message, File offendingFile) {
+    public NotAFolderException(String message, Path offendingFile) {
         super(message);
         this.offendingFile = offendingFile;
     }
 
-    public NotAFolderException(Throwable cause, File offendingFile) {
+    public NotAFolderException(Throwable cause, Path offendingFile) {
         super(cause);
         this.offendingFile = offendingFile;
     }
 
     public NotAFolderException(String message,
                                Throwable cause,
-                               File offendingFile) {
+                               Path offendingFile) {
         super(message, cause);
         this.offendingFile = offendingFile;
     }
 
-    public File getOffendingFile() {
+    public Path getOffendingFile() {
         return offendingFile;
     }
 
