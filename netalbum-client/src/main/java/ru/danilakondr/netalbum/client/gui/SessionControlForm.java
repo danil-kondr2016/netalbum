@@ -226,7 +226,13 @@ public class SessionControlForm extends javax.swing.JFrame {
     }//GEN-LAST:event_miExitActionPerformed
 
     private void miViewSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miViewSessionActionPerformed
-        // TODO add your handling code here:
+        int selectedRow = tblSessionList.getSelectedRow();
+        if (selectedRow == -1)
+            return;
+        
+        Session s = sessionTable.getSessionAt(selectedRow);
+        FolderViewerForm viewer = new FolderViewerForm(s);
+        viewer.setVisible(true);
     }//GEN-LAST:event_miViewSessionActionPerformed
     
     public void restoreSessions() {
