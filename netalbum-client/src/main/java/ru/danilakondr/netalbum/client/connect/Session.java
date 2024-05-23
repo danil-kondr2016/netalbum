@@ -29,6 +29,11 @@ public class Session {
         service.sendRequest(req);
     }
     
+    public void requestThumbnails() {
+        Request req = new Request(Request.Method.DOWNLOAD_THUMBNAILS);
+        service.sendRequest(req);
+    }
+    
     public enum Type {
         INIT_SESSION("session.InitSession"),
         CONNECT_TO_SESSION("session.ConnectToSession"),
