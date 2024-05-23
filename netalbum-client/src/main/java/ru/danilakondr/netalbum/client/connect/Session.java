@@ -13,6 +13,7 @@ import java.util.concurrent.Flow;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import ru.danilakondr.netalbum.api.message.Message;
+import static ru.danilakondr.netalbum.api.message.Message.Type.RESPONSE;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.LocalizedMessages;
@@ -22,6 +23,12 @@ import ru.danilakondr.netalbum.client.LocalizedMessages;
  * @author danko
  */
 public class Session {
+
+    public void requestDirectoryInfo() {
+        Request req = new Request(Request.Method.GET_DIRECTORY_INFO);
+        service.sendRequest(req);
+    }
+    
     public enum Type {
         INIT_SESSION("session.InitSession"),
         CONNECT_TO_SESSION("session.ConnectToSession"),
