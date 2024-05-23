@@ -43,7 +43,7 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         connectionLatch.await();
     }
 
-    public void putRequest(Request req) {
+    public void sendRequest(Request req) {
         service.execute(() -> {
             try {
                 ObjectMapper mapper = new ObjectMapper();

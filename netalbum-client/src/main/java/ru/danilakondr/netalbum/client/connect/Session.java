@@ -114,7 +114,7 @@ public class Session {
         
         Request.InitSession req = new Request.InitSession();
         req.setDirectoryName(directoryName);
-        service.putRequest(req);
+        service.sendRequest(req);
     }
     
     public void restore(URI uri, String sessionId) {
@@ -123,7 +123,7 @@ public class Session {
         
         Request.RestoreSession req = new Request.RestoreSession();
         req.setSessionId(sessionId);
-        service.putRequest(req);
+        service.sendRequest(req);
     }
     
     public void connect(URI uri, String sessionId) {
@@ -132,17 +132,17 @@ public class Session {
         
         Request.ConnectToSession req = new Request.ConnectToSession();
         req.setSessionId(sessionId);
-        service.putRequest(req);
+        service.sendRequest(req);
     }
     
     public void disconnect() {
         Request req = new Request(Request.Method.DISCONNECT_FROM_SESSION);
-        service.putRequest(req);
+        service.sendRequest(req);
     }
     
     public void close() {
         Request req = new Request(Request.Method.CLOSE_SESSION);
-        service.putRequest(req);
+        service.sendRequest(req);
     }
     
     public void loadImages(File directory) {

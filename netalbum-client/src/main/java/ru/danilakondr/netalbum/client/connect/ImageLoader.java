@@ -145,7 +145,7 @@ public class ImageLoader {
             ImageData imgData = Images.generateImage(file, name, 640, 480);
             addImage.setImage(imgData);
 
-            service.putRequest(addImage);
+            service.sendRequest(addImage);
         } catch (IOException ex) {
             SwingUtilities.invokeLater(() -> 
                 JOptionPane.showMessageDialog(null, ex, "Error", JOptionPane.ERROR_MESSAGE));
