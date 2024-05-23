@@ -284,15 +284,7 @@ public class Session {
     }
     
     public void addOnResponseListener(Response.Type type, BiConsumer<Session, Response> listener) {
-        service.subscribe(new Listener(this, (s, item) -> {
-            switch (item.getType()) {
-                case RESPONSE:
-                    Response resp = (Response)item;
-                    if (resp.getAnswerType() == type)
-                        listener.accept(Session.this, resp);
-                    break;
-            }
-        }));
+        addOnResponseListener(type, listener, false);
     }
     
     public void addOnResponseListener(Response.Type type, Consumer<Session> listener, boolean oneShot) {
@@ -302,6 +294,18 @@ public class Session {
                     Response resp = (Response)item;
                     if (resp.getAnswerType() == type)
                         listener.accept(Session.this);
+                    break;
+            }
+        }, oneShot));
+    }
+    
+    public void addOnResponseListener(Response.Type type, BiConsumer<Session, Response> listener, boolean oneShot) {
+        service.subscribe(new Listener(this, (s, item) -> {
+            switch (item.getType()) {
+                case RESPONSE:
+                    Response resp = (Response)item;
+                    if (resp.getAnswerType() == type)
+                        listener.accept(Session.this, resp);
                     break;
             }
         }, oneShot));
