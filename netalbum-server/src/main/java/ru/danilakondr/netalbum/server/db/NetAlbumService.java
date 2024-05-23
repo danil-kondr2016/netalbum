@@ -86,6 +86,13 @@ public class NetAlbumService {
                 .mapToLong(ImageFile::getFileSize)
                 .sum();
     }
+    
+    @Transactional
+    public long getImageCount(String sessionId) {
+        NetAlbumSession s = dao.getSession(sessionId);
+        
+        return s.getFiles().stream().count();
+    }
 
     @Transactional
     public byte[] generateArchiveWithThumbnails(String sessionId) {

@@ -207,7 +207,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         String sessionId = connected.get(session);
         NetAlbumSession s = service.getSession(sessionId);
         long directorySize = service.getDirectorySize(sessionId);
-        Response r = new Response.DirectoryInfo(s.getDirectoryName(), directorySize);
+        long imageCount = service.getImageCount(sessionId);
+        
+        Response r = new Response.DirectoryInfo(s.getDirectoryName(), directorySize, imageCount);
         sendResponse(session, r);
     }
 
