@@ -6,12 +6,18 @@ package ru.danilakondr.netalbum.client.gui;
 
 import java.awt.Point;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
+import javax.swing.SwingUtilities;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
@@ -49,6 +55,7 @@ public class SessionControlForm extends javax.swing.JFrame {
         contextMenu = new javax.swing.JPopupMenu();
         miViewSession = new javax.swing.JMenuItem();
         miCloseSessions = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblSessionList = new javax.swing.JTable();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -79,6 +86,14 @@ public class SessionControlForm extends javax.swing.JFrame {
             }
         });
         contextMenu.add(miCloseSessions);
+
+        jMenuItem1.setText("miDownloadThumbnails");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        contextMenu.add(jMenuItem1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -233,7 +248,7 @@ public class SessionControlForm extends javax.swing.JFrame {
 
     private void viewSession(int index) {
         Session s = sessionTable.getSessionAt(index);
-        FolderViewerForm viewer = new FolderViewerForm(s);
+        ViewFolderForm viewer = new ViewFolderForm(s);
         viewer.setVisible(true);
     }
     
@@ -264,6 +279,35 @@ public class SessionControlForm extends javax.swing.JFrame {
         
         viewSession(selectedRow);
     }//GEN-LAST:event_tblSessionListMousePressed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        int selectedRow = tblSessionList.getSelectedRow();
+        if (selectedRow == -1)
+            return;
+        
+        Session session = sessionTable.getSessionAt(selectedRow);
+        session.addOnResponseListener(Response.Type.THUMBNAILS_ARCHIVE, 
+            (s, r) -> {
+                SwingUtilities.invokeLater(() -> {
+                    JFileChooser ch = new JFileChooser();
+                    ch.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    
+                    int x = ch.showSaveDialog(SessionControlForm.this);
+                    if (x == JFileChooser.APPROVE_OPTION) {
+                        File f = ch.getSelectedFile();
+                        Response.ThumbnailsArchive ar = (Response.ThumbnailsArchive)r;
+                        try (FileOutputStream fos = new FileOutputStream(f)) {
+                            fos.write(ar.getThumbnailsZip());
+                        }
+                        catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                });
+            }, true
+        );
+        session.requestThumbnails();
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
     
     public void restoreSessions() {
         List<SessionInfo> sessions = cfg.getInitiatedSessions();
@@ -282,6 +326,7 @@ public class SessionControlForm extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenuItem miAbout;
     private javax.swing.JMenuItem miCloseAllSessions;
