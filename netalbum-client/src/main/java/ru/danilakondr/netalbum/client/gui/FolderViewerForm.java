@@ -25,11 +25,12 @@ public class FolderViewerForm extends javax.swing.JFrame {
     }
     
     private void initViewer() {
+        
         session.addOnResponseListener(Response.Type.DIRECTORY_INFO, (s, r) -> {
             Response.DirectoryInfo info = (Response.DirectoryInfo)r;
             SwingUtilities.invokeLater(() -> {
                 lblFolderName.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.properties.name"), info.getDirectoryName()));
-                lblFolderSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.properties.size"), info.getDirectorySize()));
+                lblFolderSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.properties.size"), FileSize.getDisplayFileSize(info.getDirectorySize())));
                 lblImageCount.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.properties.count"), info.getImageCount()));
             });
         });
