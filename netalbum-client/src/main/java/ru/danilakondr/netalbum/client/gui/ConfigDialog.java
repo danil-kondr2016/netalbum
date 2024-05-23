@@ -95,7 +95,7 @@ public class ConfigDialog extends javax.swing.JDialog {
             }
         });
 
-        lblApproxSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.approximateThumbnailSize"), new Object[] {getApproximateImageSizeInKB()})); // NOI18N
+        lblApproxSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.approximateThumbnailSize"), new Object[] {FileSize.getDisplayFileSize(getApproximateImageSize())})); // NOI18N
         lblApproxSize.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -214,23 +214,24 @@ public class ConfigDialog extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
-    private long getApproximateImageSizeInKB() {
+    private long getApproximateImageSize() {
         int thumbnailWidth = (Integer)spThumbnailWidth.getValue();
         int thumbnailHeight = (Integer)spThumbnailHeight.getValue();
         
         long area = (long)thumbnailWidth * thumbnailHeight;
         long size = (area + 4) / 5;
-        long sizeInKB = (size + 1023) / 1024;
         
-        return sizeInKB;
+        return size;
     }
     
     private void spThumbnailWidthStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spThumbnailWidthStateChanged
-        lblApproxSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.approximateThumbnailSize"), new Object[] {getApproximateImageSizeInKB()}));
+        String dispSize = FileSize.getDisplayFileSize(getApproximateImageSize());
+        lblApproxSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.approximateThumbnailSize"), new Object[] {dispSize}));
     }//GEN-LAST:event_spThumbnailWidthStateChanged
 
     private void spThumbnailHeightStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spThumbnailHeightStateChanged
-        lblApproxSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.approximateThumbnailSize"), new Object[] {getApproximateImageSizeInKB()}));
+        String dispSize = FileSize.getDisplayFileSize(getApproximateImageSize());
+        lblApproxSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("config.approximateThumbnailSize"), new Object[] {dispSize}));
     }//GEN-LAST:event_spThumbnailHeightStateChanged
     
     private void apply() {

@@ -186,7 +186,7 @@
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="ru/danilakondr/netalbum/client/gui/Strings.properties" key="config.approximateThumbnailSize" replaceFormat="java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;), {arguments})">
-                <Argument index="0" javacode="getApproximateImageSizeInKB()"/>
+                <Argument index="0" javacode="FileSize.getDisplayFileSize(getApproximateImageSize())"/>
               </ResourceString>
             </Property>
             <Property name="horizontalTextPosition" type="int" value="4"/>
