@@ -4,6 +4,7 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import java.awt.Point;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
@@ -83,6 +84,11 @@ public class SessionControlForm extends javax.swing.JFrame {
 
         tblSessionList.setModel(sessionTable);
         tblSessionList.setComponentPopupMenu(contextMenu);
+        tblSessionList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                tblSessionListMousePressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblSessionList);
 
         fileMenu.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("menu.File"), new Object[] {})); // NOI18N
@@ -225,15 +231,39 @@ public class SessionControlForm extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_miExitActionPerformed
 
+    private void viewSession(int index) {
+        Session s = sessionTable.getSessionAt(index);
+        FolderViewerForm viewer = new FolderViewerForm(s);
+        viewer.setVisible(true);
+    }
+    
     private void miViewSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miViewSessionActionPerformed
         int selectedRow = tblSessionList.getSelectedRow();
         if (selectedRow == -1)
             return;
         
-        Session s = sessionTable.getSessionAt(selectedRow);
-        FolderViewerForm viewer = new FolderViewerForm(s);
-        viewer.setVisible(true);
+        viewSession(selectedRow);
     }//GEN-LAST:event_miViewSessionActionPerformed
+
+    private void tblSessionListMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblSessionListMousePressed
+        Point point = evt.getPoint();
+        int clickedRow = tblSessionList.rowAtPoint(point);
+        int selectedRow = tblSessionList.getSelectedRow();
+        
+        if (evt.getClickCount() != 2)
+            return;
+        
+        if (clickedRow == -1)
+            return;
+        
+        if (selectedRow == -1)
+            return;
+        
+        if (clickedRow != selectedRow)
+            return;
+        
+        viewSession(selectedRow);
+    }//GEN-LAST:event_tblSessionListMousePressed
     
     public void restoreSessions() {
         List<SessionInfo> sessions = cfg.getInitiatedSessions();
