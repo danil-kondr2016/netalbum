@@ -76,6 +76,8 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
 
     @Override
     public abstract void remove(MutableTreeNode node);
+    
+    public abstract void update();
 
     @Override
     public void setUserObject(Object object) {
@@ -203,6 +205,10 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
         public Enumeration<? extends TreeNode> children() {
             throw new NotADirectoryException(path);
         }
+
+        @Override
+        public void update() {
+        }
         
     }
     
@@ -244,7 +250,6 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
             FileSystemTreeNode file = (FileSystemTreeNode)child;
             file.setParent(this);
             children.add(index, file);
-            Collections.sort(children, FileComparator.INSTANCE);
         }
 
         @Override
@@ -253,7 +258,6 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
             
             file.setParent(null);
             children.remove(index);
-            Collections.sort(children, FileComparator.INSTANCE);
         }
 
         @Override
@@ -262,7 +266,6 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
             
             file.setParent(null);
             children.remove((FileSystemTreeNode)node);
-            Collections.sort(children, FileComparator.INSTANCE);
         }
 
         @Override
@@ -303,6 +306,11 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
         @Override
         public Enumeration<? extends TreeNode> children() {
             return Collections.enumeration(children);
+        }
+
+        @Override
+        public void update() {
+            Collections.sort(children, FileComparator.INSTANCE);
         }
     }
 
@@ -353,6 +361,7 @@ public abstract class FileSystemTreeNode implements TreeNode, MutableTreeNode {
         }
         catch (IOException ignored) {}
         finally {
+            root.update();
             return root;
         }
     }
