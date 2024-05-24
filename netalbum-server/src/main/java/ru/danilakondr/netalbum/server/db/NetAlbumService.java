@@ -118,21 +118,19 @@ public class NetAlbumService {
                 info.setFileSize(f.getFileSize());
                 info.setWidth(f.getImgWidth());
                 info.setHeight(f.getImgHeight());
+                infoList.add(info);
 
                 ZipEntry fileEntry = new ZipEntry("thumbnails/" + f.getFileName());
                 out.putNextEntry(fileEntry);
                 ByteArrayInputStream is = new ByteArrayInputStream(f.getThumbnail());
                 is.transferTo(out);
-                out.closeEntry();
             }
             
             ZipEntry contentsEntry = new ZipEntry("contents.json");
             out.putNextEntry(contentsEntry);
-            
             ObjectMapper mapper = new ObjectMapper();
-            mapper.writeValue(out, infoList);
-            
-            out.closeEntry();
+            byte[] contentsJson = mapper.writeValueAsBytes(infoList);
+            out.write(contentsJson);
 
             out.finish();
             return os.toByteArray();
