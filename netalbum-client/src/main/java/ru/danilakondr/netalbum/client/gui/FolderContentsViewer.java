@@ -4,29 +4,23 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
-import javax.swing.tree.DefaultTreeModel;
 
 import java.nio.file.Path;
-import ru.danilakondr.netalbum.client.contents.FileSystemTreeNode;
 
 import java.nio.file.FileSystems;
 import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import ru.danilakondr.netalbum.api.data.ImageInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.List;
+import ru.danilakondr.netalbum.client.contents.FolderContentModel;
+import ru.danilakondr.netalbum.client.contents.FolderContentNode;
 
 /**
  *
  * @author danko
  */
 public class FolderContentsViewer extends javax.swing.JPanel {
-    private DefaultTreeModel contents;
-    private FileSystemTreeNode rootNode;
+    private FolderContentModel contents;
     
     /**
      * Creates new form FolderViewer
@@ -49,11 +43,17 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         treeFolderContents = new javax.swing.JTree();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        lblOriginalSize = new javax.swing.JLabel();
+        lblOriginalFileSize = new javax.swing.JLabel();
+        lblFileName = new javax.swing.JLabel();
 
         treeFolderContents.setModel(contents);
+        treeFolderContents.setEditable(true);
+        treeFolderContents.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                treeFolderContentsValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(treeFolderContents);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -67,11 +67,11 @@ public class FolderContentsViewer extends javax.swing.JPanel {
             .addGap(0, 214, Short.MAX_VALUE)
         );
 
-        jLabel1.setText("Image original size: {0}x{1}");
+        lblOriginalSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.imageSize"), new Object[] {})); // NOI18N
 
-        jLabel2.setText("Original file size: {0}");
+        lblOriginalFileSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.fileSize"), new Object[] {})); // NOI18N
 
-        jLabel3.setText("File name: {0}");
+        lblFileName.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.fileName"), new Object[] {})); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -81,11 +81,11 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblFileName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel1))
+                            .addComponent(lblOriginalFileSize)
+                            .addComponent(lblOriginalSize))
                         .addGap(0, 202, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -95,11 +95,11 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel3)
+                .addComponent(lblFileName, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
+                .addComponent(lblOriginalSize)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
+                .addComponent(lblOriginalFileSize)
                 .addContainerGap())
         );
 
@@ -119,32 +119,38 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void treeFolderContentsValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeFolderContentsValueChanged
+        FolderContentNode node = (FolderContentNode)evt.getPath().getLastPathComponent();
+        if (node.isImage()) {
+            ImageInfo info = node.getImageInfo();
+            
+            String[] pathSegments = info.getFileName().split("/");
+            String fileName = pathSegments[pathSegments.length-1];
+            lblOriginalSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.imageSize"), info.getWidth(), info.getHeight())); // NOI18N
+            lblOriginalFileSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.fileSize"), info.getFileSize())); // NOI18N
+            lblFileName.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.fileName"), fileName)); // NOI18N
+        }
+    }//GEN-LAST:event_treeFolderContentsValueChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblFileName;
+    private javax.swing.JLabel lblOriginalFileSize;
+    private javax.swing.JLabel lblOriginalSize;
     private javax.swing.JTree treeFolderContents;
     // End of variables declaration//GEN-END:variables
 
     private void initContents(Path zipFile) {
         try {
             FileSystem fs = FileSystems.newFileSystem(zipFile);
-            Path pContents = fs.getPath("contents.json");
-            Path pThumbnails = fs.getPath("thumbnails");
-            
-            byte[] contentsJson = Files.readAllBytes(pContents);
-            ObjectMapper mapper = new ObjectMapper();
-            List<ImageInfo> imgInfos = mapper.readValue(contentsJson, new TypeReference<List<ImageInfo>>() {});
-
-            rootNode = FileSystemTreeNode.buildTree(pThumbnails);
-            this.contents = new DefaultTreeModel(rootNode);
+            this.contents = new FolderContentModel("Contents");
+            this.contents.load(fs);
         }
         catch (IOException e) {
-            this.contents = new DefaultTreeModel(new DefaultMutableTreeNode("empty"));
+            this.contents = new FolderContentModel("Failure");
         }
     }
 }
