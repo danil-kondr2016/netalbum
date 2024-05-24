@@ -1,5 +1,6 @@
 package ru.danilakondr.netalbum.server.db;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,8 +14,11 @@ import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import ru.danilakondr.netalbum.api.data.ImageInfo;
 
 @Service
 public class NetAlbumService {
@@ -99,16 +103,36 @@ public class NetAlbumService {
         NetAlbumSession s = dao.getSession(sessionId);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try (ZipOutputStream out = new ZipOutputStream(os)) {
+            List<ImageInfo> infoList = new ArrayList<>();
+            
+            ZipEntry thumbnailsEntry = new ZipEntry("thumbnails/");
+            out.putNextEntry(thumbnailsEntry);
+            out.closeEntry();
+            
             for (ImageFile f : s.getFiles()) {
                 if (f.getFileName() == null)
                     continue;
+                
+                ImageInfo info = new ImageInfo();
+                info.setFileName(f.getFileName());
+                info.setFileSize(f.getFileSize());
+                info.setWidth(f.getImgWidth());
+                info.setHeight(f.getImgHeight());
 
-                ZipEntry entry = new ZipEntry(f.getFileName());
-                out.putNextEntry(entry);
+                ZipEntry fileEntry = new ZipEntry("thumbnails/" + f.getFileName());
+                out.putNextEntry(fileEntry);
                 ByteArrayInputStream is = new ByteArrayInputStream(f.getThumbnail());
                 is.transferTo(out);
                 out.closeEntry();
             }
+            
+            ZipEntry contentsEntry = new ZipEntry("contents.json");
+            out.putNextEntry(contentsEntry);
+            
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(out, infoList);
+            
+            out.closeEntry();
 
             out.finish();
             return os.toByteArray();
