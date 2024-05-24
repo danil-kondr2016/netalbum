@@ -1,30 +1,29 @@
-package ru.danilakondr.fstreemodel;
+package ru.danilakondr.netalbum.client.contents;
 
-import java.io.File;
 import java.nio.file.Path;
 
 /**
  * Thrown when an operation that should be executed on folders is attempted
- * on a file {@link FileSystemTreeNode FileSystemTreeNode}.
+ * on a file {@link FileSystemNode FileSystemNode}.
  */
-public class NotAFolderException extends RuntimeException {
+public class NotADirectoryException extends RuntimeException {
     private final Path offendingFile;
 
-    public NotAFolderException(Path offendingFile) {
+    public NotADirectoryException(Path offendingFile) {
         this.offendingFile = offendingFile;
     }
 
-    public NotAFolderException(String message, Path offendingFile) {
+    public NotADirectoryException(String message, Path offendingFile) {
         super(message);
         this.offendingFile = offendingFile;
     }
 
-    public NotAFolderException(Throwable cause, Path offendingFile) {
+    public NotADirectoryException(Throwable cause, Path offendingFile) {
         super(cause);
         this.offendingFile = offendingFile;
     }
 
-    public NotAFolderException(String message,
+    public NotADirectoryException(String message,
                                Throwable cause,
                                Path offendingFile) {
         super(message, cause);
@@ -43,7 +42,7 @@ public class NotAFolderException extends RuntimeException {
             buffer.append(": ");
         }
 
-        buffer.append("Unable to get child of File: [");
+        buffer.append("Unable to get child of Path: [");
         buffer.append(getOffendingFile());
         buffer.append(']');
         return buffer.toString();
