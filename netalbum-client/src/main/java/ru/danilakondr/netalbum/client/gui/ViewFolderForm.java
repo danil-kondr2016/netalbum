@@ -4,6 +4,15 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.GroupLayout;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.Session;
@@ -50,6 +59,8 @@ public class ViewFolderForm extends javax.swing.JFrame {
         lblFolderName = new javax.swing.JLabel();
         lblFolderSize = new javax.swing.JLabel();
         lblImageCount = new javax.swing.JLabel();
+        btnLoadContents = new javax.swing.JButton();
+        dummyPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.title"), new Object[] {})); // NOI18N
@@ -85,13 +96,37 @@ public class ViewFolderForm extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        btnLoadContents.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.loadContents"), new Object[] {})); // NOI18N
+        btnLoadContents.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLoadContentsActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout dummyPanelLayout = new javax.swing.GroupLayout(dummyPanel);
+        dummyPanel.setLayout(dummyPanelLayout);
+        dummyPanelLayout.setHorizontalGroup(
+            dummyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        dummyPanelLayout.setVerticalGroup(
+            dummyPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(dummyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnLoadContents))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -99,16 +134,58 @@ public class ViewFolderForm extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnLoadContents)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dummyPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnLoadContentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadContentsActionPerformed
+        session.addOnResponseListener(Response.Type.THUMBNAILS_ARCHIVE, (s, r) -> {
+            Response.ThumbnailsArchive archive = (Response.ThumbnailsArchive)r;
+            Path thumbnails = saveThumbnails(archive.getThumbnailsZip());
+            if (thumbnails == null)
+                return;
+            
+            SwingUtilities.invokeLater( () -> {
+                panelContentsViewer = new FolderContentsViewer(thumbnails);
+                ((GroupLayout)getContentPane().getLayout()).replace(dummyPanel, panelContentsViewer);
+                pack();
+            });
+        });
+        session.requestThumbnails();
+    }//GEN-LAST:event_btnLoadContentsActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnLoadContents;
+    private javax.swing.JPanel dummyPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblFolderName;
     private javax.swing.JLabel lblFolderSize;
     private javax.swing.JLabel lblImageCount;
     // End of variables declaration//GEN-END:variables
+
+    private FolderContentsViewer panelContentsViewer;
+    
+    private Path saveThumbnails(byte[] thumbnailsZip) {
+        try {
+            Path tmpFilePath = Files.createTempFile(session.getSessionId(), ".zip");
+            File tmpFile = tmpFilePath.toFile();
+            
+            try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                fos.write(thumbnailsZip);
+            }
+            
+            return tmpFilePath;
+        } 
+        catch (IOException ex) {
+            ex.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(this, "Не удалось сохранить уменьшенные картинки на компьютере", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+    }
 }
