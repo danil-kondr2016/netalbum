@@ -80,6 +80,7 @@ public class Session {
             }
             
             private void onConnectionEstablished(Message item) {
+                setUrl(Objects.toString(item.getProperty("url")));
             }
 
             @Override
@@ -121,12 +122,13 @@ public class Session {
     }
     
     public void init(URI uri, String directoryName) {
-        setUrl(uri.toString());
         service.connectTo(uri);
         
-        Request.InitSession req = new Request.InitSession();
-        req.setDirectoryName(directoryName);
-        service.sendRequest(req);
+        this.addOnConnectionEstablishedListener((s) -> {
+            Request.InitSession req = new Request.InitSession();
+            req.setDirectoryName(directoryName);
+            service.sendRequest(req);
+        }, true);
     }
     
     public void restore(URI uri, String sessionId) {
@@ -208,20 +210,23 @@ public class Session {
         return connected;
     }
 
-    private static class Listener implements Flow.Subscriber<Message> {
+    private static class ResponseListener implements Flow.Subscriber<Message> {
         private Flow.Subscription subscription;
         private final Session session;
-        private final BiConsumer<Session, Message> consumer;
+        private final BiConsumer<Session, Response> consumer;
         private final boolean oneShot;
+        private final Response.Type respType;
         
-        public Listener(Session s, BiConsumer<Session, Message> consumer) {
+        public ResponseListener(Session s, ru.danilakondr.netalbum.api.message.Response.Type respType, BiConsumer<Session, Response> consumer) {
             this.session = s;
+            this.respType = respType;
             this.consumer = consumer;
             this.oneShot = false;
         }
         
-        public Listener(Session s, BiConsumer<Session, Message> consumer, boolean oneShot) {
+        public ResponseListener(Session s, ru.danilakondr.netalbum.api.message.Response.Type respType, BiConsumer<Session, Response> consumer, boolean oneShot) {
             this.session = s;
+            this.respType = respType;
             this.consumer = consumer;
             this.oneShot = oneShot;
         }
@@ -234,11 +239,20 @@ public class Session {
 
         @Override
         public void onNext(Message item) {
-            consumer.accept(session, item);
-            if (!oneShot)
+            if (item.getType() != RESPONSE) {
                 subscription.request(1);
-            else
-                subscription.cancel();
+                return;
+            }
+            
+            Response resp = (Response)item;
+            if (respType == null || (respType != null && resp.getAnswerType() == respType)) {
+                consumer.accept(session, resp);
+                if (oneShot) {
+                    subscription.cancel();
+                    return;
+                }
+            }
+            subscription.request(1);
         }
 
         @Override
@@ -251,34 +265,84 @@ public class Session {
         }
     }
     
-    public void addOnCloseListener(Consumer<Session> listener) {
-        service.subscribe(new Listener(this, (s, item) -> {
-            switch (item.getType()) {
-                case RESPONSE:
-                    Response resp = (Response)item;
-                    switch (resp.getAnswerType()) {
-                        case CLIENT_DISCONNECTED:
-                        case SESSION_CLOSED:
-                            listener.accept(Session.this);
-                            break;
-                    }
+    private static class MessageListener implements Flow.Subscriber<Message> {
+        private Flow.Subscription subscription;
+        private final Session session;
+        private final BiConsumer<Session, Message> consumer;
+        private final boolean oneShot;
+        private final Message.Type msgType;
+        
+        public MessageListener(Session s, Message.Type msgType, BiConsumer<Session, Message> consumer) {
+            this.session = s;
+            this.msgType = msgType;
+            this.consumer = consumer;
+            this.oneShot = false;
+        }
+        
+        public MessageListener(Session s, Message.Type msgType, BiConsumer<Session, Message> consumer, boolean oneShot) {
+            this.session = s;
+            this.msgType = msgType;
+            this.consumer = consumer;
+            this.oneShot = oneShot;
+        }
+        
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            this.subscription = subscription;
+            subscription.request(1);
+        }
+
+        @Override
+        public void onNext(Message item) {
+            if (msgType == null || (msgType != null && item.getType() == msgType)) {
+                consumer.accept(session, item);
+                if (oneShot)
+                    subscription.cancel();
+            }
+            
+            subscription.request(1);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            throwable.printStackTrace(System.err);
+        }
+
+        @Override
+        public void onComplete() {
+        }
+    }
+    
+    public void addOnSessionClosedListener(Consumer<Session> listener) {
+        service.subscribe(new MessageListener(this, Message.Type.RESPONSE, (s, item) -> {
+            Response resp = (Response)item;
+            switch (resp.getAnswerType()) {
+                case CLIENT_DISCONNECTED:
+                case SESSION_CLOSED:
+                    listener.accept(Session.this);
                     break;
             }
         }));
     }
     
-    public void addOnConnectedListener(Consumer<Session> listener) {
-        service.subscribe(new Listener(this, (s, item) -> {
+    public void addOnConnectionEstablishedListener(Consumer<Session> listener, boolean oneShot) {
+        service.subscribe(new MessageListener(this, Message.Type.CONNECTION_ESTABLISHED, (s, item) -> {
             switch (item.getType()) {
-                case RESPONSE:
-                    Response resp = (Response)item;
-                    switch (resp.getAnswerType()) {
-                        case SESSION_CREATED:
-                        case SESSION_RESTORED:
-                        case VIEWER_CONNECTED:
-                            listener.accept(Session.this);
-                            break;
-                    }
+                case CONNECTION_ESTABLISHED:
+                    listener.accept(this);
+                    break;
+            }
+        }, true));
+    }
+    
+    public void addOnSessionEstablishedListener(Consumer<Session> listener) {
+        service.subscribe(new MessageListener(this, Message.Type.RESPONSE, (s, item) -> {
+            Response resp = (Response)item;
+            switch (resp.getAnswerType()) {
+                case SESSION_CREATED:
+                case SESSION_RESTORED:
+                case VIEWER_CONNECTED:
+                    listener.accept(Session.this);
                     break;
             }
         }));
@@ -293,26 +357,14 @@ public class Session {
     }
     
     public void addOnResponseListener(Response.Type type, Consumer<Session> listener, boolean oneShot) {
-        service.subscribe(new Listener(this, (s, item) -> {
-            switch (item.getType()) {
-                case RESPONSE:
-                    Response resp = (Response)item;
-                    if (resp.getAnswerType() == type)
-                        listener.accept(Session.this);
-                    break;
-            }
+        service.subscribe(new ResponseListener(this, type, (s, item) -> {
+            listener.accept(Session.this);
         }, oneShot));
     }
     
     public void addOnResponseListener(Response.Type type, BiConsumer<Session, Response> listener, boolean oneShot) {
-        service.subscribe(new Listener(this, (s, item) -> {
-            switch (item.getType()) {
-                case RESPONSE:
-                    Response resp = (Response)item;
-                    if (resp.getAnswerType() == type)
+        service.subscribe(new ResponseListener(this, type, (s, resp) -> {
                         listener.accept(Session.this, resp);
-                    break;
-            }
         }, oneShot));
     }
 }

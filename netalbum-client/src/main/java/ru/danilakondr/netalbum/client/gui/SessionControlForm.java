@@ -190,12 +190,14 @@ public class SessionControlForm extends javax.swing.JFrame {
         URI serverUri = URI.create(serverAddress);
         
         Session session = new Session();
-        session.addOnConnectedListener(s -> sessionTable.addSession(s));
-        session.addOnConnectedListener(s -> cfg.addInitiatedSession(
+        session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
+        session.addOnSessionEstablishedListener(s -> {
+            cfg.addInitiatedSession(
                 serverAddress, 
                 s.getSessionId(), 
-                directory.getAbsolutePath()));
-        session.addOnCloseListener(s -> sessionTable.removeSession(s));
+                directory.getAbsolutePath());
+        });
+        session.addOnSessionClosedListener(s -> sessionTable.removeSession(s));
         session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
         session.addOnResponseListener(Response.Type.SESSION_CREATED, (s) -> {
             s.loadImages(directory);
@@ -314,7 +316,7 @@ public class SessionControlForm extends javax.swing.JFrame {
         for (SessionInfo sessionInfo : sessions) {
             Session session = new Session();
             session.addOnResponseListener(Response.Type.SESSION_RESTORED, s -> sessionTable.addSession(s));
-            session.addOnCloseListener(s -> sessionTable.removeSession(s));
+            session.addOnSessionClosedListener(s -> sessionTable.removeSession(s));
             session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
             session.setPath(sessionInfo.getPath());
             session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
