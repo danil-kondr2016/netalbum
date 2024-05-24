@@ -67,11 +67,9 @@ public class FolderContentsViewer extends javax.swing.JPanel {
             .addGap(0, 214, Short.MAX_VALUE)
         );
 
-        lblOriginalSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.imageSize"), new Object[] {})); // NOI18N
+        lblOriginalSize.setText(" ");
 
-        lblOriginalFileSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.fileSize"), new Object[] {})); // NOI18N
-
-        lblFileName.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.fileName"), new Object[] {})); // NOI18N
+        lblOriginalFileSize.setText(" ");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -86,7 +84,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblOriginalFileSize)
                             .addComponent(lblOriginalSize))
-                        .addGap(0, 202, Short.MAX_VALUE)))
+                        .addGap(0, 340, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(

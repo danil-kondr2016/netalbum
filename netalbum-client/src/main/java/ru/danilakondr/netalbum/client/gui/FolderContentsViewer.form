@@ -63,7 +63,7 @@
                               <Component id="lblOriginalFileSize" min="-2" max="-2" attributes="0"/>
                               <Component id="lblOriginalSize" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="0" pref="202" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="340" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -104,24 +104,15 @@
         </Container>
         <Component class="javax.swing.JLabel" name="lblOriginalSize">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="ru/danilakondr/netalbum/client/gui/Strings.properties" key="folderContents.imageSize" replaceFormat="java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;), {arguments})"/>
-            </Property>
+            <Property name="text" type="java.lang.String" value=" "/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="lblOriginalFileSize">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="ru/danilakondr/netalbum/client/gui/Strings.properties" key="folderContents.fileSize" replaceFormat="java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;), {arguments})"/>
-            </Property>
+            <Property name="text" type="java.lang.String" value=" "/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="lblFileName">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="ru/danilakondr/netalbum/client/gui/Strings.properties" key="folderContents.fileName" replaceFormat="java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;), {arguments})"/>
-            </Property>
-          </Properties>
         </Component>
       </SubComponents>
     </Container>
