@@ -93,19 +93,23 @@ public class FolderContentModel extends DefaultTreeModel {
     public List<Change> getChanges() {
         List<Change> changes = new ArrayList<>();
         FolderContentNode root = (FolderContentNode)getRoot();
-        var rootEnumeration = root.depthFirstEnumeration();
+        var nodeEnum = root.depthFirstEnumeration();
         
-        while (rootEnumeration.hasMoreElements()) {
-            FolderContentNode node = (FolderContentNode)rootEnumeration.nextElement();
+        while (nodeEnum.hasMoreElements()) {
+            FolderContentNode node = (FolderContentNode)nodeEnum.nextElement();
             if (node.isDirectory())
                 continue;
             
+            if (node.getImageInfo() == null)
+                continue;
             String oldName = node.getImageInfo().getFileName();
-            
             String newName = String.join("/", Arrays.stream(node.getPath())
-                    .filter(obj -> Objects.equals(obj, root))
+                    .filter(obj -> !Objects.equals(obj, root))
                     .map(obj -> Objects.toString(obj, ""))
                     .toArray(String[]::new));
+            
+            if (Objects.equals(oldName, newName))
+                continue;
             
             Change change = new Change();
             change.setOldName(oldName);
