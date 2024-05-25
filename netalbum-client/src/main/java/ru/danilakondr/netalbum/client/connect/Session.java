@@ -7,11 +7,13 @@ package ru.danilakondr.netalbum.client.connect;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.Flow;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.message.Message;
 import static ru.danilakondr.netalbum.api.message.Message.Type.RESPONSE;
 import ru.danilakondr.netalbum.api.message.Request;
@@ -31,6 +33,12 @@ public class Session {
     
     public void requestThumbnails() {
         Request req = new Request(Request.Method.DOWNLOAD_THUMBNAILS);
+        service.sendRequest(req);
+    }
+
+    public void synchronize(List<Change> changes) {
+        Request.Synchronize req = new Request.Synchronize();
+        req.setChanges(changes);
         service.sendRequest(req);
     }
     
