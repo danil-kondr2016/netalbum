@@ -34,13 +34,12 @@ public class FolderContentModel extends DefaultTreeModel {
     private FileSystem fs;
     private HashMap<String, ImageInfo> imageInfoMap = new HashMap<>();
 
-    
-    private List<Change> changes;
+    private List<String> removed;
     
     public FolderContentModel(String name) {
         super(null);
         this.folderName = name;
-        this.changes = new ArrayList<>();
+        this.removed = new ArrayList<>();
     }
     
     public void load(FileSystem fs) {
@@ -88,5 +87,36 @@ public class FolderContentModel extends DefaultTreeModel {
     
     public ImageInfo getImageInfo(String[] path) {
         return imageInfoMap.get(String.join("/", path));
+    }
+
+    public void appendRemoved(String fileToRemove) {
+        this.removed.add(fileToRemove);
+    }
+    
+    public List<Change> getChanges() {
+        List<Change> changes = new ArrayList<>();
+        FolderContentNode root = (FolderContentNode)getRoot();
+        var rootEnumeration = root.depthFirstEnumeration();
+        
+        while (rootEnumeration.hasMoreElements()) {
+            FolderContentNode node = (FolderContentNode)rootEnumeration.nextElement();
+            if (node.isDirectory())
+                continue;
+            
+            String oldName = node.getImageInfo().getFileName();
+            
+            String newName = String.join("/", Arrays.stream(node.getPath())
+                    .filter(obj -> Objects.equals(obj, root))
+                    .map(obj -> Objects.toString(obj, ""))
+                    .toArray(String[]::new));
+            
+            Change change = new Change();
+            change.setOldName(oldName);
+            change.setNewName(newName);
+            
+            changes.add(change);
+        }
+        
+        return changes;
     }
 }
