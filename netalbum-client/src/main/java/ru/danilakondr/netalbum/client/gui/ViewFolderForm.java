@@ -23,6 +23,7 @@ import ru.danilakondr.netalbum.client.connect.Session;
  */
 public class ViewFolderForm extends javax.swing.JFrame {
     private final Session session;
+    private String folderName;
     
     /**
      * Creates new form FolderViewerForm
@@ -42,6 +43,7 @@ public class ViewFolderForm extends javax.swing.JFrame {
                 lblFolderSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.properties.size"), FileSize.getDisplayFileSize(info.getDirectorySize())));
                 lblImageCount.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderViewer.properties.count"), info.getImageCount()));
             });
+            folderName = info.getDirectoryName();
         });
         session.requestDirectoryInfo();
     }
@@ -153,7 +155,7 @@ public class ViewFolderForm extends javax.swing.JFrame {
             SwingUtilities.invokeLater( () -> {
                 btnLoadContents.setEnabled(false);
                 
-                panelContentsViewer = new FolderContentsViewer(session, thumbnails);
+                panelContentsViewer = new FolderContentsViewer(session, folderName, thumbnails);
                 ((GroupLayout)getContentPane().getLayout()).replace(dummyPanel, panelContentsViewer);
                 pack();
             });

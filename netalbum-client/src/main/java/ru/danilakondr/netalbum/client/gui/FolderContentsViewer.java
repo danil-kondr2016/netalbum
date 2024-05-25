@@ -43,18 +43,21 @@ public class FolderContentsViewer extends javax.swing.JPanel {
     private FolderContentModel contents;
     private ImagePanel imageViewer;
     private Session session;
+    private String folderName;
     
     /**
      * Creates new form FolderViewer
      */
-    public FolderContentsViewer(Session session, Path zipFile) {
+    public FolderContentsViewer(Session session, String folderName, Path zipFile) {
+        this.session = session;
+        this.folderName = folderName;
+
         initContents(zipFile);
         initComponents();
         
-        this.session = session;
         treeFolderContents.setTransferHandler(new FolderContentTreeTransferHandler());
     }
-    
+     
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -217,7 +220,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
     private void initContents(Path zipFile) {
         try {
             FileSystem fs = FileSystems.newFileSystem(zipFile);
-            this.contents = new FolderContentModel("Contents");
+            this.contents = new FolderContentModel(folderName);
             this.contents.load(fs);
         }
         catch (IOException e) {
