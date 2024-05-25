@@ -25,6 +25,7 @@ import java.util.Objects;
 import ru.danilakondr.netalbum.api.data.ImageInfo;
 
 import static ru.danilakondr.netalbum.api.message.Response.Error.Status.*;
+import static ru.danilakondr.netalbum.api.message.Response.Type.SUCCESS;
 
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
@@ -191,13 +192,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         for (Change change: changes) {
             service.renameFile(sessionId, change.getOldName(), change.getNewName());
         }
-        // Второе. Отправить изменения другим пользователям (в т.ч. инициатору).
+        // Второе. Отправить изменения инициатору.
         Response changesResp = new Response.Synchronizing(changes);
-        for (Map.Entry<WebSocketSession, String> e : connected.entrySet()) {
-            if (e.getValue().equals(sessionId)) {
-                sendResponse(e.getKey(), changesResp);
-            }
-        }
+        WebSocketSession initiator = initiators.get(sessionId);
+        sendResponse(initiator, changesResp);
+        sendResponse(session, new Response(SUCCESS));
     }
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
