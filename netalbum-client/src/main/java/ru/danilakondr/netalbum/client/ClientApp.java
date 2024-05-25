@@ -50,9 +50,4 @@ public class ClientApp {
             }
         });
     }
-
-    public enum SessionType {
-        INIT_SESSION,
-        CONNECT_TO_SESSION
-    }
 }
