@@ -70,6 +70,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         lblOriginalSize = new javax.swing.JLabel();
         lblOriginalFileSize = new javax.swing.JLabel();
         lblFileName = new javax.swing.JLabel();
+        btnSynchronize = new javax.swing.JButton();
 
         treeFolderContents.setModel(contents);
         treeFolderContents.setAutoscrolls(true);
@@ -103,6 +104,14 @@ public class FolderContentsViewer extends javax.swing.JPanel {
 
         lblOriginalFileSize.setText(" ");
 
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings"); // NOI18N
+        btnSynchronize.setText(bundle.getString("folderViewer.synchronize")); // NOI18N
+        btnSynchronize.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSynchronizeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -116,6 +125,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                     .addComponent(dummyPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 305, Short.MAX_VALUE)
+                        .addComponent(btnSynchronize)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -184,8 +194,14 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_treeFolderContentsValueChanged
 
+    private void btnSynchronizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSynchronizeActionPerformed
+        List<Change> changes = contents.getChanges();
+        session.synchronize(changes);
+    }//GEN-LAST:event_btnSynchronizeActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnSynchronize;
     private javax.swing.JPanel dummyPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;

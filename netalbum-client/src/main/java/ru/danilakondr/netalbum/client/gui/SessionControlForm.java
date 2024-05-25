@@ -6,18 +6,16 @@ package ru.danilakondr.netalbum.client.gui;
 
 import java.awt.Point;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
-import javax.swing.SwingUtilities;
+import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
@@ -193,6 +191,10 @@ public class SessionControlForm extends javax.swing.JFrame {
         session.addOnResponseListener(Response.Type.SESSION_CREATED, (s) -> {
             s.loadImages(directory);
         }, true);
+        session.addOnResponseListener(Response.Type.SYNCHRONIZING, (s, r) -> {
+            Response.Synchronizing resp = (Response.Synchronizing)r;
+            synchronizeSession(s, resp.getChanges());
+        });
         session.init(serverUri, directory.getName());
     }
     
@@ -282,6 +284,29 @@ public class SessionControlForm extends javax.swing.JFrame {
             session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
             session.setPath(sessionInfo.getPath());
             session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
+        }
+    }
+    
+    private void synchronizeSession(Session session, List<Change> changes) {
+        if (session.getSessionType() != Session.Type.INIT_SESSION)
+            return;
+        
+        try {
+            Path dirPath = Path.of(session.getPath());
+            
+            for (Change change: changes) {
+                Path newDir = dirPath.resolve(change.getNewName()).getParent();
+                Files.createDirectories(newDir);
+            }
+            
+            for (Change change: changes) {
+                Path oldFile = dirPath.resolve(change.getOldName());
+                Path newFile = dirPath.resolve(change.getNewName());
+                Files.move(oldFile, newFile);
+            }
+        }
+        catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Failed to synchronize files: " + e);
         }
     }
     
