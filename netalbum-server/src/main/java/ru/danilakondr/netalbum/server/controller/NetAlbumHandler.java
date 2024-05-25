@@ -174,6 +174,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         NetAlbumSession s = service.getSession(id);
         if (s == null)
             throw new NonExistentSession(id);
+        
+        if (initiators.containsKey(id))
+            throw new InvalidRequestError("Initiator already connected");
 
         putInitiator(session, id);
         Response resp = new Response(Response.Type.SESSION_RESTORED);
