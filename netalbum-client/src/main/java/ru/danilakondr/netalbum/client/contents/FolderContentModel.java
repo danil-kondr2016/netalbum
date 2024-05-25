@@ -120,4 +120,24 @@ public class FolderContentModel extends DefaultTreeModel {
         
         return changes;
     }
+    
+    public void applyChanges() {
+        FolderContentNode root = (FolderContentNode)getRoot();
+        var nodeEnum = root.depthFirstEnumeration();
+
+        while (nodeEnum.hasMoreElements()) {
+            FolderContentNode node = (FolderContentNode)nodeEnum.nextElement();
+            if (node.isDirectory())
+                continue;
+            
+            if (node.getImageInfo() == null)
+                continue;
+            
+            String newName = String.join("/", Arrays.stream(node.getPath())
+                    .filter(obj -> !Objects.equals(obj, root))
+                    .map(obj -> Objects.toString(obj, ""))
+                    .toArray(String[]::new));
+            node.getImageInfo().setFileName(newName);
+        }
+    }
 }

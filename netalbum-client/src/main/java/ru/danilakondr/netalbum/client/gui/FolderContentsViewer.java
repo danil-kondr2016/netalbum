@@ -30,6 +30,7 @@ import javax.swing.tree.TreePath;
 import ru.danilakondr.netalbum.api.data.Change;
 
 import ru.danilakondr.netalbum.api.data.ImageInfo;
+import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.client.contents.FolderContentModel;
 import ru.danilakondr.netalbum.client.contents.FolderContentNode;
@@ -196,6 +197,8 @@ public class FolderContentsViewer extends javax.swing.JPanel {
 
     private void btnSynchronizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSynchronizeActionPerformed
         List<Change> changes = contents.getChanges();
+        
+        session.addOnResponseListener(Response.Type.SYNCHRONIZING, s -> contents.applyChanges(), true);
         session.synchronize(changes);
     }//GEN-LAST:event_btnSynchronizeActionPerformed
 
