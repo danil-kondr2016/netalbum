@@ -92,6 +92,11 @@ public abstract class FolderContentNode extends DefaultMutableTreeNode {
         }
 
         @Override
+        public boolean isLeaf() {
+            return false;
+        }
+        
+        @Override
         public ImageInfo getImageInfo() {
             throw new UnsupportedOperationException("Not an image");
         }
