@@ -78,6 +78,7 @@ public class NetAlbumService {
         if (dao.getImageFile(sessionId, newName) != null)
             throw new FileAlreadyExistsError(newName);
 
+        file.setFirstName(oldName);
         file.setFileName(newName);
         dao.putImageFile(file);
     }
