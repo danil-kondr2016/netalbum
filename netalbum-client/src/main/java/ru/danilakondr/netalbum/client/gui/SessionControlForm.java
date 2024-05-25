@@ -8,17 +8,26 @@ import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
+import javax.swing.SwingUtilities;
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.CLIENT_ALREADY_CONNECTED;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.CLIENT_NOT_CONNECTED;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.EXCEPTION;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.FILE_ALREADY_EXISTS;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.FILE_NOT_FOUND;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.INVALID_REQUEST;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.NON_EXISTENT_SESSION;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.NOT_AN_INITIATOR;
+import static ru.danilakondr.netalbum.api.message.Response.Error.Status.NOT_A_VIEWER;
 import ru.danilakondr.netalbum.client.NetAlbumPreferences;
 import ru.danilakondr.netalbum.client.SessionInfo;
 
@@ -174,27 +183,19 @@ public class SessionControlForm extends javax.swing.JFrame {
         }
     }
     
+    private void error(Object message, String title) {
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE));
+    }
+    
     private void initSession(File directory) {
         String serverAddress = cfg.getServerAddress();
         URI serverUri = URI.create(serverAddress);
         
         Session session = new Session();
-        session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
-        session.addOnSessionEstablishedListener(s -> {
-            cfg.addInitiatedSession(
-                serverAddress, 
-                s.getSessionId(), 
-                directory.getAbsolutePath());
-        });
-        session.addOnSessionClosedListener(s -> sessionTable.removeSession(s));
-        session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
+        addCommonListeners(session, serverAddress, directory.getAbsolutePath());
         session.addOnResponseListener(Response.Type.SESSION_CREATED, (s) -> {
             s.loadImages(directory);
         }, true);
-        session.addOnResponseListener(Response.Type.SYNCHRONIZING, (s, r) -> {
-            Response.Synchronizing resp = (Response.Synchronizing)r;
-            synchronizeSession(s, resp.getChanges());
-        });
         session.init(serverUri, directory.getName());
     }
     
@@ -275,18 +276,80 @@ public class SessionControlForm extends javax.swing.JFrame {
         viewSession(selectedRow);
     }//GEN-LAST:event_tblSessionListMousePressed
     
+    private void addCommonListeners(Session session, String serverAddress, String absolutePath) { 
+        session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
+        session.addOnSessionEstablishedListener(s -> {
+            cfg.addInitiatedSession(
+                serverAddress, 
+                s.getSessionId(), 
+                absolutePath);
+        });
+        session.addOnSessionClosedListener(s -> sessionTable.removeSession(s));
+        session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
+        
+        session.addOnResponseListener(Response.Type.SYNCHRONIZING, (s, r) -> {
+            Response.Synchronizing resp = (Response.Synchronizing)r;
+            synchronizeSession(s, resp.getChanges());
+        });
+        session.addOnResponseListener(Response.Type.ERROR, (s, r) -> {
+            Response.Error err = (Response.Error)r;
+            
+            switch (err.getStatus()) {
+                case INVALID_REQUEST: {
+                    String message = (String)err.getProperty("message");
+                    error("Invalid request: " + message, "Error");
+                    break;
+                }
+                case NON_EXISTENT_SESSION: {
+                    String sessionId = (String)err.getProperty("sessionId");
+                    error("Invalid request: " + sessionId, "Error");
+                    break;
+                }
+                case CLIENT_NOT_CONNECTED: {
+                    error("Client not connected", "Error");
+                    break;
+                } 
+                case CLIENT_ALREADY_CONNECTED: {
+                    error("Client already connected", "Error");
+                    break;
+                }
+                case NOT_AN_INITIATOR: {
+                    error("Not an initiator", "Error");
+                    break;
+                }
+                case NOT_A_VIEWER: {
+                    error("Not a viewer", "Error");
+                    break;
+                }
+                case FILE_NOT_FOUND: {
+                    String fileName = (String)err.getProperty("fileName");
+                    error("File not found: " + fileName, "Error");
+                    break;
+                }
+                case FILE_ALREADY_EXISTS: {
+                    String fileName = (String)err.getProperty("fileName");
+                    error("File already exists: " + fileName, "Error");
+                    break;
+                }
+                case EXCEPTION: {
+                    String message = (String)err.getProperty("message");
+                    error("An exception occured on server: " + message, "Error");
+                    break;
+                }
+            }
+        });
+    }
+    
     public void restoreSessions() {
         List<SessionInfo> sessions = cfg.getInitiatedSessions();
         for (SessionInfo sessionInfo : sessions) {
             Session session = new Session();
-            session.addOnResponseListener(Response.Type.SESSION_RESTORED, s -> sessionTable.addSession(s));
-            session.addOnSessionClosedListener(s -> sessionTable.removeSession(s));
-            session.addOnResponseListener(Response.Type.SESSION_CLOSED, s -> cfg.removeInitiatedSession(s.getUrl(), s.getSessionId()), false);
+            addCommonListeners(session, sessionInfo.getUrl(), sessionInfo.getPath());
             session.setPath(sessionInfo.getPath());
             session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
         }
     }
-    
+
     private void synchronizeSession(Session session, List<Change> changes) {
         if (session.getSessionType() != Session.Type.INIT_SESSION)
             return;
@@ -307,6 +370,7 @@ public class SessionControlForm extends javax.swing.JFrame {
         }
         catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Failed to synchronize files: " + e);
+            e.printStackTrace(System.err);
         }
     }
     
