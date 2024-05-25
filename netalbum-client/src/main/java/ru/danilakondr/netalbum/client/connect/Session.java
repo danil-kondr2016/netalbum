@@ -365,14 +365,10 @@ public class Session {
     }
     
     public void addOnResponseListener(Response.Type type, Consumer<Session> listener, boolean oneShot) {
-        service.subscribe(new ResponseListener(this, type, (s, item) -> {
-            listener.accept(Session.this);
-        }, oneShot));
+       service.subscribe(new ResponseListener(this, type, (s, item) -> listener.accept(s), oneShot));
     }
     
     public void addOnResponseListener(Response.Type type, BiConsumer<Session, Response> listener, boolean oneShot) {
-        service.subscribe(new ResponseListener(this, type, (s, resp) -> {
-                        listener.accept(Session.this, resp);
-        }, oneShot));
+        service.subscribe(new ResponseListener(this, type, listener, oneShot));
     }
 }
