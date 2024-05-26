@@ -16,13 +16,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({"fileName", "fileSize", "width", "height", "thumbnail"})
 public class ImageData extends ImageInfo {
-	private byte[] thumbnail;
-	
-	public byte[] getThumbnail() {
-		return thumbnail;
-	}
-	
-	public void setThumbnail(byte[] thumbnail) {
-		this.thumbnail = thumbnail;
-	}
+    private byte[] thumbnail;
+    
+    public byte[] getThumbnail() {
+        return thumbnail;
+    }
+    
+    public void setThumbnail(byte[] thumbnail) {
+        this.thumbnail = thumbnail;
+    }
 }
