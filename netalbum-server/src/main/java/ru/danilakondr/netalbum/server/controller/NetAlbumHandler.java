@@ -137,6 +137,9 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     }
 
     private void putInitiator(WebSocketSession session, String sessionId) {
+        if (initiators.containsKey(sessionId))
+            throw new InvalidRequestError("Initiator already connected");
+
         initiators.put(sessionId, session);
         connected.put(session, sessionId);
     }
@@ -153,18 +156,19 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         boolean isConnected = this.isConnected(session);
         if (isConnected) {
             String sessionId = connected.get(session);
-            return initiators.containsKey(sessionId);
+            return Objects.equals(session, initiators.get(sessionId));
         }
         return false;
     }
     
     private void removeClient(WebSocketSession session) {
-        if (!connected.containsKey(session))
+        if (!isConnected(session))
             return;
         
         String sessionId = connected.get(session);
-        if (initiators.containsKey(sessionId))
+        if (isInitiator(session)) {
             initiators.remove(sessionId);
+        }
 
         connected.remove(session);
     }
@@ -178,9 +182,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (s == null)
             throw new NonExistentSession(id);
         
-        if (initiators.containsKey(id))
-            throw new InvalidRequestError("Initiator already connected");
-
         putInitiator(session, id);
         Response resp = new Response(Response.Type.SESSION_RESTORED);
         resp.setProperty("sessionId", id);
