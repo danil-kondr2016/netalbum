@@ -5,6 +5,11 @@ import javax.persistence.*;
 @Entity
 @Table(name="contents")
 public class ImageFile {
+    public enum Type {
+        FILE,
+        DIRECTORY;
+    }
+    
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="fileId")
@@ -30,6 +35,9 @@ public class ImageFile {
     
     @Column(name="thumbnail")
     private byte[] thumbnail;
+    
+    @Column(name="fileType")
+    private Type fileType;
 
     public long getFileSize() {
         return fileSize;
@@ -63,6 +71,10 @@ public class ImageFile {
         return firstName;
     }
 
+    public Type getFileType() {
+        return fileType;
+    }
+    
     public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
     }
@@ -93,5 +105,9 @@ public class ImageFile {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public void setFileType(Type fileType) {
+        this.fileType = fileType;
     }
 }
