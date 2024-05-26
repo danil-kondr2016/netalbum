@@ -6,7 +6,7 @@
     <parent>
         <groupId>ru.danilakondr</groupId>
         <artifactId>netalbum</artifactId>
-        <version>0.6.20</version>
+        <version>0.7.0</version>
     </parent>
 
     <groupId>ru.danilakondr.les</groupId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>ru.danilakondr</groupId>
             <artifactId>netalbum-api</artifactId>
-            <version>0.6.20</version>
+            <version>0.7.0</version>
         </dependency>
         <dependency>
             <groupId>net.coobird</groupId>
