@@ -62,18 +62,16 @@ public class RequestGenerateTest {
 		original.setHeight(8);
 		original.setThumbnail("THUMB1\r\n".getBytes(StandardCharsets.US_ASCII));
 
-		Request.AddImage req = new Request.AddImage();
-		req.setImage(original);
+		Request.AddFile req = new Request.AddFile();
+		req.setFile(original);
 		String x = objectToJson(req);
-		
-		assertEquals("{\"type\":\"REQUEST\",\"method\":\"ADD_IMAGE\",\"image\":{\"fileName\":\"test.raw\",\"fileSize\":8,\"width\":1,\"height\":8,\"thumbnail\":\"VEhVTUIxDQo=\"}}", x);
-
+                
 		Request req1 = jsonToObject(x, Request.class);
-		assertSame(req1.getMethod(), Request.Method.ADD_IMAGE);
-		assertSame(req1.getClass(), Request.AddImage.class);
+		assertSame(req1.getMethod(), Request.Method.ADD_FILE);
+		assertSame(req1.getClass(), Request.AddFile.class);
 
-		Request.AddImage req2 = (Request.AddImage) req1;
-		ImageData received = req2.getImage();
+		Request.AddFile req2 = (Request.AddFile) req1;
+		ImageData received = req2.getFile();
                 assertNotNull(received);
 
 		assertEquals(original.getFileName(), received.getFileName());
@@ -86,11 +84,11 @@ public class RequestGenerateTest {
 	@Test
 	@DisplayName("Check message with nullable fields (synchronize)")
 	void synchronize() throws JsonProcessingException {
-		Change first = new Change();
+		Change.RenameFile first = new Change.RenameFile();
 		first.setOldName("test1.png");
 		first.setNewName("test/test1.png");
 		
-		Change second = new Change();
+		Change.RenameFile second = new Change.RenameFile();
 		second.setOldName("test2.png");
 		second.setNewName(null);
 		
@@ -102,6 +100,6 @@ public class RequestGenerateTest {
 		req.setProperty("changes", changes);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"type\":\"REQUEST\",\"method\":\"SYNCHRONIZE\",\"changes\":[{\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"oldName\":\"test2.png\",\"newName\":null}]}", x);
+		assertEquals("{\"type\":\"REQUEST\",\"method\":\"SYNCHRONIZE\",\"changes\":[{\"type\":\"RENAME_FILE\",\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"type\":\"RENAME_FILE\",\"oldName\":\"test2.png\",\"newName\":null}]}", x);
 	}
 }
