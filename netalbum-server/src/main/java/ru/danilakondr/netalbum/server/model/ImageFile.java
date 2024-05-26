@@ -37,6 +37,7 @@ public class ImageFile {
     private byte[] thumbnail;
     
     @Column(name="fileType")
+    @Enumerated(value = EnumType.STRING)
     private Type fileType;
 
     public long getFileSize() {
