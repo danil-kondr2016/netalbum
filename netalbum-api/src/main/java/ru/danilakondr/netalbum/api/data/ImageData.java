@@ -15,8 +15,44 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @author Данила А. Кондратенко
  */
 @JsonPropertyOrder({"fileName", "fileSize", "width", "height", "thumbnail"})
-public class ImageData extends ImageInfo {
+public class ImageData {
+    private String fileName;
+    private long fileSize;
+    private int width;
+    private int height;
     private byte[] thumbnail;
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
     
     public byte[] getThumbnail() {
         return thumbnail;

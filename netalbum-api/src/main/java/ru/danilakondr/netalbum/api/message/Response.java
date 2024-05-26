@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.*;
 import ru.danilakondr.netalbum.api.data.Change;
-import ru.danilakondr.netalbum.api.data.ImageInfo;
+import ru.danilakondr.netalbum.api.data.FileInfo;
 
 /**
  * Класс-держатель ответа. Используется для формирования ответа на стороне
@@ -56,8 +56,8 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
  * <h3> {@code SYNCHRONIZING} </h3>
  * <p> Посылается сервером при отправке запроса {@code SYNCHRONIZE}. Содержит
  * список изменений.
- * <h3> {@code IMAGE_ADDED} </h3>
- * <p> Посылается сервером при отправке запроса {@code ADD_IMAGE}. Содержит
+ * <h3> {@code FILE_ADDED} </h3>
+ * <p> Посылается сервером при отправке запроса {@code ADD_FILE}. Содержит
  * данные об отправленном изображении.
  * <h3> {@code SESSION_CLOSED} </h3>
  * <p> Посылается сервером при закрытии сессии каждому, кто к ней подключён.
@@ -79,7 +79,7 @@ import ru.danilakondr.netalbum.api.data.ImageInfo;
         @JsonSubTypes.Type(value=Response.Synchronizing.class, name="SYNCHRONIZING"),
         @JsonSubTypes.Type(value=Response.ThumbnailsArchive.class, name="THUMBNAILS_ARCHIVE"),
         @JsonSubTypes.Type(value=Response.SessionCreated.class, name="SESSION_CREATED"),
-        @JsonSubTypes.Type(value=Response.ImageAdded.class, name="IMAGE_ADDED"),
+        @JsonSubTypes.Type(value=Response.FileAdded.class, name="FILE_ADDED"),
         @JsonSubTypes.Type(value=Response.class, name="SUCCESS"),
         @JsonSubTypes.Type(value=Response.Error.class, name="ERROR"),
         @JsonSubTypes.Type(value=Response.class, name="SESSION_CLOSED"),
@@ -98,7 +98,7 @@ public class Response extends Message {
         CLIENT_DISCONNECTED,
         DIRECTORY_INFO,
         THUMBNAILS_ARCHIVE,
-        SYNCHRONIZING, IMAGE_ADDED,
+        SYNCHRONIZING, FILE_ADDED,
     }
     private static Response SUCCESS = null;
     private Type answerType;
@@ -297,25 +297,25 @@ public class Response extends Message {
         this.answerType = type;
     }
 
-    @JsonPropertyOrder({"type", "answer", "image"})
-    public static class ImageAdded extends Response {
-        private ImageInfo image;
+    @JsonPropertyOrder({"type", "answer", "file"})
+    public static class FileAdded extends Response {
+        private FileInfo file;
 
-        public ImageAdded() {
-            super(Type.IMAGE_ADDED);
+        public FileAdded() {
+            super(Type.FILE_ADDED);
         }
 
-        public ImageAdded(ImageInfo image) {
-            super(Type.IMAGE_ADDED);
-            this.image = image;
+        public FileAdded(FileInfo file) {
+            super(Type.FILE_ADDED);
+            this.file = file;
         }
 
-        public ImageInfo getImage() {
-            return image;
+        public FileInfo getFile() {
+            return file;
         }
 
-        public void setImage(ImageInfo image) {
-            this.image = image;
+        public void setFile(FileInfo image) {
+            this.file = image;
         }
     }
 }

@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.data.ImageData;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Класс-держатель запроса. Используется для формирования запроса на стороне
@@ -39,10 +37,14 @@ import java.util.Map;
  * <h3> {@code DOWNLOAD_THUMBNAILS} </h3>
  * <p> Скачивание уменьшенных картинок.
  * <p> В ответ сервер посылает ответ типа {@code THUMBNAILS_ARCHIVE}.
- * <h3> {@code ADD_IMAGE} </h3>
- * <p> Добавление изображений. Содержит поле {@code image}, представляющее
- * собой данные об изображении в виде объекта.
- * <p> В ответ сервер возвращает {@code SUCCESS}.
+ * <h3> {@code ADD_FILE} </h3>
+ * <p> Добавление файлов. Содержит поле {@code file}, представляющее
+ * собой данные о файле в виде объекта.
+ * <p> В ответ сервер возвращает {@code FILE_ADDED}.
+ * <h3> {@code ADD_DIRECTORY} </h3>
+ * <p> Добавление директории. Содержит поле {@code directoryName}, являющееся
+ * строкой, которое содержит имя папки.
+ * <p> В ответ сервер возвращает {@code FILE_ADDED}.
  * <h3> {@code SYNCHRONIZE} </h3>
  * <p> Синхронизация. Содержит поле {@code changes}, представляющее собой массив
  * изменений в виде объектов.
@@ -58,7 +60,8 @@ import java.util.Map;
 @JsonSubTypes({
         @JsonSubTypes.Type(value=Request.InitSession.class, name="INIT_SESSION"),
         @JsonSubTypes.Type(value=Request.Synchronize.class, name="SYNCHRONIZE"),
-        @JsonSubTypes.Type(value=Request.AddImage.class, name="ADD_IMAGE"),
+        @JsonSubTypes.Type(value=Request.AddFile.class, name="ADD_FILE"),
+        @JsonSubTypes.Type(value=Request.AddDirectory.class, name="ADD_DIRECTORY"),
         @JsonSubTypes.Type(value=Request.ConnectToSession.class, name="CONNECT_TO_SESSION"),
         @JsonSubTypes.Type(value=Request.RestoreSession.class, name="RESTORE_SESSION"),
         @JsonSubTypes.Type(value=Request.class, name="CLOSE_SESSION"),
@@ -138,22 +141,46 @@ public class Request extends Message {
         }
     }
 
-    @JsonPropertyOrder({"type","method","image"})
-    public static class AddImage extends Request {
-        private ImageData image;
+    @JsonPropertyOrder({"type","method","file"})
+    public static class AddFile extends Request {
+        private ImageData file;
 
-        public AddImage() {
-            super(Method.ADD_IMAGE);
+        public AddFile() {
+            super(Method.ADD_FILE);
         }
 
-        @JsonSetter("image")
-        public void setImage(ImageData data) {
-            this.image = data;
+        @JsonSetter("file")
+        public void setFile(ImageData data) {
+            this.file = data;
         }
 
-        @JsonGetter("image")
-        public ImageData getImage() {
-            return image;
+        @JsonGetter("file")
+        public ImageData getFile() {
+            return file;
+        }
+    }
+    
+    @JsonPropertyOrder({"type", "method", "directoryName"})
+    public static class AddDirectory extends Request {
+        private String directoryName;
+        
+        public AddDirectory() {
+            super(Method.ADD_DIRECTORY);
+        }
+        
+        public AddDirectory(String dirName) {
+            this();
+            this.directoryName = dirName;
+        }
+
+        @JsonGetter("directoryName")
+        public String getDirectoryName() {
+            return directoryName;
+        }
+
+        @JsonSetter("directoryName")
+        public void setDirectoryName(String directoryName) {
+            this.directoryName = directoryName;
         }
     }
 
@@ -181,7 +208,8 @@ public class Request extends Message {
         , DISCONNECT_FROM_SESSION
         , CLOSE_SESSION
         , GET_DIRECTORY_INFO
-        , ADD_IMAGE
+        , ADD_FILE
+        , ADD_DIRECTORY
         , DOWNLOAD_THUMBNAILS
         , SYNCHRONIZE
         ;
