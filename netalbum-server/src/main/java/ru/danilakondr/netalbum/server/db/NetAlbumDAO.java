@@ -52,6 +52,12 @@ public class NetAlbumDAO {
         Session s = factory.getCurrentSession();
         s.saveOrUpdate(file);
     }
+    
+    @Transactional
+    public void removeImageFile(ImageFile file) {
+        Session s = factory.getCurrentSession();
+        s.remove(file);
+    }
 
     @Transactional
     public ImageFile getImageFile(String sessionId, String name) {

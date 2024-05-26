@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import ru.danilakondr.netalbum.api.data.ImageInfo;
+import ru.danilakondr.netalbum.api.data.FileInfo;
 
 import static ru.danilakondr.netalbum.api.message.Response.Error.Status.*;
 import static ru.danilakondr.netalbum.api.message.Response.Type.SUCCESS;
@@ -83,8 +83,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                 case CLOSE_SESSION:
                     handleCloseSession(session);
                     break;
-                case ADD_IMAGE:
-                    handleAddImage(session, (Request.AddImage)req);
+                case ADD_FILE:
+                    handleAddFile(session, (Request.AddFile)req);
+                    break;
+                case ADD_DIRECTORY:
+                    handleAddDirectory(session, (Request.AddDirectory)req);
                     break;
                 case DOWNLOAD_THUMBNAILS:
                     handleDownloadThumbnails(session);
@@ -193,13 +196,26 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         List<Change> changes = req.getChanges();
         // Первое. Записать изменения в базу данных.
         for (Change change: changes) {
-            service.renameFile(sessionId, change.getOldName(), change.getNewName());
+            switch (change.getType()) {
+                case ADD_FOLDER:
+                    Change.AddFolder mkdir = (Change.AddFolder)change;
+                    service.putDirectories(sessionId, mkdir.getFolderName());
+                    break;
+                case RENAME_FILE:
+                    Change.RenameFile renFile = (Change.RenameFile)change;
+                    service.renameFile(sessionId, renFile.getOldName(), renFile.getNewName());
+                    break;
+                case RENAME_DIR:
+                    Change.RenameDir renDir = (Change.RenameDir)change;
+                    service.renameDir(sessionId, renDir.getOldName(), renDir.getNewName());
+                    break;
+            }
         }
         // Второе. Отправить изменения инициатору.
         Response changesResp = new Response.Synchronizing(changes);
         WebSocketSession initiator = initiators.get(sessionId);
         sendResponse(initiator, changesResp);
-        sendResponse(session, new Response(SUCCESS));
+        sendResponse(session, new Response(Response.Type.SUCCESS));
     }
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
@@ -226,7 +242,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, resp);
     }
 
-    private void handleAddImage(WebSocketSession session, Request.AddImage req) throws IOException {
+    private void handleAddFile(WebSocketSession session, Request.AddFile req) throws IOException {
         if (!isConnected(session))
             throw new NotConnectedError();
 
@@ -234,16 +250,16 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (!isInitiator(session))
             throw new NotAnInitiatorError();
         
-        System.out.printf("Adding image: %s%n", req.getImage().getFileName());
-        ImageData image = req.getImage();
+        System.out.printf("Adding image: %s%n", req.getFile().getFileName());
+        ImageData image = req.getFile();
         service.putImage(sessionId, image);
 
-        ImageInfo imgInfo = new ImageInfo();
+        FileInfo.Image imgInfo = new FileInfo.Image();
         imgInfo.setFileName(image.getFileName());
         imgInfo.setFileSize(image.getFileSize());
         imgInfo.setWidth(image.getWidth());
         imgInfo.setHeight(image.getHeight());
-        sendResponse(session, new Response.ImageAdded(imgInfo));
+        sendResponse(session, new Response.FileAdded(imgInfo));
     }
 
     private void handleCloseSession(WebSocketSession session) throws IOException {
@@ -325,5 +341,17 @@ public class NetAlbumHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.printf("Closed session %s %d %s%n", session, status.getCode(), status.getReason());
         removeClient(session);
+    }
+
+    private void handleAddDirectory(WebSocketSession session, Request.AddDirectory req) throws IOException {
+        if (!isConnected(session))
+            throw new NotConnectedError();
+
+        String sessionId = connected.get(session);
+        service.putDirectory(sessionId, req.getDirectoryName());
+        
+        FileInfo dirInfo = new FileInfo(FileInfo.Type.DIRECTORY);
+        dirInfo.setFileName(req.getDirectoryName());
+        sendResponse(session, new Response.FileAdded(dirInfo));
     }
 }
