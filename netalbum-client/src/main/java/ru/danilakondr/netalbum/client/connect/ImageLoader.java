@@ -64,8 +64,8 @@ public class ImageLoader {
             
             Response resp = (Response)item;
 
-            if (resp.getAnswerType() == Response.Type.IMAGE_ADDED) {
-                Response.ImageAdded imgAdded = (Response.ImageAdded)resp;
+            if (resp.getAnswerType() == Response.Type.FILE_ADDED) {
+                Response.FileAdded imgAdded = (Response.FileAdded)resp;
                 
                 nProcessed++;
                 EventQueue.invokeLater(() -> {
@@ -136,14 +136,14 @@ public class ImageLoader {
 
     private void loadImage(File file) {
         try {
-            Request.AddImage addImage = new Request.AddImage();
+            Request.AddFile addImage = new Request.AddFile();
             String name = directory.toPath()
                     .relativize(file.toPath())
                     .toString()
                     .replace(File.separatorChar, '/');
 
             ImageData imgData = Images.generateImage(file, name, 640, 480);
-            addImage.setImage(imgData);
+            addImage.setFile(imgData);
 
             service.sendRequest(addImage);
         } catch (IOException ex) {

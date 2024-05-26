@@ -16,6 +16,9 @@ import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import javax.swing.SwingUtilities;
 import ru.danilakondr.netalbum.api.data.Change;
+import static ru.danilakondr.netalbum.api.data.Change.Type.ADD_FOLDER;
+import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_DIR;
+import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_FILE;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
@@ -278,7 +281,7 @@ public class SessionControlForm extends javax.swing.JFrame {
     
     private void addCommonListeners(Session session, String serverAddress, String absolutePath) { 
         session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
-        session.addOnSessionEstablishedListener(s -> {
+        session.addOnResponseListener(Response.Type.SESSION_CREATED, s -> {
             cfg.addInitiatedSession(
                 serverAddress, 
                 s.getSessionId(), 
@@ -356,16 +359,22 @@ public class SessionControlForm extends javax.swing.JFrame {
         
         try {
             Path dirPath = Path.of(session.getPath());
-            
+             
             for (Change change: changes) {
-                Path newDir = dirPath.resolve(change.getNewName()).getParent();
-                Files.createDirectories(newDir);
-            }
-            
-            for (Change change: changes) {
-                Path oldFile = dirPath.resolve(change.getOldName());
-                Path newFile = dirPath.resolve(change.getNewName());
-                Files.move(oldFile, newFile);
+                switch (change.getType()) {
+                    case RENAME_FILE:
+                    case RENAME_DIR:
+                        Change.Rename renFile = (Change.Rename)change;
+                        Path oldFile = dirPath.resolve(renFile.getOldName());
+                        Path newFile = dirPath.resolve(renFile.getNewName());
+                        Files.move(oldFile, newFile);
+                        break;
+                    case ADD_FOLDER:
+                        Change.AddFolder mkdir = (Change.AddFolder)change;
+                        Path folderName = dirPath.resolve(mkdir.getFolderName());
+                        Files.createDirectories(folderName);
+                        break;
+                }
             }
         }
         catch (IOException e) {

@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.FileSystems;
 import java.nio.file.FileSystem;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -24,12 +25,16 @@ import java.util.Objects;
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import ru.danilakondr.netalbum.api.data.Change;
 
-import ru.danilakondr.netalbum.api.data.ImageInfo;
+import ru.danilakondr.netalbum.api.data.FileInfo;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.client.contents.FolderContentModel;
@@ -45,9 +50,6 @@ public class FolderContentsViewer extends javax.swing.JPanel {
     private Session session;
     private String folderName;
     
-    /**
-     * Creates new form FolderViewer
-     */
     public FolderContentsViewer(Session session, String folderName, Path zipFile) {
         this.session = session;
         this.folderName = folderName;
@@ -56,6 +58,54 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         initComponents();
         
         treeFolderContents.setTransferHandler(new FolderContentTreeTransferHandler());
+        contents.addTreeModelListener(new TreeModelListener() {
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                for (Object oNode: e.getChildren()) {
+                    treeUpdated((FolderContentNode)oNode);
+                }
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                for (Object oNode: e.getChildren()) {
+                    var childNode = (FolderContentNode)oNode;
+                    String newPath = String.join("/", Arrays.stream(childNode.getPath())
+                        .filter(node -> !Objects.equals(node, childNode.getRoot()))
+                        .map(node -> Objects.toString(node, ""))
+                        .toArray(String[]::new));
+                    contents.addInsert(childNode.getFileInfo(), newPath);
+                }
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                for (Object oNode: e.getChildren()) {
+                    var childNode = (FolderContentNode)oNode;
+                    contents.addRemove(childNode.getFileInfo());
+                }
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                for (Object oNode: e.getChildren()) {
+                    treeUpdated((FolderContentNode)oNode);
+                }
+            }
+            
+            private void treeUpdated(FolderContentNode lastNode) {
+                FileInfo info = lastNode.getFileInfo();
+                String oldPath = info.getFileName();
+                
+                FolderContentNode rootNode = (FolderContentNode)lastNode.getRoot();
+                String newPath = String.join("/", Arrays.stream(lastNode.getPath())
+                        .filter(node -> !Objects.equals(node, rootNode))
+                        .map(node -> Objects.toString(node, ""))
+                        .toArray(String[]::new));
+                
+                contents.addUpdate(info, newPath);
+            }
+        });
     }
      
     /**
@@ -174,7 +224,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         
         FolderContentNode node = (FolderContentNode)evt.getPath().getLastPathComponent();
         if (node.isImage()) {
-            ImageInfo info = node.getImageInfo();
+            FileInfo.Image info = (FileInfo.Image)node.getFileInfo();
             
             String fileName = Objects.toString(node.getUserObject(), "");
             lblOriginalSize.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("folderContents.imageSize"), info.getWidth(), info.getHeight()));
@@ -201,7 +251,8 @@ public class FolderContentsViewer extends javax.swing.JPanel {
     private void btnSynchronizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSynchronizeActionPerformed
         List<Change> changes = contents.getChanges();
         
-        session.addOnResponseListener(Response.Type.SYNCHRONIZING, s -> contents.applyChanges(), true);
+        var form = SwingUtilities.getWindowAncestor(this);
+        session.addOnResponseListener(Response.Type.SYNCHRONIZING, s -> form.dispose());
         session.synchronize(changes);
     }//GEN-LAST:event_btnSynchronizeActionPerformed
 
@@ -338,8 +389,6 @@ class FolderContentTreeTransferHandler extends TransferHandler {
             FolderContentModel model = (FolderContentModel)tree.getModel();
             // Remove nodes saved in nodesToRemove in createTransferable.
             for (FolderContentNode nodeToRemove : nodesToRemove) {
-                if (nodeToRemove.isImage())
-                    model.appendRemoved(nodeToRemove.getImageInfo().getFileName());
                 model.removeNodeFromParent(nodeToRemove);
             }
         }

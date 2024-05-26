@@ -4,41 +4,57 @@
  */
 package ru.danilakondr.netalbum.client.contents;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 import javax.swing.tree.DefaultMutableTreeNode;
-import ru.danilakondr.netalbum.api.data.ImageInfo;
+import ru.danilakondr.netalbum.api.data.FileInfo;
 
 /**
  *
  * @author danko
  */
 public abstract class FolderContentNode extends DefaultMutableTreeNode {
+    private FileInfo fileInfo;
+    
+    private static String getLastElement(String path) {
+        if (path.isEmpty())
+            return "";
+
+        String[] fragments = path.split("/");
+        return fragments[fragments.length - 1];
+    }
+    
     protected FolderContentNode(Object userObject) {
         super(userObject);
+    }
+    
+    protected FolderContentNode(FileInfo info) {
+        super(getLastElement(info.getFileName()));
+    }
+
+    public FileInfo getFileInfo() {
+        return fileInfo;
+    }
+
+    public void setFileInfo(FileInfo fileInfo) {
+        this.fileInfo = fileInfo;
+    }
+
+    public String[] getCurrentPath() {
+        return 
+                Arrays.stream(getPath())
+                .filter(n -> !Objects.equals(n, getRoot()))
+                .map(n -> Objects.toString(n))
+                .toArray(String[]::new);
     }
     
     public abstract boolean isDirectory();
     
     public abstract boolean isImage();
     
-    public abstract ImageInfo getImageInfo();
-    
-    public abstract void setImageInfo(ImageInfo info);
-  
     private static final class Image extends FolderContentNode {
-        private ImageInfo info;
-        
-        private static String getLastElement(String path) {
-            if (path.isEmpty())
-                return "";
-            
-            String[] fragments = path.split("/");
-            return fragments[fragments.length - 1];
-        }
-        
-        public Image(ImageInfo info) {
-            super(getLastElement(info.getFileName()));
-            this.info = info;
+        public Image(FileInfo info) {
+            super(info);
         }
         
         public Image(String fileName) {
@@ -55,16 +71,6 @@ public abstract class FolderContentNode extends DefaultMutableTreeNode {
             return true;
         }
 
-        @Override
-        public ImageInfo getImageInfo() {
-            return info;
-        }
-
-        @Override
-        public void setImageInfo(ImageInfo info) {
-            this.info = info;
-        }
-        
         @Override
         public boolean isLeaf() {
             return true;
@@ -95,19 +101,9 @@ public abstract class FolderContentNode extends DefaultMutableTreeNode {
         public boolean isLeaf() {
             return false;
         }
-        
-        @Override
-        public ImageInfo getImageInfo() {
-            throw new UnsupportedOperationException("Not an image");
-        }
-
-        @Override
-        public void setImageInfo(ImageInfo info) {
-            throw new UnsupportedOperationException("Not an image");
-        }
     }
 
-    public static FolderContentNode createImage(ImageInfo info) {
+    public static FolderContentNode createImage(FileInfo info) {
         return new Image(info);
     }
     
