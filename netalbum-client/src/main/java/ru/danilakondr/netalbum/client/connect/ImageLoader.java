@@ -69,7 +69,7 @@ public class ImageLoader {
                 
                 nProcessed++;
                 EventQueue.invokeLater(() -> {
-                    monitor.setNote(imgAdded.getImage().getFileName());
+                    monitor.setNote(imgAdded.getFile().getFileName());
                     monitor.setProgress(nProcessed);
                     if (nProcessed == nTotal) {
                         JOptionPane.showMessageDialog(null, "All images has been loaded successfully.");
