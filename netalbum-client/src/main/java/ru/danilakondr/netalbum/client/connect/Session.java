@@ -18,7 +18,7 @@ import ru.danilakondr.netalbum.api.message.Message;
 import static ru.danilakondr.netalbum.api.message.Message.Type.RESPONSE;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
-import ru.danilakondr.netalbum.client.LocalizedMessages;
+import ru.danilakondr.netalbum.client.errors.NotADirectoryError;
 
 /**
  *
@@ -54,7 +54,9 @@ public class Session {
         }
         
         public String getLocalizedName() {
-            return ResourceBundle.getBundle("ru/danilakondr/netalbum/client/connect/Strings").getString(strId);
+            return ResourceBundle.getBundle("ru/danilakondr/"
+                    + "netalbum/client/connect/Strings")
+                    .getString(strId);
         }
     }
     
@@ -171,7 +173,7 @@ public class Session {
     
     public void loadImages(File directory) {
         if (!directory.isDirectory())
-            throw new IllegalArgumentException(LocalizedMessages.notADirectoryError(directory));
+            throw new NotADirectoryError(directory);
         
         setPath(directory.getAbsolutePath());
         ImageLoader loader = new ImageLoader(service, directory);
