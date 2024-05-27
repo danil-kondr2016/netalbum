@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -350,43 +351,53 @@ public class SessionControlForm extends javax.swing.JFrame {
             switch (err.getStatus()) {
                 case INVALID_REQUEST: {
                     String message = (String)err.getProperty("message");
-                    error("Invalid request: " + message, "Error");
+                    error(MessageFormat
+                            .format(Messages.INVALID_REQUEST, message), 
+                            Messages.ERROR_TITLE);
                     break;
                 }
                 case NON_EXISTENT_SESSION: {
                     String sessionId = (String)err.getProperty("sessionId");
-                    error("Invalid request: " + sessionId, "Error");
+                    error(MessageFormat
+                            .format(Messages.NON_EXISTENT_SESSION, sessionId), 
+                            Messages.ERROR_TITLE);
                     break;
                 }
                 case CLIENT_NOT_CONNECTED: {
-                    error("Client not connected", "Error");
+                    error(Messages.CLIENT_NOT_CONNECTED, Messages.ERROR_TITLE);
                     break;
                 } 
                 case CLIENT_ALREADY_CONNECTED: {
-                    error("Client already connected", "Error");
+                    error(Messages.CLIENT_ALREADY_CONNECTED, Messages.ERROR_TITLE);
                     break;
                 }
                 case NOT_AN_INITIATOR: {
-                    error("Not an initiator", "Error");
+                    error(Messages.NOT_AN_INITIATOR, Messages.ERROR_TITLE);
                     break;
                 }
                 case NOT_A_VIEWER: {
-                    error("Not a viewer", "Error");
+                    error(Messages.NOT_A_VIEWER, Messages.ERROR_TITLE);
                     break;
                 }
                 case FILE_NOT_FOUND: {
                     String fileName = (String)err.getProperty("fileName");
-                    error("File not found: " + fileName, "Error");
+                    error(MessageFormat
+                            .format(Messages.FILE_NOT_FOUND, fileName),
+                            Messages.ERROR_TITLE);
                     break;
                 }
                 case FILE_ALREADY_EXISTS: {
                     String fileName = (String)err.getProperty("fileName");
-                    error("File already exists: " + fileName, "Error");
+                    error(MessageFormat
+                            .format(Messages.FILE_ALREADY_EXISTS, fileName), 
+                            Messages.ERROR_TITLE);
                     break;
                 }
                 case EXCEPTION: {
                     String message = (String)err.getProperty("message");
-                    error("An exception occured on server: " + message, "Error");
+                    error(MessageFormat
+                            .format(Messages.EXCEPTION, message), 
+                            Messages.ERROR_TITLE);
                     break;
                 }
             }
