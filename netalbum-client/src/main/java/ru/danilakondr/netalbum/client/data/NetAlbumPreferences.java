@@ -144,4 +144,15 @@ public class NetAlbumPreferences {
     public boolean hasInitiatedSessions() {
         return initiatedSessions.getInt("count", 0) > 0;
     }
+
+    public boolean isNotConfigured() {
+        int width = thumbnails.getInt("width", -1);
+        int height = thumbnails.getInt("height", -1);
+        String address = server.get("server", null);
+        
+        if (address == null || width == -1 || height == -1)
+            return true;
+        
+        return false;
+    }
 }

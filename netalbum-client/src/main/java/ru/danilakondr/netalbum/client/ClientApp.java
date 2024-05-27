@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.io.IOException;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import ru.danilakondr.netalbum.client.gui.ConfigDialog;
 import ru.danilakondr.netalbum.client.gui.SessionControlForm;
 
 public class ClientApp {
@@ -27,6 +28,15 @@ public class ClientApp {
 
     public static void main(String[] args) throws IOException {
         NetAlbumPreferences cfg = new NetAlbumPreferences();
+        if (cfg.isNotConfigured()) {
+            JOptionPane.showMessageDialog(null, 
+                    "Вы запускаете программу первый раз. Нужно произвести "
+                            + "первоначальную настройку.", "", 
+                            JOptionPane.INFORMATION_MESSAGE);
+            ConfigDialog dlg = new ConfigDialog(null, true, cfg);
+            dlg.setVisible(true);
+        }
+        
         ClientApp app = new ClientApp(cfg);
         app.run();
     }
