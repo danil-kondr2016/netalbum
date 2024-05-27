@@ -150,7 +150,7 @@ public class NetAlbumPreferences {
         int height = thumbnails.getInt("height", -1);
         String address = server.get("server", null);
         
-        if (address == null || width == -1 || height == -1)
+        if (address == null && width == -1 && height == -1)
             return true;
         
         return false;
