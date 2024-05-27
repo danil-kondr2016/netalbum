@@ -38,11 +38,21 @@ public class ImageLoader {
         service.subscribe(imgTaskSubscriber);
     }
     
+    private static final ResourceBundle BUNDLE = ResourceBundle
+            .getBundle("ru/danilakondr/netalbum/client/connect/Strings");
+    
+    private static final String LOADING_IMAGES = BUNDLE
+            .getString("imageLoader.loadingImages");
+    
+    private static final String IMAGES_LOADED_SUCCESSFULLY = BUNDLE
+            .getString("imageLoader.imagesLoadedSuccessfully");
+    
+    private static final String FAILED_TO_LOAD_IMAGES = BUNDLE
+            .getString("imageLoader.failedToLoadImages");
+    
     private final NetAlbumService service;
     private final ProgressMonitor monitor = new ProgressMonitor(null,
-            ResourceBundle
-                .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
-                .getString("imageLoader.loadingImages"),
+            LOADING_IMAGES,
             "",
             0, 100);
     
@@ -73,7 +83,7 @@ public class ImageLoader {
                         ResourceBundle
                             .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
                             .getString("imageLoader.failedToLoadImages"),
-                        ru.danilakondr.netalbum.client.gui.Messages.ERROR_TITLE,
+                        ru.danilakondr.netalbum.client.gui.GuiMessages.ERROR_TITLE,
                         JOptionPane.ERROR_MESSAGE);
                     break;
             }
@@ -99,19 +109,15 @@ public class ImageLoader {
                     monitor.setProgress(nProcessed);
                     if (nProcessed == nTotal) {
                         JOptionPane.showMessageDialog(null, 
-                            ResourceBundle
-                                .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
-                                .getString("imageLoader.imagesLoadedSuccessfully"));
+                            IMAGES_LOADED_SUCCESSFULLY);
                     }
                 });
             }
             else if (resp.getAnswerType() == Response.Type.ERROR) {
                 subscription.cancel();
                 JOptionPane.showMessageDialog(null, 
-                    ResourceBundle
-                        .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
-                        .getString("imageLoader.failedToLoadImages"),
-                    ru.danilakondr.netalbum.client.gui.Messages.ERROR_TITLE,
+                    FAILED_TO_LOAD_IMAGES,
+                    GuiMessages.ERROR_TITLE,
                     JOptionPane.ERROR_MESSAGE);
             }
         }
