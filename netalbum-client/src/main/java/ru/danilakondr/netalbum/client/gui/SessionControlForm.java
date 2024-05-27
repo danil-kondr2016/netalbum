@@ -159,6 +159,11 @@ public class SessionControlForm extends javax.swing.JFrame {
         helpMenu.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("menu.Help"), new Object[] {})); // NOI18N
 
         miAbout.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("menu.Help.About"), new Object[] {})); // NOI18N
+        miAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miAboutActionPerformed(evt);
+            }
+        });
         helpMenu.add(miAbout);
 
         jMenuBar1.add(helpMenu);
@@ -317,6 +322,10 @@ public class SessionControlForm extends javax.swing.JFrame {
         StringSelection sessionId = new StringSelection(s.getSessionId());
         cb.setContents(sessionId, sessionId);
     }//GEN-LAST:event_miCopySessionIdActionPerformed
+
+    private void miAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miAboutActionPerformed
+        new AboutDialog(this, true).setVisible(true);
+    }//GEN-LAST:event_miAboutActionPerformed
     
     private void addCommonListeners(Session session, String serverAddress, String absolutePath) { 
         session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
