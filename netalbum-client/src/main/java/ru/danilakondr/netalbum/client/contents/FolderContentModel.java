@@ -127,7 +127,53 @@ public class FolderContentModel extends DefaultTreeModel {
     public FileInfo getImageInfo(String[] path) {
         return imageInfoMap.get(String.join("/", path));
     }
+    
+    private void replaceFileNames(List<Change> changes, int renIndex) {
+        Change.Rename ren = (Change.Rename)changes.get(renIndex);
+        String renOldName = "^" + Pattern.quote(ren.getOldName());
+        String renNewName = Matcher.quoteReplacement(ren.getNewName());
+        for (int j = renIndex + 1; j < changes.size(); j++) {
+            Change ch = changes.get(j);
+            switch (ch.getType()) {
+                case RENAME_DIR:
+                case RENAME_FILE:
+                    Change.Rename nextRen = (Change.Rename)ch;
+                    String oldName = nextRen.getOldName().replaceAll(renOldName, renNewName);
+                    nextRen.setOldName(oldName);
+                    changes.set(j, nextRen);
+                    break;
+            }
+        }
+    }
 
+    private void replaceFolderPaths(List<Change> changes, int renIndex) {
+        Change.Rename ren = (Change.Rename)changes.get(renIndex);
+
+        String renOldName = "^" + Pattern.quote(ren.getOldName() + "/");
+        String renNewName = Matcher.quoteReplacement(ren.getNewName() + "/");
+        for (int j = renIndex + 1; j < changes.size(); j++) {
+            Change ch = changes.get(j);
+            switch (ch.getType()) {
+                case ADD_FOLDER:
+                    Change.AddFolder mkdir = (Change.AddFolder)ch;
+                    String oldFolderName = mkdir.getFolderName();
+                    String newFolderName = oldFolderName.replaceAll(renOldName, renNewName);
+                    mkdir.setFolderName(newFolderName);
+                    changes.set(j, mkdir);
+                    break;
+                case RENAME_DIR:
+                case RENAME_FILE:
+                    Change.Rename nextRen = (Change.Rename)ch;
+                    String oldDirName = nextRen.getOldName().replaceAll(renOldName, renNewName);
+                    String newDirName = nextRen.getNewName().replaceAll(renOldName, renNewName);
+                    nextRen.setOldName(oldDirName);
+                    nextRen.setNewName(newDirName);
+                    changes.set(j, nextRen);
+                    break;
+            }
+        }
+    }
+    
     public List<Change> getChanges() {
         List<Change> changes = new ArrayList<>();
         
@@ -159,87 +205,16 @@ public class FolderContentModel extends DefaultTreeModel {
             if (change.getType() != RENAME_DIR)
                 continue;
             
-            
-            Change.Rename ren = (Change.Rename)change;
-
-            String renOldName = "^" + Pattern.quote(ren.getOldName() + "/");
-            String renNewName = Matcher.quoteReplacement(ren.getNewName() + "/");
-            for (int j = i + 1; j < changes.size(); j++) {
-                Change ch = changes.get(j);
-                switch (ch.getType()) {
-                    case ADD_FOLDER:
-                        Change.AddFolder mkdir = (Change.AddFolder)ch;
-                        String oldFolderName = mkdir.getFolderName();
-                        String newFolderName = oldFolderName.replaceAll(renOldName, renNewName);
-                        mkdir.setFolderName(newFolderName);
-                        changes.set(j, mkdir);
-                        break;
-                    case RENAME_DIR:
-                        Change.RenameDir nextRenDir = (Change.RenameDir)ch;
-                        String oldDirName = nextRenDir.getOldName().replaceAll(renOldName, renNewName);
-                        String newDirName = nextRenDir.getNewName().replaceAll(renOldName, renNewName);
-                        nextRenDir.setOldName(oldDirName);
-                        nextRenDir.setNewName(newDirName);
-                        changes.set(j, nextRenDir);
-                        break;
-                    case RENAME_FILE:
-                        Change.RenameFile nextRenFile = (Change.RenameFile)ch;
-                        String oldFileName = nextRenFile.getOldName().replaceAll(renOldName, renNewName);
-                        String newFileName = nextRenFile.getNewName().replaceAll(renOldName, renNewName);
-                        nextRenFile.setOldName(oldFileName);
-                        nextRenFile.setNewName(newFileName);
-                        changes.set(j, nextRenFile);
-                        break;
-                }
-            }
+            replaceFolderPaths(changes, i);
         }
         
         for (int i = 0; i < changes.size(); i++) {
             Change change = changes.get(i);
-            if (change.getType() != RENAME_DIR)
+            if (change.getType() != RENAME_DIR && change.getType() != RENAME_FILE)
                 continue;
             
-            
-            Change.Rename ren = (Change.Rename)change;
-
-            String renOldName = "^" + Pattern.quote(ren.getOldName());
-            String renNewName = Matcher.quoteReplacement(ren.getNewName());
-            for (int j = i + 1; j < changes.size(); j++) {
-                Change ch = changes.get(j);
-                switch (ch.getType()) {
-                    case RENAME_DIR:
-                        Change.Rename nextRen = (Change.Rename)ch;
-                        String oldName = nextRen.getOldName().replaceAll(renOldName, renNewName);
-                        nextRen.setOldName(oldName);
-                        changes.set(j, nextRen);
-                        break;
-                }
-            }
+            replaceFileNames(changes, i);
         }
-        
-        for (int i = 0; i < changes.size(); i++) {
-            Change change = changes.get(i);
-            if (change.getType() != RENAME_FILE)
-                continue;
-            
-            
-            Change.Rename ren = (Change.Rename)change;
-
-            String renOldName = "^" + Pattern.quote(ren.getOldName());
-            String renNewName = Matcher.quoteReplacement(ren.getNewName());
-            for (int j = i + 1; j < changes.size(); j++) {
-                Change ch = changes.get(j);
-                switch (ch.getType()) {
-                    case RENAME_FILE:
-                        Change.Rename nextRen = (Change.Rename)ch;
-                        String oldName = nextRen.getOldName().replaceAll(renOldName, renNewName);
-                        nextRen.setOldName(oldName);
-                        changes.set(j, nextRen);
-                        break;
-                }
-            }
-        }
-        
         
         return changes.stream().filter(ch -> {
             if (ch.getType() == RENAME_DIR || ch.getType() == RENAME_FILE) {
