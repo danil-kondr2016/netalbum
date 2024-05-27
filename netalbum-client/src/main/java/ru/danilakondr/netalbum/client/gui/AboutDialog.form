@@ -46,7 +46,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="btnClose" alignment="1" min="-2" max="-2" attributes="0"/>
                   <Component id="filler1" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -61,7 +61,9 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;div style=&quot;text-align:center;&quot;&gt;&#xa;&lt;h1&gt;&lt;b&gt;&#x421;&#x435;&#x442;&#x435;&#x432;&#x43e;&#x439; &#x444;&#x43e;&#x442;&#x43e;&#x430;&#x43b;&#x44c;&#x431;&#x43e;&#x43c;&lt;/b&gt;&lt;/h1&gt;&#xa;&lt;p&gt;&#x410;&#x432;&#x442;&#x43e;&#x440;: &#x414;&#x430;&#x43d;&#x438;&#x43b;&#x430; &#x410;. &#x41a;&#x43e;&#x43d;&#x434;&#x440;&#x430;&#x442;&#x435;&#x43d;&#x43a;&#x43e;&lt;/p&gt;&#xa;&lt;p&gt;&#x412;&#x435;&#x440;&#x441;&#x438;&#x44f; 0.9.0&lt;/p&gt;&#xa;&lt;p&gt;&lt;br&gt;&amp;copy; 2024&lt;/p&gt;&#xa;&lt;/div&gt;&#xa;&lt;/html&gt;"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="ru/danilakondr/netalbum/client/gui/Strings.properties" key="aboutDialog.about" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
         <Property name="horizontalTextPosition" type="int" value="0"/>
       </Properties>
     </Component>
