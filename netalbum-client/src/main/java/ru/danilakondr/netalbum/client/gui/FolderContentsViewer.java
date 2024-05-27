@@ -252,7 +252,8 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         List<Change> changes = contents.getChanges();
         
         var form = SwingUtilities.getWindowAncestor(this);
-        session.addOnResponseListener(Response.Type.SYNCHRONIZING, s -> form.dispose());
+        session.addOnResponseListener(Response.Type.SYNCHRONIZING, s -> form.dispose(), true);
+        session.addOnResponseListener(Response.Type.SUCCESS, s -> form.dispose(), true);
         session.synchronize(changes);
     }//GEN-LAST:event_btnSynchronizeActionPerformed
 

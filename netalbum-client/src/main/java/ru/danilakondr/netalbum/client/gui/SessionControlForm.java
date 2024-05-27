@@ -118,6 +118,11 @@ public class SessionControlForm extends javax.swing.JFrame {
         fileMenu.add(miInitSession);
 
         miOpenSession.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("menu.File.OpenFolder"), new Object[] {})); // NOI18N
+        miOpenSession.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miOpenSessionActionPerformed(evt);
+            }
+        });
         fileMenu.add(miOpenSession);
         fileMenu.add(jSeparator1);
 
@@ -226,7 +231,10 @@ public class SessionControlForm extends javax.swing.JFrame {
         
         for (int i = 0; i < sessionTable.getRowCount(); i++) {
             Session s = sessionTable.getSessionAt(i);
-            s.close();
+            if (s.getSessionType() == Session.Type.INIT_SESSION)
+                s.close();
+            else
+                s.disconnect();
         }
     }//GEN-LAST:event_miCloseAllSessionsActionPerformed
 
@@ -237,7 +245,10 @@ public class SessionControlForm extends javax.swing.JFrame {
         int[] rows = tblSessionList.getSelectedRows();
         for (int row: rows) {
             Session s = sessionTable.getSessionAt(row);
-            s.close();
+            if (s.getSessionType() == Session.Type.INIT_SESSION)
+                s.close();
+            else
+                s.disconnect();
         }
     }//GEN-LAST:event_miCloseSessionsActionPerformed
 
@@ -278,6 +289,19 @@ public class SessionControlForm extends javax.swing.JFrame {
         
         viewSession(selectedRow);
     }//GEN-LAST:event_tblSessionListMousePressed
+
+    private void miOpenSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miOpenSessionActionPerformed
+        OpenFolderDialog dlg = new OpenFolderDialog(this);
+        dlg.setServerAddress(cfg.getServerAddress());
+        dlg.setVisible(true);
+        
+        if (dlg.getSessionKey() != null) {
+            URI uri = URI.create(dlg.getServerAddress());
+            Session s = new Session();
+            addCommonListeners(s, dlg.getServerAddress(), null);
+            s.connect(uri, dlg.getSessionKey());
+        }
+    }//GEN-LAST:event_miOpenSessionActionPerformed
     
     private void addCommonListeners(Session session, String serverAddress, String absolutePath) { 
         session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
