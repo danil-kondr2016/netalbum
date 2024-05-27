@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
  *
  * @author danko
  */
-public class Messages {
+public class GuiMessages {
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings");
     
     public static final String ERROR_TITLE = BUNDLE.getString("messageTitle.Error");

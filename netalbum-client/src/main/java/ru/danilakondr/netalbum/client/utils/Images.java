@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.client;
+package ru.danilakondr.netalbum.client.utils;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;

@@ -1,4 +1,4 @@
-package ru.danilakondr.netalbum.client;
+package ru.danilakondr.netalbum.client.data;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -6,6 +6,7 @@ package ru.danilakondr.netalbum.client;
  */
 
 
+import ru.danilakondr.netalbum.client.data.SessionInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;

@@ -4,6 +4,7 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import ru.danilakondr.netalbum.client.utils.FileSize;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;

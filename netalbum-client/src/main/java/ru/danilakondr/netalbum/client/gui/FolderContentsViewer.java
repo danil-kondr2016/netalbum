@@ -4,6 +4,7 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import ru.danilakondr.netalbum.client.utils.FileSize;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -29,7 +30,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import ru.danilakondr.netalbum.api.data.Change;

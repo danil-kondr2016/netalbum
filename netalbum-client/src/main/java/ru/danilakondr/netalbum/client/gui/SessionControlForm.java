@@ -20,23 +20,11 @@ import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import javax.swing.SwingUtilities;
 import ru.danilakondr.netalbum.api.data.Change;
-import static ru.danilakondr.netalbum.api.data.Change.Type.ADD_FOLDER;
-import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_DIR;
-import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_FILE;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.CLIENT_ALREADY_CONNECTED;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.CLIENT_NOT_CONNECTED;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.EXCEPTION;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.FILE_ALREADY_EXISTS;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.FILE_NOT_FOUND;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.INVALID_REQUEST;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.NON_EXISTENT_SESSION;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.NOT_AN_INITIATOR;
-import static ru.danilakondr.netalbum.api.message.Response.Error.Status.NOT_A_VIEWER;
-import ru.danilakondr.netalbum.client.NetAlbumPreferences;
-import ru.danilakondr.netalbum.client.SessionInfo;
+import ru.danilakondr.netalbum.client.data.NetAlbumPreferences;
+import ru.danilakondr.netalbum.client.data.SessionInfo;
 
 /**
  *
@@ -352,52 +340,52 @@ public class SessionControlForm extends javax.swing.JFrame {
                 case INVALID_REQUEST: {
                     String message = (String)err.getProperty("message");
                     error(MessageFormat
-                            .format(Messages.INVALID_REQUEST, message), 
-                            Messages.ERROR_TITLE);
+                            .format(GuiMessages.INVALID_REQUEST, message), 
+                            GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case NON_EXISTENT_SESSION: {
                     String sessionId = (String)err.getProperty("sessionId");
                     error(MessageFormat
-                            .format(Messages.NON_EXISTENT_SESSION, sessionId), 
-                            Messages.ERROR_TITLE);
+                            .format(GuiMessages.NON_EXISTENT_SESSION, sessionId), 
+                            GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case CLIENT_NOT_CONNECTED: {
-                    error(Messages.CLIENT_NOT_CONNECTED, Messages.ERROR_TITLE);
+                    error(GuiMessages.CLIENT_NOT_CONNECTED, GuiMessages.ERROR_TITLE);
                     break;
                 } 
                 case CLIENT_ALREADY_CONNECTED: {
-                    error(Messages.CLIENT_ALREADY_CONNECTED, Messages.ERROR_TITLE);
+                    error(GuiMessages.CLIENT_ALREADY_CONNECTED, GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case NOT_AN_INITIATOR: {
-                    error(Messages.NOT_AN_INITIATOR, Messages.ERROR_TITLE);
+                    error(GuiMessages.NOT_AN_INITIATOR, GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case NOT_A_VIEWER: {
-                    error(Messages.NOT_A_VIEWER, Messages.ERROR_TITLE);
+                    error(GuiMessages.NOT_A_VIEWER, GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case FILE_NOT_FOUND: {
                     String fileName = (String)err.getProperty("fileName");
                     error(MessageFormat
-                            .format(Messages.FILE_NOT_FOUND, fileName),
-                            Messages.ERROR_TITLE);
+                            .format(GuiMessages.FILE_NOT_FOUND, fileName),
+                            GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case FILE_ALREADY_EXISTS: {
                     String fileName = (String)err.getProperty("fileName");
                     error(MessageFormat
-                            .format(Messages.FILE_ALREADY_EXISTS, fileName), 
-                            Messages.ERROR_TITLE);
+                            .format(GuiMessages.FILE_ALREADY_EXISTS, fileName), 
+                            GuiMessages.ERROR_TITLE);
                     break;
                 }
                 case EXCEPTION: {
                     String message = (String)err.getProperty("message");
                     error(MessageFormat
-                            .format(Messages.EXCEPTION, message), 
-                            Messages.ERROR_TITLE);
+                            .format(GuiMessages.EXCEPTION, message), 
+                            GuiMessages.ERROR_TITLE);
                     break;
                 }
             }

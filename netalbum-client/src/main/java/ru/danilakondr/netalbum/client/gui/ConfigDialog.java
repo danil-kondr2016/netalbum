@@ -4,7 +4,8 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
-import ru.danilakondr.netalbum.client.NetAlbumPreferences;
+import ru.danilakondr.netalbum.client.utils.FileSize;
+import ru.danilakondr.netalbum.client.data.NetAlbumPreferences;
 
 /**
  *

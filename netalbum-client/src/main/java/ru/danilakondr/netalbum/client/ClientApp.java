@@ -1,5 +1,6 @@
 package ru.danilakondr.netalbum.client;
 
+import ru.danilakondr.netalbum.client.data.NetAlbumPreferences;
 import javax.swing.*;
 
 import java.io.IOException;

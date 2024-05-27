@@ -23,7 +23,8 @@ import ru.danilakondr.netalbum.api.data.ImageData;
 import ru.danilakondr.netalbum.api.message.Message;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
-import ru.danilakondr.netalbum.client.Images;
+import ru.danilakondr.netalbum.client.gui.GuiMessages;
+import ru.danilakondr.netalbum.client.utils.Images;
 
 /**
  *
