@@ -8,6 +8,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
@@ -38,7 +39,9 @@ public class ImageLoader {
     
     private final NetAlbumService service;
     private final ProgressMonitor monitor = new ProgressMonitor(null,
-            "Loading images...",
+            ResourceBundle
+                .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
+                .getString("imageLoader.loadingImages"),
             "",
             0, 100);
     
@@ -59,25 +62,19 @@ public class ImageLoader {
         @Override
         public void onNext(Message item) {
             subscription.request(1);
-            if (item.getType() != Message.Type.RESPONSE)
-                return;
-            
-            Response resp = (Response)item;
-
-            if (resp.getAnswerType() == Response.Type.FILE_ADDED) {
-                Response.FileAdded imgAdded = (Response.FileAdded)resp;
-                
-                nProcessed++;
-                EventQueue.invokeLater(() -> {
-                    monitor.setNote(imgAdded.getFile().getFileName());
-                    monitor.setProgress(nProcessed);
-                    if (nProcessed == nTotal) {
-                        JOptionPane.showMessageDialog(null, "All images has been loaded successfully.");
-                    }
-                });
-            }
-            else if (resp.getAnswerType() == Response.Type.ERROR) {
-                subscription.cancel();
+            switch (item.getType()) {
+                case RESPONSE:
+                    onResponse((Response)item);
+                    break;
+                case CONNECTION_CLOSED:
+                    subscription.cancel();
+                    JOptionPane.showMessageDialog(null, 
+                        ResourceBundle
+                            .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
+                            .getString("imageLoader.failedToLoadImages"),
+                        ru.danilakondr.netalbum.client.gui.Messages.ERROR_TITLE,
+                        JOptionPane.ERROR_MESSAGE);
+                    break;
             }
         }
 
@@ -89,6 +86,33 @@ public class ImageLoader {
         @Override
         public void onComplete() {
             System.out.println("Completed");
+        }
+
+        private void onResponse(Response resp) {
+            if (resp.getAnswerType() == Response.Type.FILE_ADDED) {
+                Response.FileAdded imgAdded = (Response.FileAdded)resp;
+                
+                nProcessed++;
+                EventQueue.invokeLater(() -> {
+                    monitor.setNote(imgAdded.getFile().getFileName());
+                    monitor.setProgress(nProcessed);
+                    if (nProcessed == nTotal) {
+                        JOptionPane.showMessageDialog(null, 
+                            ResourceBundle
+                                .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
+                                .getString("imageLoader.imagesLoadedSuccessfully"));
+                    }
+                });
+            }
+            else if (resp.getAnswerType() == Response.Type.ERROR) {
+                subscription.cancel();
+                JOptionPane.showMessageDialog(null, 
+                    ResourceBundle
+                        .getBundle("ru/danilakondr/netalbum/client/connect/Strings")
+                        .getString("imageLoader.failedToLoadImages"),
+                    ru.danilakondr.netalbum.client.gui.Messages.ERROR_TITLE,
+                    JOptionPane.ERROR_MESSAGE);
+            }
         }
     };
     
