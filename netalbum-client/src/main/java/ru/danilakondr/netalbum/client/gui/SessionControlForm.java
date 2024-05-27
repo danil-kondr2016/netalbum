@@ -5,6 +5,9 @@
 package ru.danilakondr.netalbum.client.gui;
 
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -64,6 +67,7 @@ public class SessionControlForm extends javax.swing.JFrame {
 
         contextMenu = new javax.swing.JPopupMenu();
         miViewSession = new javax.swing.JMenuItem();
+        miCopySessionId = new javax.swing.JMenuItem();
         miCloseSessions = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblSessionList = new javax.swing.JTable();
@@ -87,6 +91,15 @@ public class SessionControlForm extends javax.swing.JFrame {
             }
         });
         contextMenu.add(miViewSession);
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings"); // NOI18N
+        miCopySessionId.setText(bundle.getString("contextMenu.CopySessionKey")); // NOI18N
+        miCopySessionId.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miCopySessionIdActionPerformed(evt);
+            }
+        });
+        contextMenu.add(miCopySessionId);
 
         miCloseSessions.setText(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("ru/danilakondr/netalbum/client/gui/Strings").getString("contextMenu.CloseSelectedSessions"), new Object[] {})); // NOI18N
         miCloseSessions.addActionListener(new java.awt.event.ActionListener() {
@@ -302,6 +315,19 @@ public class SessionControlForm extends javax.swing.JFrame {
             s.connect(uri, dlg.getSessionKey());
         }
     }//GEN-LAST:event_miOpenSessionActionPerformed
+
+    private void miCopySessionIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miCopySessionIdActionPerformed
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        Clipboard cb = tk.getSystemClipboard();
+        
+        int selectedRow = tblSessionList.getSelectedRow();
+        if (selectedRow == -1)
+            return;
+        
+        Session s = sessionTable.getSessionAt(selectedRow);
+        StringSelection sessionId = new StringSelection(s.getSessionId());
+        cb.setContents(sessionId, sessionId);
+    }//GEN-LAST:event_miCopySessionIdActionPerformed
     
     private void addCommonListeners(Session session, String serverAddress, String absolutePath) { 
         session.addOnSessionEstablishedListener(s -> sessionTable.addSession(s));
@@ -416,6 +442,7 @@ public class SessionControlForm extends javax.swing.JFrame {
     private javax.swing.JMenuItem miAbout;
     private javax.swing.JMenuItem miCloseAllSessions;
     private javax.swing.JMenuItem miCloseSessions;
+    private javax.swing.JMenuItem miCopySessionId;
     private javax.swing.JMenuItem miExit;
     private javax.swing.JMenuItem miInitSession;
     private javax.swing.JMenuItem miOpenSession;
