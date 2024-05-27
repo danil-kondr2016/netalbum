@@ -140,21 +140,23 @@ public class Session {
     }
     
     public void restore(URI uri, String sessionId) {
-        setUrl(uri.toString());
         service.connectTo(uri);
         
-        Request.RestoreSession req = new Request.RestoreSession();
-        req.setSessionId(sessionId);
-        service.sendRequest(req);
+        this.addOnConnectionEstablishedListener((s) -> {
+            Request.RestoreSession req = new Request.RestoreSession();
+            req.setSessionId(sessionId);
+            service.sendRequest(req);
+        }, true);
     }
     
     public void connect(URI uri, String sessionId) {
-        setUrl(uri.toString());
         service.connectTo(uri);
         
-        Request.ConnectToSession req = new Request.ConnectToSession();
-        req.setSessionId(sessionId);
-        service.sendRequest(req);
+        this.addOnConnectionEstablishedListener((s) -> {
+            Request.ConnectToSession req = new Request.ConnectToSession();
+            req.setSessionId(sessionId);
+            service.sendRequest(req);
+        }, true);
     }
     
     public void disconnect() {
