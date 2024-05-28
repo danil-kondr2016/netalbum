@@ -25,7 +25,6 @@ import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.data.NetAlbumPreferences;
 import ru.danilakondr.netalbum.client.data.SessionInfo;
-
 /**
  *
  * @author danko

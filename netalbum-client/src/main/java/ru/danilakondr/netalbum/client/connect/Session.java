@@ -13,6 +13,10 @@ import java.util.ResourceBundle;
 import java.util.concurrent.Flow;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.message.Message;
 import static ru.danilakondr.netalbum.api.message.Message.Type.RESPONSE;
@@ -41,6 +45,17 @@ public class Session {
         req.setChanges(changes);
         service.sendRequest(req);
     }
+
+    private void initApi(URI uri) {
+        String httpUrl = uri.getScheme().replaceAll("^ws(s?)", "http$1")
+                + "://"
+                + uri.getAuthority()
+                + uri.getPath().replaceAll("api/?$", "\\/");
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(httpUrl)
+                .build();
+        this.api = retrofit.create(HttpRequestApi.class);
+    }
     
     public enum Type {
         INIT_SESSION("session.InitSession"),
@@ -63,6 +78,12 @@ public class Session {
     private final NetAlbumService service;
     private final PropertyChangeSupport pcs;
     private boolean connected = false;
+    private HttpRequestApi api;
+    
+    public Call<ResponseBody> getThumbnails() {
+        String id = getSessionId();
+        return api.getThumbnails(id);
+    }
     
     public Session() {
         super();
@@ -138,6 +159,8 @@ public class Session {
             Request.InitSession req = new Request.InitSession();
             req.setDirectoryName(directoryName);
             service.sendRequest(req);
+            
+            initApi(uri);
         }, true);
     }
     
@@ -148,6 +171,8 @@ public class Session {
             Request.RestoreSession req = new Request.RestoreSession();
             req.setSessionId(sessionId);
             service.sendRequest(req);
+            
+            initApi(uri);
         }, true);
     }
     
@@ -158,6 +183,8 @@ public class Session {
             Request.ConnectToSession req = new Request.ConnectToSession();
             req.setSessionId(sessionId);
             service.sendRequest(req);
+            
+            initApi(uri);
         }, true);
     }
     

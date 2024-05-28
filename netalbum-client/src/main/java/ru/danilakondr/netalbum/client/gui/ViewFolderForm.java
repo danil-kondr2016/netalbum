@@ -4,6 +4,7 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import java.io.ByteArrayOutputStream;
 import ru.danilakondr.netalbum.client.utils.FileSize;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,6 +16,9 @@ import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.Session;
 
@@ -147,7 +151,7 @@ public class ViewFolderForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoadContentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadContentsActionPerformed
-        session.addOnResponseListener(Response.Type.THUMBNAILS_ARCHIVE, (s, r) -> {
+        /*session.addOnResponseListener(Response.Type.THUMBNAILS_ARCHIVE, (s, r) -> {
             Response.ThumbnailsArchive archive = (Response.ThumbnailsArchive)r;
             Path thumbnails = saveThumbnails(archive.getThumbnailsZip());
             if (thumbnails == null)
@@ -161,7 +165,37 @@ public class ViewFolderForm extends javax.swing.JFrame {
                 pack();
             });
         });
-        session.requestThumbnails();
+        session.requestThumbnails();*/
+        
+        session.getThumbnails().enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> rspns) {
+                System.out.println(rspns.code());
+                try {
+                    ResponseBody body = rspns.body();
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    body.byteStream().transferTo(bos);
+                    Path thumbnails = saveThumbnails(bos.toByteArray());
+                    if (thumbnails == null)
+                        return;
+
+                    SwingUtilities.invokeLater( () -> {
+                        btnLoadContents.setEnabled(false);
+
+                        panelContentsViewer = new FolderContentsViewer(session, folderName, thumbnails);
+                        ((GroupLayout)getContentPane().getLayout()).replace(dummyPanel, panelContentsViewer);
+                        pack();
+                    });
+                }
+                catch (IOException e) {
+                    
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable thrwbl) {
+            }
+        });
     }//GEN-LAST:event_btnLoadContentsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
