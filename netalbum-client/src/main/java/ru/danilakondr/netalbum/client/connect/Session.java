@@ -6,10 +6,16 @@ package ru.danilakondr.netalbum.client.connect;
 
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -34,11 +40,6 @@ public class Session {
         Request req = new Request(Request.Method.GET_DIRECTORY_INFO);
         service.sendRequest(req);
     }
-    
-    public void requestThumbnails() {
-        Request req = new Request(Request.Method.DOWNLOAD_THUMBNAILS);
-        service.sendRequest(req);
-    }
 
     public void synchronize(List<Change> changes) {
         Request.Synchronize req = new Request.Synchronize();
@@ -46,17 +47,6 @@ public class Session {
         service.sendRequest(req);
     }
 
-    private void initApi(URI uri) {
-        String httpUrl = uri.getScheme().replaceAll("^ws(s?)", "http$1")
-                + "://"
-                + uri.getAuthority()
-                + uri.getPath().replaceAll("api/?$", "\\/");
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(httpUrl)
-                .build();
-        this.api = retrofit.create(HttpRequestApi.class);
-    }
-    
     public enum Type {
         INIT_SESSION("session.InitSession"),
         CONNECT_TO_SESSION("session.ConnectToSession"),
@@ -78,11 +68,27 @@ public class Session {
     private final NetAlbumService service;
     private final PropertyChangeSupport pcs;
     private boolean connected = false;
-    private HttpRequestApi api;
     
-    public Call<ResponseBody> getThumbnails() {
+    public CompletableFuture<HttpResponse<InputStream>> getThumbnails() {
         String id = getSessionId();
-        return api.getThumbnails(id);
+        
+        URI uri = URI.create(getUrl());
+        String httpUrl = uri.getScheme().replaceAll("^ws(s?)", "http$1")
+                + "://"
+                + uri.getAuthority()
+                + uri.getPath().replaceAll("api/?$", "\\/");
+        URI thumbnailsUri = URI.create(httpUrl).resolve("archive/"+id);
+            
+        HttpRequest httpReq = HttpRequest.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .uri(thumbnailsUri)
+                .GET()
+                .build();
+        
+        HttpClient client = HttpClient.newBuilder()
+                .build();
+        
+        return client.sendAsync(httpReq, BodyHandlers.ofInputStream());
     }
     
     public Session() {
@@ -159,8 +165,6 @@ public class Session {
             Request.InitSession req = new Request.InitSession();
             req.setDirectoryName(directoryName);
             service.sendRequest(req);
-            
-            initApi(uri);
         }, true);
     }
     
@@ -171,8 +175,6 @@ public class Session {
             Request.RestoreSession req = new Request.RestoreSession();
             req.setSessionId(sessionId);
             service.sendRequest(req);
-            
-            initApi(uri);
         }, true);
     }
     
@@ -183,8 +185,6 @@ public class Session {
             Request.ConnectToSession req = new Request.ConnectToSession();
             req.setSessionId(sessionId);
             service.sendRequest(req);
-            
-            initApi(uri);
         }, true);
     }
     

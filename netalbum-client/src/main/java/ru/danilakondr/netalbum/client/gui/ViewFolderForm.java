@@ -9,12 +9,15 @@ import ru.danilakondr.netalbum.client.utils.FileSize;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.ProgressMonitorInputStream;
 import javax.swing.SwingUtilities;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -151,49 +154,49 @@ public class ViewFolderForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoadContentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadContentsActionPerformed
-        /*session.addOnResponseListener(Response.Type.THUMBNAILS_ARCHIVE, (s, r) -> {
-            Response.ThumbnailsArchive archive = (Response.ThumbnailsArchive)r;
-            Path thumbnails = saveThumbnails(archive.getThumbnailsZip());
-            if (thumbnails == null)
-                return;
+        session.getThumbnails().thenAccept((resp) -> {
+            System.out.println(resp.statusCode());
+            System.out.println(resp.headers().firstValueAsLong("Content-Length"));
             
-            SwingUtilities.invokeLater( () -> {
-                btnLoadContents.setEnabled(false);
+            long length = resp.headers().firstValueAsLong("Content-Length").getAsLong();
+            try {
+                InputStream is = resp.body();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ProgressMonitor monitor = new ProgressMonitor(this, "Loading", "", 0, (int)length);
+                monitor.setMillisToDecideToPopup(0);
+                monitor.setMillisToPopup(0);
                 
-                panelContentsViewer = new FolderContentsViewer(session, folderName, thumbnails);
-                ((GroupLayout)getContentPane().getLayout()).replace(dummyPanel, panelContentsViewer);
-                pack();
-            });
-        });
-        session.requestThumbnails();*/
-        
-        session.getThumbnails().enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> rspns) {
-                System.out.println(rspns.code());
-                try {
-                    ResponseBody body = rspns.body();
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    body.byteStream().transferTo(bos);
-                    Path thumbnails = saveThumbnails(bos.toByteArray());
-                    if (thumbnails == null)
+                int n_read = 0;
+                while (true) {
+                    if (monitor.isCanceled()) {
                         return;
-
-                    SwingUtilities.invokeLater( () -> {
-                        btnLoadContents.setEnabled(false);
-
-                        panelContentsViewer = new FolderContentsViewer(session, folderName, thumbnails);
-                        ((GroupLayout)getContentPane().getLayout()).replace(dummyPanel, panelContentsViewer);
-                        pack();
-                    });
-                }
-                catch (IOException e) {
+                    }
                     
+                    int inc = is.read();
+                    
+                    if (inc == -1)
+                        break;
+                    
+                    bos.write(inc);
+                    
+                    n_read++;
+                    monitor.setProgress(n_read);
                 }
-            }
+                
+                Path thumbnails = saveThumbnails(bos.toByteArray());
+                if (thumbnails == null)
+                    return;
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable thrwbl) {
+                SwingUtilities.invokeLater( () -> {
+                    btnLoadContents.setEnabled(false);
+
+                    panelContentsViewer = new FolderContentsViewer(session, folderName, thumbnails);
+                    ((GroupLayout)getContentPane().getLayout()).replace(dummyPanel, panelContentsViewer);
+                    pack();
+                });
+            }
+            catch (IOException e) {
+
             }
         });
     }//GEN-LAST:event_btnLoadContentsActionPerformed
