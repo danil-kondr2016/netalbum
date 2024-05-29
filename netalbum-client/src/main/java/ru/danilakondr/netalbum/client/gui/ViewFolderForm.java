@@ -19,9 +19,6 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.ProgressMonitorInputStream;
 import javax.swing.SwingUtilities;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
 import ru.danilakondr.netalbum.api.message.Response;
 import ru.danilakondr.netalbum.client.connect.Session;
 
