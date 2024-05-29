@@ -33,7 +33,7 @@ public class DataController {
         byte[] thumbnailsZip = service.generateArchiveWithThumbnails(id);
         response.setContentType("application/zip");
         response.setContentLength(thumbnailsZip.length);
-        response.setHeader("Content-Disposition", "attachment; filename=\"%s.zip\"".formatted(id));
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s.zip\"", id));
         
         try (var out = response.getOutputStream()){
             out.write(thumbnailsZip);
