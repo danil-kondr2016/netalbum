@@ -23,5 +23,5 @@ public class GuiMessages {
     public static final String NOT_A_VIEWER = BUNDLE.getString("message.notAViewer");
     public static final String FILE_NOT_FOUND = BUNDLE.getString("message.fileNotFound");
     public static final String FILE_ALREADY_EXISTS = BUNDLE.getString("message.fileAlreadyExists");
-    public static final String EXCEPTION = BUNDLE.getString("message.exception");
+    public static final String EXCEPTION = BUNDLE.getString("message.exceptionOccured");
 }
