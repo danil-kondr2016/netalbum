@@ -398,6 +398,12 @@ public class SessionControlForm extends javax.swing.JFrame {
                 }
             }
         });
+    
+        session.addOnConnectionClosedListener((s, m) -> sessionTable.removeSession(s));
+        session.addOnConnectionClosedListener((s, m) -> JOptionPane.showMessageDialog(SessionControlForm.this, 
+                "Обрыв соединения: \n" +
+                        "адрес связи " + s.getUrl() + "\n" +
+                        "ключ сессии " + s.getSessionId(), "Ошибка", JOptionPane.ERROR_MESSAGE));
     }
     
     public void restoreSessions() {

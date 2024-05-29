@@ -110,6 +110,7 @@ public class ImageLoader {
                     if (nProcessed == nTotal) {
                         JOptionPane.showMessageDialog(null, 
                             IMAGES_LOADED_SUCCESSFULLY);
+                        subscription.cancel();
                     }
                 });
             }

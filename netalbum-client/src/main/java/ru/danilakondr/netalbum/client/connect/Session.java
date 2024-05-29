@@ -398,4 +398,8 @@ public class Session {
     public void addOnResponseListener(Response.Type type, BiConsumer<Session, Response> listener, boolean oneShot) {
         service.subscribe(new ResponseListener(this, type, listener, oneShot));
     }
+    
+    public void addOnConnectionClosedListener(BiConsumer<Session, Message> listener) {
+        service.subscribe(new MessageListener(this, Message.Type.CONNECTION_CLOSED, listener));
+    }
 }

@@ -79,6 +79,9 @@ public class SessionTable extends AbstractTableModel {
     
     public void removeSession(Session session) {
         int index = sessionList.indexOf(session);
+        if (index == -1)
+            return;
+        
         sessionList.remove(index);
         fireTableRowsDeleted(index, index);
     }
