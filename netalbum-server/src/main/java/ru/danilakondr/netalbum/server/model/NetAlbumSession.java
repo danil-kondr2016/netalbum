@@ -17,6 +17,10 @@ public class NetAlbumSession {
     @JoinColumn(name="sessionId")
     private List<ImageFile> files;
     
+    @OneToMany
+    @JoinColumn(name="sessionId")
+    private List<ChangeQueueRecord> changes;
+    
     public String getSessionId() {
         return sessionId;
     }
@@ -39,5 +43,13 @@ public class NetAlbumSession {
 
     public void setFiles(List<ImageFile> files) {
         this.files = files;
+    }
+
+    public List<ChangeQueueRecord> getChangesFromQueue() {
+        return changes;
+    }
+
+    public void setChanges(List<ChangeQueueRecord> changes) {
+        this.changes = changes;
     }
 }

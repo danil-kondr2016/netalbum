@@ -10,6 +10,7 @@ import ru.danilakondr.netalbum.server.model.NetAlbumSession;
 
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
 
 @Repository
 public class NetAlbumDAO {
@@ -75,5 +76,46 @@ public class NetAlbumDAO {
             throw new IllegalArgumentException("Repeating files");
 
         return results.get(0);
+    }
+    
+    @Transactional
+    public void putChangeQueueRecord(ChangeQueueRecord change) {
+        Session s = factory.getCurrentSession();
+        s.saveOrUpdate(change);
+    }
+    
+    @Transactional
+    public boolean isChangeQueueEmpty(String sessionId) {
+        Session s = factory.getCurrentSession();
+        
+        Query<ChangeQueueRecord> q = 
+                s.createQuery("FROM ChangeQueueRecord WHERE sessionId=:id", 
+                        ChangeQueueRecord.class)
+                        .setParameter("id", sessionId)
+                ;
+        
+        return q.getResultList().isEmpty();
+    }
+
+    @Transactional
+    public void clearChangeQueue(String sessionId) {
+        Session s = factory.getCurrentSession();
+        
+        Query<ChangeQueueRecord> q = 
+                s.createQuery("FROM ChangeQueueRecord WHERE sessionId=:id",
+                        ChangeQueueRecord.class)
+                .setParameter("id", sessionId)
+                ;
+        
+        List<ChangeQueueRecord> l = q.getResultList();
+        if (l == null)
+            return;
+        
+        if (l.isEmpty())
+            return;
+        
+        for (ChangeQueueRecord c: l) {
+            s.remove(c);
+        }
     }
 }

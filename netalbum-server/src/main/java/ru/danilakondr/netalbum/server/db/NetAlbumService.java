@@ -15,12 +15,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.data.FileInfo;
 import ru.danilakondr.netalbum.api.data.FilenameUtils;
+import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
 
 @Service
 public class NetAlbumService {
@@ -226,5 +227,73 @@ public class NetAlbumService {
             e.printStackTrace(System.err);
             throw new IllegalStateException(e);
         }
+    }
+    
+    @Transactional
+    public void putChange(String sessionId, Change change) {
+        ChangeQueueRecord record = new ChangeQueueRecord();
+        record.setSessionId(sessionId);
+        record.setChangeType(change.getType());
+        
+        switch (change.getType()) {
+            case ADD_FOLDER:
+                Change.AddFolder addFolder = (Change.AddFolder)change;
+                record.setNewName(addFolder.getFolderName());
+                break;
+            case RENAME_DIR:
+            case RENAME_FILE:
+                Change.Rename ren = (Change.Rename)change;
+                record.setOldName(ren.getOldName());
+                record.setNewName(ren.getNewName());
+                break;
+        }
+        
+        dao.putChangeQueueRecord(record);
+    }
+    
+    @Transactional
+    public List<Change> getChangesList(String sessionId) {
+                List<Change> result = new ArrayList<>();
+        NetAlbumSession session = dao.getSession(sessionId);
+        if (session == null)
+            throw new NonExistentSession(sessionId);
+        
+        List<ChangeQueueRecord> records = session.getChangesFromQueue();
+        for (ChangeQueueRecord record: records) {
+            switch (record.getChangeType()) {
+                case ADD_FOLDER:
+                    Change.AddFolder addFolder = new Change.AddFolder();
+                    addFolder.setFolderName(record.getNewName());
+                    result.add(addFolder);
+                    break;
+                case RENAME_DIR:
+                    Change.RenameDir renDir = new Change.RenameDir();
+                    renDir.setOldName(record.getOldName());
+                    renDir.setNewName(record.getNewName());
+                    result.add(renDir);
+                    break;
+                case RENAME_FILE:
+                    Change.RenameFile renFile = new Change.RenameFile();
+                    renFile.setOldName(record.getOldName());
+                    renFile.setNewName(record.getNewName());
+                    result.add(renFile);
+                    break;
+            }
+        }
+        
+        return result;
+    }
+    
+    @Transactional
+    public List<Change> moveChanges(String sessionId) {
+        List<Change> result = getChangesList(sessionId);
+        dao.clearChangeQueue(sessionId);
+        
+        return result;
+    }
+    
+    @Transactional
+    public boolean isChangeQueueEmpty(String sessionId) {
+        return dao.isChangeQueueEmpty(sessionId);
     }
 }

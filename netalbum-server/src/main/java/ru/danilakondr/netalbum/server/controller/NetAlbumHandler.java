@@ -25,7 +25,6 @@ import java.util.Objects;
 import ru.danilakondr.netalbum.api.data.FileInfo;
 
 import static ru.danilakondr.netalbum.api.message.Response.Error.Status.*;
-import static ru.danilakondr.netalbum.api.message.Response.Type.SUCCESS;
 
 @Service
 public class NetAlbumHandler extends TextWebSocketHandler {
@@ -186,6 +185,12 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         Response resp = new Response(Response.Type.SESSION_RESTORED);
         resp.setProperty("sessionId", id);
         sendResponse(session, resp);
+        
+        if (!service.isChangeQueueEmpty(id)) {
+            List<Change> changes = service.moveChanges(id);
+            Response changesResp = new Response.Synchronizing(changes);
+            sendResponse(session, changesResp);
+        }
     }
 
     private void handleSynchronize(WebSocketSession session, Request.Synchronize req) throws IOException {
@@ -211,12 +216,16 @@ public class NetAlbumHandler extends TextWebSocketHandler {
                     service.renameDir(sessionId, renDir.getOldName(), renDir.getNewName());
                     break;
             }
+            service.putChange(sessionId, change);
         }
         // Второе. Отправить изменения инициатору.
-        Response changesResp = new Response.Synchronizing(changes);
-        WebSocketSession initiator = initiators.get(sessionId);
-        sendResponse(initiator, changesResp);
-        sendResponse(session, new Response(Response.Type.SUCCESS));
+        if (initiators.containsKey(sessionId)) {
+            Response changesResp = new Response.Synchronizing(changes);
+            WebSocketSession initiator = initiators.get(sessionId);
+            sendResponse(initiator, changesResp);
+            sendResponse(session, new Response(Response.Type.SUCCESS));
+            service.moveChanges(sessionId);
+        }
     }
 
     private void handleGetDirectoryInfo(WebSocketSession session) throws IOException {
