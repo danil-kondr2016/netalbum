@@ -10,7 +10,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -203,14 +202,13 @@ public class SessionControlForm extends javax.swing.JFrame {
     
     private void initSession(File directory) {
         String serverAddress = cfg.getServerAddress();
-        URI serverUri = URI.create(serverAddress);
         
         Session session = new Session();
         addCommonListeners(session, serverAddress, directory.getAbsolutePath());
         session.addOnResponseListener(Response.Type.SESSION_CREATED, (s) -> {
             s.loadImages(directory);
         }, true);
-        session.init(serverUri, directory.getName());
+        session.init(serverAddress, directory.getName());
     }
     
     private void miPreferencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miPreferencesActionPerformed
@@ -302,10 +300,9 @@ public class SessionControlForm extends javax.swing.JFrame {
         dlg.setVisible(true);
         
         if (dlg.getSessionKey() != null) {
-            URI uri = URI.create(dlg.getServerAddress());
             Session s = new Session();
             addCommonListeners(s, dlg.getServerAddress(), null);
-            s.connect(uri, dlg.getSessionKey());
+            s.connect(dlg.getServerAddress(), dlg.getSessionKey());
         }
     }//GEN-LAST:event_miOpenSessionActionPerformed
 
@@ -416,7 +413,7 @@ public class SessionControlForm extends javax.swing.JFrame {
             Session session = new Session();
             addCommonListeners(session, sessionInfo.getUrl(), sessionInfo.getPath());
             session.setPath(sessionInfo.getPath());
-            session.restore(URI.create(sessionInfo.getUrl()), sessionInfo.getSessionId());
+            session.restore(sessionInfo.getUrl(), sessionInfo.getSessionId());
         }
     }
 

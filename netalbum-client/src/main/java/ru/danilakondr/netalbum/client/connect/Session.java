@@ -8,6 +8,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -67,17 +68,10 @@ public class Session {
     
     public CompletableFuture<HttpResponse<InputStream>> getThumbnails() {
         String id = getSessionId();
-        
-        URI uri = URI.create(getUrl());
-        String httpUrl = uri.getScheme().replaceAll("^ws(s?)", "http$1")
-                + "://"
-                + uri.getAuthority()
-                + uri.getPath().replaceAll("api/?$", "\\/");
-        URI thumbnailsUri = URI.create(httpUrl).resolve("archive/"+id);
             
         HttpRequest httpReq = HttpRequest.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
-                .uri(thumbnailsUri)
+                .uri(httpBaseUri.resolve("archive/"+id))
                 .GET()
                 .build();
         
@@ -113,7 +107,11 @@ public class Session {
             }
             
             private void onConnectionEstablished(Message item) {
-                setUrl(Objects.toString(item.getProperty("url")));
+                URI uri = URI.create(Objects.toString(item.getProperty("url")));
+                String serverUrl = uri.getAuthority()
+                        + uri.getPath() + "/..";
+                
+                setUrl(URI.create(serverUrl).normalize().toString());
             }
 
             @Override
@@ -154,8 +152,9 @@ public class Session {
         });
     }
     
-    public void init(URI uri, String directoryName) {
-        service.connectTo(uri);
+    public void init(String baseUri, String directoryName) {
+        setUrl(baseUri);
+        service.connectTo(wsApiUri);
         
         this.addOnConnectionEstablishedListener((s) -> {
             Request.InitSession req = new Request.InitSession();
@@ -164,8 +163,9 @@ public class Session {
         }, true);
     }
     
-    public void restore(URI uri, String sessionId) {
-        service.connectTo(uri);
+    public void restore(String baseUri, String sessionId) {
+        setUrl(baseUri);
+        service.connectTo(wsApiUri);
         
         this.addOnConnectionEstablishedListener((s) -> {
             Request.RestoreSession req = new Request.RestoreSession();
@@ -174,8 +174,9 @@ public class Session {
         }, true);
     }
     
-    public void connect(URI uri, String sessionId) {
-        service.connectTo(uri);
+    public void connect(String baseUri, String sessionId) {
+        setUrl(baseUri);
+        service.connectTo(wsApiUri);
         
         this.addOnConnectionEstablishedListener((s) -> {
             Request.ConnectToSession req = new Request.ConnectToSession();
@@ -204,6 +205,7 @@ public class Session {
     }
     
     private String url, sessionId, path;
+    private URI wsApiUri, httpBaseUri;
     private Type type;
     
     public String getUrl() {
@@ -225,6 +227,21 @@ public class Session {
     public void setUrl(String url) {
         pcs.firePropertyChange("url", this.url, url);
         this.url = url;
+        
+        try {
+            String[] tokens = url.split("/", 2);
+            if (tokens.length == 2) {
+                this.wsApiUri = new URI("ws", tokens[0], "/" + tokens[1] + "/api", null, null);
+                this.httpBaseUri = new URI("http", tokens[0], "/" + tokens[1], null, null);
+            }
+            else {
+                this.wsApiUri = new URI("ws", tokens[0], "/api", null, null);
+                this.httpBaseUri = new URI("http", tokens[0], "/", null, null);
+            }
+        }
+        catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
    
     public void setSessionId(String sessionId) {
