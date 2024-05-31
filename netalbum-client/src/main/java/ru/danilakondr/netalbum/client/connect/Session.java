@@ -68,7 +68,7 @@ public class Session {
     
     public CompletableFuture<HttpResponse<InputStream>> getThumbnails() {
         String id = getSessionId();
-            
+        
         HttpRequest httpReq = HttpRequest.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .uri(httpBaseUri.resolve("archive/"+id))
@@ -107,11 +107,6 @@ public class Session {
             }
             
             private void onConnectionEstablished(Message item) {
-                URI uri = URI.create(Objects.toString(item.getProperty("url")));
-                String serverUrl = uri.getAuthority()
-                        + uri.getPath() + "/..";
-                
-                setUrl(URI.create(serverUrl).normalize().toString());
             }
 
             @Override
@@ -232,7 +227,7 @@ public class Session {
             String[] tokens = url.split("/", 2);
             if (tokens.length == 2) {
                 this.wsApiUri = new URI("ws", tokens[0], "/" + tokens[1] + "/api", null, null);
-                this.httpBaseUri = new URI("http", tokens[0], "/" + tokens[1], null, null);
+                this.httpBaseUri = new URI("http", tokens[0], "/" + tokens[1] + "/", null, null);
             }
             else {
                 this.wsApiUri = new URI("ws", tokens[0], "/api", null, null);
