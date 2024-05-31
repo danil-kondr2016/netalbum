@@ -80,6 +80,7 @@ public class FolderContentModel extends DefaultTreeModel {
     }
     
     public void addUpdate(FileInfo info, String path) {
+        System.out.println("INSERT " + info.getFileName() + " " + path);
         commands.add(new Command(Command.Type.UPDATE, info, path));
     }
     
@@ -194,6 +195,14 @@ public class FolderContentModel extends DefaultTreeModel {
                     ren.setOldName(cmd.info.getFileName());
                     ren.setNewName(cmd.path);
                     changes.add(ren);
+                }
+                case INSERT: {
+                    if (cmd.info.getFileType() == FileInfo.Type.DIRECTORY) {
+                        Change.AddFolder mkdir = new Change.AddFolder();
+                        mkdir.setFolderName(cmd.path);
+                        changes.add(mkdir);
+                    }
+                    break;
                 }
                 default:
                     break;
