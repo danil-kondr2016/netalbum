@@ -353,6 +353,11 @@ class FolderContentTreeTransferHandler extends TransferHandler {
                 (JTree.DropLocation)support.getDropLocation();
         JTree tree = (JTree)support.getComponent();
         int dropRow = tree.getRowForPath(dl.getPath());
+        FolderContentNode dropNode = 
+                (FolderContentNode)tree.getPathForRow(dropRow).getLastPathComponent();
+        if (!dropNode.getAllowsChildren())
+            return false;
+        
         int[] selRows = tree.getSelectionRows();
         for(int i = 0; i < selRows.length; i++) {
             if(selRows[i] == dropRow) {

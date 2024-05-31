@@ -52,6 +52,12 @@ public abstract class FolderContentNode extends DefaultMutableTreeNode {
     
     public abstract boolean isImage();
     
+    @Override
+    public abstract boolean isLeaf();
+    
+    @Override
+    public abstract boolean getAllowsChildren();
+    
     private static final class Image extends FolderContentNode {
         public Image(FileInfo info) {
             super(info);
@@ -100,6 +106,11 @@ public abstract class FolderContentNode extends DefaultMutableTreeNode {
         @Override
         public boolean isLeaf() {
             return false;
+        }
+
+        @Override
+        public boolean getAllowsChildren() {
+            return true;
         }
     }
 
