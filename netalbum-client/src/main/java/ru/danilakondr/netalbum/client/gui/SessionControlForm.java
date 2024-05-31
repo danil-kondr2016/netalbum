@@ -386,6 +386,32 @@ public class SessionControlForm extends javax.swing.JFrame {
                             GuiMessages.ERROR_TITLE);
                     break;
                 }
+                case INITIATOR_ALREADY_CONNECTED: {
+                    error(GuiMessages.INITIATOR_ALREADY_CONNECTED,
+                            GuiMessages.ERROR_TITLE);
+                    break;
+                }
+                case DIRECTORY_NOT_FOUND: {
+                    String fileName = (String)err.getProperty("fileName");
+                    error(MessageFormat
+                            .format(GuiMessages.DIRECTORY_NOT_FOUND, fileName), 
+                            GuiMessages.ERROR_TITLE);
+                    break;
+                }
+                case CANNOT_MOVE_A_DIRECTORY: {
+                    String fileName = (String)err.getProperty("fileName");
+                    error(MessageFormat
+                            .format(GuiMessages.CANNOT_MOVE_A_DIRECTORY, fileName), 
+                            GuiMessages.ERROR_TITLE);
+                    break;
+                }
+                case NOT_A_DIRECTORY: {
+                    String fileName = (String)err.getProperty("fileName");
+                    error(MessageFormat
+                            .format(GuiMessages.NOT_A_DIRECTORY, fileName), 
+                            GuiMessages.ERROR_TITLE);
+                    break;
+                }
                 case EXCEPTION: {
                     String message = (String)err.getProperty("message");
                     error(MessageFormat

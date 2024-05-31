@@ -250,6 +250,8 @@ public class Response extends Message {
      * <p>Клиент не подключён.
      * <h3>{@code CLIENT_ALREADY_CONNECTED}</h3>
      * <p>Клиент уже подключён.
+     * <h3>{@code INITIATOR_ALREADY_CONNECTED}</h3>
+     * <p>Инициатор уже подключён.
      * <h3>{@code EXCEPTION}</h3>
      * <p>Исключение. Содержит поле {@code message}.
      */
@@ -261,11 +263,15 @@ public class Response extends Message {
             INVALID_REQUEST,
             FILE_NOT_FOUND,
             FILE_ALREADY_EXISTS,
+            DIRECTORY_NOT_FOUND,
+            NOT_A_DIRECTORY,
+            CANNOT_MOVE_A_DIRECTORY,
             NON_EXISTENT_SESSION,
             NOT_AN_INITIATOR,
             NOT_A_VIEWER,
             CLIENT_NOT_CONNECTED,
             CLIENT_ALREADY_CONNECTED,
+            INITIATOR_ALREADY_CONNECTED,
             EXCEPTION
         }
 

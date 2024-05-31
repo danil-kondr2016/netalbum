@@ -106,7 +106,8 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             Response.Error err = new Response.Error(INVALID_REQUEST);
             err.setProperty("message", e.getMessage());
             sendResponse(session, err);
-        } catch (NonExistentSession e) {
+        } 
+        catch (NonExistentSession e) {
             Response.Error err = new Response.Error(NON_EXISTENT_SESSION);
             err.setProperty("sessionId", e.getMessage());
             sendResponse(session, err);
@@ -120,8 +121,11 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         catch (NotConnectedError e) {
             sendResponse(session, new Response.Error(CLIENT_NOT_CONNECTED));
         }
-        catch (AlreadyConnectedError e) {
+        catch (ClientAlreadyConnectedError e) {
             sendResponse(session, new Response.Error(CLIENT_ALREADY_CONNECTED));
+        }
+        catch (InitiatorAlreadyConnectedError e) {
+            sendResponse(session, new Response.Error(INITIATOR_ALREADY_CONNECTED));
         }
         catch (FileNotFoundError e) {
             Response.Error err = new Response.Error(FILE_NOT_FOUND);
@@ -133,11 +137,26 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             err.setProperty("fileName", e.getMessage());
             sendResponse(session, err);
         }
+        catch (DirectoryNotFoundError e) {
+            Response.Error err = new Response.Error(DIRECTORY_NOT_FOUND);
+            err.setProperty("fileName", e.getMessage());
+            sendResponse(session, err);
+        }
+        catch (NotADirectoryError e) {
+            Response.Error err = new Response.Error(NOT_A_DIRECTORY);
+            err.setProperty("fileName", e.getMessage());
+            sendResponse(session, err);
+        }
+        catch (CannotMoveADirectoryError e) {
+            Response.Error err = new Response.Error(CANNOT_MOVE_A_DIRECTORY);
+            err.setProperty("fileName", e.getMessage());
+            sendResponse(session, err);
+        }
     }
 
     private void putInitiator(WebSocketSession session, String sessionId) {
         if (initiators.containsKey(sessionId))
-            throw new InvalidRequestError("Initiator already connected");
+            throw new InitiatorAlreadyConnectedError();
 
         initiators.put(sessionId, session);
         connected.put(session, sessionId);
@@ -174,7 +193,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleRestoreSession(WebSocketSession session, Request.RestoreSession req) throws IOException {
         if (isConnected(session))
-            throw new AlreadyConnectedError();
+            throw new ClientAlreadyConnectedError();
 
         String id = req.getSessionId();
         NetAlbumSession s = service.getSession(id);
@@ -304,7 +323,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleConnectToSession(WebSocketSession session, Request.ConnectToSession req) throws IOException {
         if (isConnected(session))
-            throw new AlreadyConnectedError();
+            throw new ClientAlreadyConnectedError();
 
         String id = req.getSessionId();
         NetAlbumSession s = service.getSession(id);
@@ -325,7 +344,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     private void handleInitSession(WebSocketSession session, Request.InitSession req) throws IOException {
         if (isConnected(session))
-            throw new AlreadyConnectedError();
+            throw new ClientAlreadyConnectedError();
 
         String id = SessionIdProvider.generateSessionId();
         String directoryName = req.getDirectoryName();

@@ -21,6 +21,9 @@ import java.util.zip.ZipOutputStream;
 import ru.danilakondr.netalbum.api.data.Change;
 import ru.danilakondr.netalbum.api.data.FileInfo;
 import ru.danilakondr.netalbum.api.data.FilenameUtils;
+import ru.danilakondr.netalbum.server.error.CannotMoveADirectoryError;
+import ru.danilakondr.netalbum.server.error.DirectoryNotFoundError;
+import ru.danilakondr.netalbum.server.error.NotADirectoryError;
 import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
 
 @Service
@@ -112,7 +115,7 @@ public class NetAlbumService {
         if (file == null)
             throw new FileNotFoundError(oldName);
         if (file.getFileType() != ImageFile.Type.FILE)
-            throw new IllegalArgumentException("CANNOT_MOVE_A_DIRECTORY");
+            throw new CannotMoveADirectoryError(file.getFileName());
 
         if (dao.getImageFile(sessionId, newName) != null)
             throw new FileAlreadyExistsError(newName);
@@ -120,7 +123,7 @@ public class NetAlbumService {
         String newDirName = FilenameUtils.dirName(newName);
         ImageFile newDir = dao.getImageFile(sessionId, newDirName);
         if (newDir == null)
-            throw new IllegalArgumentException("DIRECTORY_NOT_FOUND " + newDirName);
+            throw new DirectoryNotFoundError(newDirName);
 
         file.setFirstName(oldName);
         file.setFileName(newName);
@@ -133,7 +136,7 @@ public class NetAlbumService {
         if (dir == null)
             throw new FileNotFoundError(oldName);
         if (dir.getFileType() != ImageFile.Type.DIRECTORY)
-            throw new IllegalArgumentException("NOT_A_DIRECTORY");
+            throw new NotADirectoryError(dir.getFileName());
         
         ImageFile newDir = dao.getImageFile(sessionId, newName);
         if (newDir != null)
