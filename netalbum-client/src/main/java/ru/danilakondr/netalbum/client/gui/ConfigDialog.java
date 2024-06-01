@@ -4,8 +4,10 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import javax.swing.JOptionPane;
 import ru.danilakondr.netalbum.client.utils.FileSize;
 import ru.danilakondr.netalbum.client.data.NetAlbumPreferences;
+import ru.danilakondr.netalbum.client.utils.ServerAddressValidator;
 
 /**
  *
@@ -203,10 +205,28 @@ public class ConfigDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnApplyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApplyActionPerformed
+        if (ServerAddressValidator.isValid(tfServerAddress.getText())) {
+            JOptionPane.showMessageDialog(this, 
+                    "Неправильный адрес сервера",
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            
+            return;
+        }
+        
         apply();
     }//GEN-LAST:event_btnApplyActionPerformed
 
     private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
+         if (ServerAddressValidator.isValid(tfServerAddress.getText())) {
+            JOptionPane.showMessageDialog(this, 
+                    "Неправильный адрес сервера",
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            
+            return;
+        }
+        
         apply();
         dispose();
     }//GEN-LAST:event_btnOKActionPerformed

@@ -5,6 +5,7 @@
 package ru.danilakondr.netalbum.client.gui;
 
 import javax.swing.JOptionPane;
+import ru.danilakondr.netalbum.client.utils.ServerAddressValidator;
 import ru.danilakondr.netalbum.client.utils.SessionIdValidator;
 
 /**
@@ -120,6 +121,15 @@ public class OpenFolderDialog extends javax.swing.JDialog {
         }
         
         serverAddress = tfServerAddress.getText();
+        if (ServerAddressValidator.isValid(serverAddress)) {
+            JOptionPane.showMessageDialog(this, 
+                    "Неправильный адрес сервера",
+                    "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+            
+            return;
+        }
+        
         dispose();
     }//GEN-LAST:event_btnConnectActionPerformed
 
