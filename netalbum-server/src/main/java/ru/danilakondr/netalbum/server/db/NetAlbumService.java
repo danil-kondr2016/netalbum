@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.danilakondr.netalbum.api.data.ImageData;
+import ru.danilakondr.netalbum.api.utils.FileIdGenerator;
 import ru.danilakondr.netalbum.server.error.FileAlreadyExistsError;
-import ru.danilakondr.netalbum.server.error.FileNotFoundError;
 import ru.danilakondr.netalbum.server.error.NonExistentSession;
 import ru.danilakondr.netalbum.server.model.ImageFile;
 import ru.danilakondr.netalbum.server.model.NetAlbumSession;
@@ -21,8 +21,7 @@ import java.util.zip.ZipOutputStream;
 import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.api.data.FileInfo;
-import ru.danilakondr.netalbum.api.data.FilenameUtils;
-import ru.danilakondr.netalbum.server.error.DirectoryNotFoundError;
+import ru.danilakondr.netalbum.api.utils.FilenameUtils;
 import ru.danilakondr.netalbum.server.error.NotADirectoryError;
 import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
 
@@ -68,6 +67,7 @@ public class NetAlbumService {
             ImageFile dir = new ImageFile();
             dir.setFileType(ImageFile.Type.DIRECTORY);
             dir.setSessionId(sessionId);
+            dir.setFileId(FileIdGenerator.generate(dirName));
             dir.setFileName(dirName);
             dir.setFileSize(0);
             dir.setImgWidth(0);
@@ -97,6 +97,7 @@ public class NetAlbumService {
 
         ImageFile file = new ImageFile();
         file.setFileType(ImageFile.Type.FILE);
+        file.setFileId(data.getFileId());
         file.setFileName(data.getFileName());
         file.setFileSize(data.getFileSize());
         file.setSessionId(sessionId);
@@ -117,18 +118,13 @@ public class NetAlbumService {
 
         if (dao.getImageFile(sessionId, newName) != null)
             throw new FileAlreadyExistsError(newName);
-        
-        String newDirName = FilenameUtils.dirName(newName);
-        ImageFile newDir = dao.getImageFile(sessionId, newDirName);
-        if (newDir == null)
-            throw new DirectoryNotFoundError(newDirName);
 
         file.setFileName(newName);
         dao.putImageFile(file);
     }
     
     @Transactional
-    public void renameDir(String sessionId, long fileId, String newName) {
+    private void renameDir(String sessionId, long fileId, String newName) {
         ImageFile dir = dao.getImageFile(sessionId, fileId);
         if (dir.getFileType() != ImageFile.Type.DIRECTORY)
             throw new NotADirectoryError(dir.getFileName());
@@ -235,15 +231,17 @@ public class NetAlbumService {
         ChangeQueueRecord record = new ChangeQueueRecord();
         record.setSessionId(sessionId);
         record.setChangeType(change.getType());
-        
+
         switch (change.getType()) {
             case ADD_FOLDER:
                 ChangeCommand.AddFolder addFolder = (ChangeCommand.AddFolder)change;
+                record.setFileId(addFolder.getFileId());
                 record.setNewName(addFolder.getFolderName());
                 break;
             case RENAME:
                 ChangeCommand.Rename ren = (ChangeCommand.Rename)change;
                 record.setOldName(dao.getImageFile(sessionId, ren.getFileId()).getFileName());
+                record.setFileId(ren.getFileId());
                 record.setNewName(ren.getNewName());
                 break;
         }

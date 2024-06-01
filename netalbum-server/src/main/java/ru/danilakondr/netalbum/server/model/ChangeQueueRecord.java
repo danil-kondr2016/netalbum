@@ -39,6 +39,17 @@ public class ChangeQueueRecord {
     @Column(name="sessionId")
     private String sessionId;
 
+    @Column(name="fileId")
+    private long fileId;
+
+    public long getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(long fileId) {
+        this.fileId = fileId;
+    }
+
     public long getChangeId() {
         return changeId;
     }

@@ -1,20 +1,64 @@
 package ru.danilakondr.netalbum.server.model;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name="contents")
+@IdClass(ImageFile.FileId.class)
 public class ImageFile {
+    @Embeddable
+    public static class FileId implements Serializable {
+        private long fileId;
+        private String sessionId;
+
+        public long getFileId() {
+            return fileId;
+        }
+
+        public void setFileId(long fileId) {
+            this.fileId = fileId;
+        }
+
+        public String getSessionId() {
+            return sessionId;
+        }
+
+        public void setSessionId(String sessionId) {
+            this.sessionId = sessionId;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+            if (obj == this)
+                return false;
+            if (!(obj instanceof FileId))
+                return false;
+
+            FileId fileId = (FileId)obj;
+            return fileId.getFileId() == getFileId()
+                    && Objects.equals(getSessionId(), fileId.getSessionId());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(fileId, sessionId);
+        }
+    }
+
     public enum Type {
         FILE,
         DIRECTORY;
     }
     
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="fileId")
     private long fileId;
 
+    @Id
     @Column(name="sessionId")
     private String sessionId;
     
