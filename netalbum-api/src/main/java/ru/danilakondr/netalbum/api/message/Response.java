@@ -1,11 +1,10 @@
 package ru.danilakondr.netalbum.api.message;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.*;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
+import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.api.data.FileInfo;
 
 /**
@@ -71,7 +70,7 @@ import ru.danilakondr.netalbum.api.data.FileInfo;
  * @author Данила А. Кондратенко
  * @see Request
  * @see Response.Error
- * @see Change
+ * @see ChangeCommand
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="answer", visible = true)
 @JsonSubTypes({
@@ -167,22 +166,22 @@ public class Response extends Message {
 
     @JsonPropertyOrder({"type", "answer", "changes"})
     public static class Synchronizing extends Response {
-        private List<Change> changes;
+        private List<ChangeInfo> changes;
 
         public Synchronizing() {
             super(Type.SYNCHRONIZING);
         }
 
-        public Synchronizing(List<Change> changes) {
+        public Synchronizing(List<ChangeInfo> changes) {
             this();
             this.changes = changes;
         }
 
-        public List<Change> getChanges() {
+        public List<ChangeInfo> getChanges() {
             return changes;
         }
 
-        public void setChanges(List<Change> changes) {
+        public void setChanges(List<ChangeInfo> changes) {
             this.changes = changes;
         }
     }
@@ -265,7 +264,6 @@ public class Response extends Message {
             FILE_ALREADY_EXISTS,
             DIRECTORY_NOT_FOUND,
             NOT_A_DIRECTORY,
-            CANNOT_MOVE_A_DIRECTORY,
             NON_EXISTENT_SESSION,
             NOT_AN_INITIATOR,
             NOT_A_VIEWER,

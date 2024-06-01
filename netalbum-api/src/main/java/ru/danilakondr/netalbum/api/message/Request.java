@@ -1,7 +1,7 @@
 package ru.danilakondr.netalbum.api.message;
 
 import com.fasterxml.jackson.annotation.*;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.ImageData;
 
 import java.util.List;
@@ -53,7 +53,7 @@ import java.util.List;
  *
  * @author Данила А. Кондратенко
  * @see Response
- * @see Change
+ * @see ChangeCommand
  * @see ImageData
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="method", visible = true)
@@ -126,17 +126,17 @@ public class Request extends Message {
 
     @JsonPropertyOrder({"type","method","changes"})
     public static class Synchronize extends Request {
-        private List<Change> changes;
+        private List<ChangeCommand> changes;
 
         public Synchronize() {
             super(Method.SYNCHRONIZE);
         }
 
-        public List<Change> getChanges() {
+        public List<ChangeCommand> getChanges() {
             return changes;
         }
 
-        public void setChanges(List<Change> changes) {
+        public void setChanges(List<ChangeCommand> changes) {
             this.changes = changes;
         }
     }
