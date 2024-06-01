@@ -205,7 +205,7 @@ public class ConfigDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnApplyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApplyActionPerformed
-        if (ServerAddressValidator.isValid(tfServerAddress.getText())) {
+        if (!ServerAddressValidator.isValid(tfServerAddress.getText())) {
             JOptionPane.showMessageDialog(this, 
                     "Неправильный адрес сервера",
                     "Ошибка",
@@ -218,7 +218,7 @@ public class ConfigDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_btnApplyActionPerformed
 
     private void btnOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOKActionPerformed
-         if (ServerAddressValidator.isValid(tfServerAddress.getText())) {
+         if (!ServerAddressValidator.isValid(tfServerAddress.getText())) {
             JOptionPane.showMessageDialog(this, 
                     "Неправильный адрес сервера",
                     "Ошибка",

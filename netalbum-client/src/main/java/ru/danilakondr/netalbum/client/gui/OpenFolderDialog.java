@@ -108,7 +108,7 @@ public class OpenFolderDialog extends javax.swing.JDialog {
 
     private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
         sessionKey = tfSessionKey.getText();
-        if (SessionIdValidator.isSessionIdValid(sessionKey)) {
+        if (!SessionIdValidator.isSessionIdValid(sessionKey)) {
             JOptionPane.showMessageDialog(this, 
                     "Неправильный ключ сессии: он должен состоять из "
                             + "40 символов и содержать только "
@@ -121,7 +121,7 @@ public class OpenFolderDialog extends javax.swing.JDialog {
         }
         
         serverAddress = tfServerAddress.getText();
-        if (ServerAddressValidator.isValid(serverAddress)) {
+        if (!ServerAddressValidator.isValid(serverAddress)) {
             JOptionPane.showMessageDialog(this, 
                     "Неправильный адрес сервера",
                     "Ошибка",
