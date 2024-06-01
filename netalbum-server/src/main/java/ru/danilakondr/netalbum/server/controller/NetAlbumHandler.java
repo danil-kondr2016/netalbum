@@ -367,6 +367,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         service.putDirectory(sessionId, req.getDirectoryName());
         
         FileInfo dirInfo = new FileInfo(FileInfo.Type.DIRECTORY);
+        dirInfo.setFileId(req.getFileId());
         dirInfo.setFileName(req.getDirectoryName());
         sendResponse(session, new Response.FileAdded(dirInfo));
     }
