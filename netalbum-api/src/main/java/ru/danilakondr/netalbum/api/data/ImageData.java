@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 /**
  * Класс-держатель данных изображения. Содержит поля:
  * <ul>
+ *     <li>{@code fileId}: код файла</li>
  *     <li>{@code fileName}: имя файла</li>
  *     <li>{@code fileSize}: размер файла</li>
  *     <li>{@code width}: ширина</li>
@@ -14,8 +15,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *
  * @author Данила А. Кондратенко
  */
-@JsonPropertyOrder({"fileName", "fileSize", "width", "height", "thumbnail"})
+@JsonPropertyOrder({"fileId", "fileName", "fileSize", "width", "height", "thumbnail"})
 public class ImageData {
+    private long fileId;
     private String fileName;
     private long fileSize;
     private int width;
@@ -60,5 +62,13 @@ public class ImageData {
     
     public void setThumbnail(byte[] thumbnail) {
         this.thumbnail = thumbnail;
+    }
+
+    public long getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(long fileId) {
+        this.fileId = fileId;
     }
 }

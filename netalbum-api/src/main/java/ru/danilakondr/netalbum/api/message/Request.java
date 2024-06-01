@@ -160,8 +160,9 @@ public class Request extends Message {
         }
     }
     
-    @JsonPropertyOrder({"type", "method", "directoryName"})
+    @JsonPropertyOrder({"type", "method", "fileId", "directoryName"})
     public static class AddDirectory extends Request {
+        private long fileId;
         private String directoryName;
         
         public AddDirectory() {
@@ -171,6 +172,14 @@ public class Request extends Message {
         public AddDirectory(String dirName) {
             this();
             this.directoryName = dirName;
+        }
+
+        public long getFileId() {
+            return fileId;
+        }
+
+        public void setFileId(long fileId) {
+            this.fileId = fileId;
         }
 
         @JsonGetter("directoryName")

@@ -10,8 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * <p>Типы изменений:
  * <ul>
  * <li>{@code ADD_FOLDER}: создать папку</li>
- * <li>{@code RENAME_FILE}: переименовать файл</li>
- * <li>{@code RENAME_DIR}: переименовать папку</li>
+ * <li>{@code RENAME}: переименовать</li>
  * </ul>
  * 
  * @author Данила А. Кондратенко
@@ -41,8 +40,10 @@ public class ChangeCommand {
     public void setType(Type type) {
         this.type = type;
     }
-    
+
+    @JsonPropertyOrder({"type", "fileId", "folderName"})
     public static class AddFolder extends ChangeCommand {
+        private long fileId;
         private String folderName;
         
         public AddFolder() {
@@ -55,6 +56,14 @@ public class ChangeCommand {
 
         public void setFolderName(String folderName) {
             this.folderName = folderName;
+        }
+
+        public long getFileId() {
+            return fileId;
+        }
+
+        public void setFileId(long fileId) {
+            this.fileId = fileId;
         }
     }
     
