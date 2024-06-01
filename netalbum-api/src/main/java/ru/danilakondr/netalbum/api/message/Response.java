@@ -262,7 +262,6 @@ public class Response extends Message {
             INVALID_REQUEST,
             FILE_NOT_FOUND,
             FILE_ALREADY_EXISTS,
-            DIRECTORY_NOT_FOUND,
             NOT_A_DIRECTORY,
             NON_EXISTENT_SESSION,
             NOT_AN_INITIATOR,
