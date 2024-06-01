@@ -93,8 +93,6 @@ public class NetAlbumPreferences {
     }
     
     public void removeInitiatedSession(String url, String id) {
-        System.out.println("removeInitatedSession " + url + " " + id);
-        
         String urlHash = DigestUtils.md5Hex(url);
         initiatedSessions.node(urlHash).remove(id);
         

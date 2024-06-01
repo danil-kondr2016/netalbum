@@ -151,10 +151,25 @@ public class ViewFolderForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLoadContentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadContentsActionPerformed
-        session.getThumbnails().thenAccept((resp) -> {
-            System.out.println(resp.statusCode());
-            System.out.println(resp.headers().firstValueAsLong("Content-Length"));
+        session.getThumbnails()
+                .exceptionally((t) -> {
+                    JOptionPane.showMessageDialog(ViewFolderForm.this, 
+                        "Не удалось получить архив с уменьшенными картинками",
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    return null;
+                })
+                .thenAccept((resp) -> {
+            if (resp == null)
+                return;
             
+            if (resp.statusCode() != 200) {
+                JOptionPane.showMessageDialog(ViewFolderForm.this, 
+                        "Не удалось получить архив с уменьшенными картинками: "
+                                + "код HTTP " + resp.statusCode(),
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+                    
             long length = resp.headers().firstValueAsLong("Content-Length").getAsLong();
             try {
                 InputStream is = resp.body();
@@ -193,7 +208,9 @@ public class ViewFolderForm extends javax.swing.JFrame {
                 });
             }
             catch (IOException e) {
-
+                JOptionPane.showMessageDialog(ViewFolderForm.this, 
+                        "Ошибка при записи: " + e, 
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
         });
     }//GEN-LAST:event_btnLoadContentsActionPerformed

@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
@@ -426,10 +427,20 @@ public class SessionControlForm extends javax.swing.JFrame {
         session.addOnConnectionClosedListener((s, m) -> {
             if (!s.isConnected())
                 return;
+            
+            System.out.println(m.getProperties());
             JOptionPane.showMessageDialog(SessionControlForm.this, 
                 "Обрыв соединения: \n" +
                         "адрес связи " + s.getUrl() + "\n" +
                         "ключ сессии " + s.getSessionId(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+        });
+        
+        session.addOnConnectionFailedListener((s, m) -> {
+            String msg = Objects.toString(m.getProperty("message"));
+            JOptionPane.showMessageDialog(SessionControlForm.this,
+                    "Ошибка при соединении с сервером. Пожалуйста, проверьте подключение.\n"
+                            + "Исключение: " + msg,
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);
         });
     }
     
