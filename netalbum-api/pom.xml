@@ -3,7 +3,7 @@
     <parent>
         <groupId>ru.danilakondr</groupId>
         <artifactId>netalbum</artifactId>
-        <version>0.14.0</version>
+        <version>0.15.0</version>
     </parent>
     <artifactId>netalbum-api</artifactId>
     <name>Net album common API</name>
