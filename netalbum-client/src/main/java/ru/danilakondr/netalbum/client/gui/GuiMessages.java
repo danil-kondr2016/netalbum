@@ -26,5 +26,4 @@ public class GuiMessages {
     public static final String EXCEPTION = BUNDLE.getString("message.exceptionOccured");
     public static final String INITIATOR_ALREADY_CONNECTED = BUNDLE.getString("message.initiatorAlreadyConnected");
     public static final String NOT_A_DIRECTORY = BUNDLE.getString("message.notADirectory");
-    public static final String DIRECTORY_NOT_FOUND = BUNDLE.getString("message.directoryNotFound");
 }
