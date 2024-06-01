@@ -119,6 +119,12 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 
+    @Override
+    public void onError(WebSocket webSocket, Throwable error) {
+        WebSocket.Listener.super.onError(webSocket, error);
+        System.out.println("Error: "+error);
+    }
+
     private void processResponse(String strResponse) {
         ObjectMapper mapper = new ObjectMapper();
         try {
