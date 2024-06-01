@@ -19,10 +19,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.YES_NO_OPTION;
 import javax.swing.SwingUtilities;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.client.connect.SessionTable;
 import ru.danilakondr.netalbum.client.connect.Session;
 import ru.danilakondr.netalbum.api.message.Response;
+import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.client.data.NetAlbumPreferences;
 import ru.danilakondr.netalbum.client.data.SessionInfo;
 /**
@@ -399,13 +400,6 @@ public class SessionControlForm extends javax.swing.JFrame {
                             GuiMessages.ERROR_TITLE);
                     break;
                 }
-                case CANNOT_MOVE_A_DIRECTORY: {
-                    String fileName = (String)err.getProperty("fileName");
-                    error(MessageFormat
-                            .format(GuiMessages.CANNOT_MOVE_A_DIRECTORY, fileName), 
-                            GuiMessages.ERROR_TITLE);
-                    break;
-                }
                 case NOT_A_DIRECTORY: {
                     String fileName = (String)err.getProperty("fileName");
                     error(MessageFormat
@@ -454,25 +448,23 @@ public class SessionControlForm extends javax.swing.JFrame {
         }
     }
 
-    private void synchronizeSession(Session session, List<Change> changes) {
+    private void synchronizeSession(Session session, List<ChangeInfo> changes) {
         if (session.getSessionType() != Session.Type.INIT_SESSION)
             return;
         
         try {
             Path dirPath = Path.of(session.getPath());
              
-            for (Change change: changes) {
+            for (ChangeInfo change: changes) {
+                System.out.println(change);
                 switch (change.getType()) {
-                    case RENAME_FILE:
-                    case RENAME_DIR:
-                        Change.Rename renFile = (Change.Rename)change;
-                        Path oldFile = dirPath.resolve(renFile.getOldName());
-                        Path newFile = dirPath.resolve(renFile.getNewName());
+                    case RENAME:
+                        Path oldFile = dirPath.resolve(change.getOldName());
+                        Path newFile = dirPath.resolve(change.getNewName());
                         Files.move(oldFile, newFile);
                         break;
                     case ADD_FOLDER:
-                        Change.AddFolder mkdir = (Change.AddFolder)change;
-                        Path folderName = dirPath.resolve(mkdir.getFolderName());
+                        Path folderName = dirPath.resolve(change.getNewName());
                         Files.createDirectories(folderName);
                         break;
                 }
