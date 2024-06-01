@@ -13,12 +13,12 @@ public class NetAlbumSession {
     @Column(name="directoryName")
     private String directoryName;
 
-    @OneToMany(cascade=CascadeType.ALL)
-    @JoinColumn(name="sessionId")
+    @OneToMany(cascade=CascadeType.REMOVE)
+    @JoinColumn(name="sessionId", updatable = false)
     private List<ImageFile> files;
     
-    @OneToMany
-    @JoinColumn(name="sessionId")
+    @OneToMany(cascade = CascadeType.REMOVE)
+    @JoinColumn(name="sessionId", updatable = false)
     private List<ChangeQueueRecord> changes;
     
     public String getSessionId() {

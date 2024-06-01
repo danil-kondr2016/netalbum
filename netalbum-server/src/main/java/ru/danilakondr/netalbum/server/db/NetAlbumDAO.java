@@ -136,4 +136,10 @@ public class NetAlbumDAO {
             s.remove(c);
         }
     }
+
+    @Transactional
+    public void removeChange(ChangeQueueRecord rec) {
+        Session s = factory.getCurrentSession();
+        s.remove(rec);
+    }
 }

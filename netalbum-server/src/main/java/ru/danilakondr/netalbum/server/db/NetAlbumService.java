@@ -49,6 +49,19 @@ public class NetAlbumService {
         if (session == null)
             throw new NonExistentSession(sessionId);
 
+        List<ChangeQueueRecord> queueRecords = session.getChangesFromQueue();
+        List<ImageFile> images = session.getFiles();
+
+        for (ChangeQueueRecord rec : queueRecords) {
+            dao.removeChange(rec);
+        }
+        queueRecords.clear();
+
+        for (ImageFile file : images) {
+            dao.removeImageFile(file);
+        }
+        images.clear();
+
         dao.removeSession(session);
     }
 
