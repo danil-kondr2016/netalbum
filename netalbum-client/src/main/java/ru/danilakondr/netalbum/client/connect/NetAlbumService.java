@@ -30,16 +30,23 @@ public class NetAlbumService extends SubmissionPublisher<Message>
             throw new IllegalStateException("Already connected");
 
         service.execute(() -> {
-            CompletableFuture<WebSocket> cfWebSocket = HttpClient
-                    .newHttpClient()
-                    .newWebSocketBuilder()
-                    .buildAsync(uri, NetAlbumService.this);
-            cfWebSocket.join();
-            connectionLatch.countDown();
-            
-            Message msg = new Message(Message.Type.CONNECTION_ESTABLISHED);
-            msg.setProperty("url", uri.toString());
-            submit(msg);
+            try {
+                CompletableFuture<WebSocket> cfWebSocket = HttpClient
+                        .newHttpClient()
+                        .newWebSocketBuilder()
+                        .buildAsync(uri, NetAlbumService.this);
+                cfWebSocket.join();
+                connectionLatch.countDown();
+
+                Message msg = new Message(Message.Type.CONNECTION_ESTABLISHED);
+                msg.setProperty("url", uri.toString());
+                submit(msg);
+            }
+            catch (CompletionException ex) {
+                Message msg = new Message(Message.Type.CONNECTION_FAILED);
+                msg.setProperty("message", ex.toString());
+                submit(msg);
+            }
         });
     }
 
@@ -56,16 +63,16 @@ public class NetAlbumService extends SubmissionPublisher<Message>
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException ex) {
-                Response.Error err = new Response.Error(Response.Error.Status.EXCEPTION);
-                err.setProperty("message", ex);
-                submit(err);
+                Message msg = new Message(Message.Type.CONNECTION_FAILED);
+                msg.setProperty("message", ex.toString());
+                submit(msg);
 
                 Logger.getLogger(NetAlbumService.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ExecutionException ex) {
-                Response.Error err = new Response.Error(Response.Error.Status.EXCEPTION);
-                err.setProperty("message", ex);
-                submit(err);
-
+            } catch (ExecutionException | CompletionException ex) {
+                Message msg = new Message(Message.Type.CONNECTION_FAILED);
+                msg.setProperty("message", ex.toString());
+                submit(msg);
+                
                 Logger.getLogger(NetAlbumService.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
@@ -111,7 +118,7 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
-    
+
     private void processResponse(String strResponse) {
         ObjectMapper mapper = new ObjectMapper();
         try {
