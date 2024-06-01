@@ -212,13 +212,14 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         List<ChangeCommand> changes = req.getChanges();
         
         for (ChangeCommand change: changes) {
-            service.putChange(sessionId, change);
             switch (change.getType()) {
                 case ADD_FOLDER:
                     ChangeCommand.AddFolder mkdir = (ChangeCommand.AddFolder)change;
                     service.putDirectories(sessionId, mkdir.getFolderName());
+                    service.putChange(sessionId, change);
                     break;
                 case RENAME:
+                    service.putChange(sessionId, change);
                     ChangeCommand.Rename ren = (ChangeCommand.Rename)change;
                     service.rename(sessionId, ren.getFileId(), ren.getNewName());
                     break;
