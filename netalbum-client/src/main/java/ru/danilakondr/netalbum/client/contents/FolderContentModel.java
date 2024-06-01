@@ -66,7 +66,7 @@ public class FolderContentModel extends DefaultTreeModel {
     }
     
     public void addRemove(long fileId) {
-        Command cmd = commands.getLast();
+        Command cmd = commands.get(commands.size() - 1);
         if (cmd.type == Command.Type.INSERT && cmd.fileId == fileId) {
             cmd = new Command(Command.Type.MOVE, cmd.fileId, cmd.path);
             commands.set(commands.size() - 1, cmd);
@@ -140,6 +140,7 @@ public class FolderContentModel extends DefaultTreeModel {
                 }
                 case INSERT: {
                     ChangeCommand.AddFolder mkdir = new ChangeCommand.AddFolder();
+                    mkdir.setFileId(cmd.fileId);
                     mkdir.setFolderName(cmd.path);
                     changes.add(mkdir);
                     break;

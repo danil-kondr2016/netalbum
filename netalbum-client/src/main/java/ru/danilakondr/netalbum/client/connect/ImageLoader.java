@@ -8,6 +8,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +24,7 @@ import ru.danilakondr.netalbum.api.data.ImageData;
 import ru.danilakondr.netalbum.api.message.Message;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
+import ru.danilakondr.netalbum.api.utils.FileIdGenerator;
 import ru.danilakondr.netalbum.client.gui.GuiMessages;
 import ru.danilakondr.netalbum.client.utils.Images;
 
@@ -34,7 +36,7 @@ public class ImageLoader {
     public ImageLoader(NetAlbumService service, File directory) {
         this.service = service;
         this.directory = directory;
-        
+
         service.subscribe(imgTaskSubscriber);
     }
     
@@ -58,7 +60,7 @@ public class ImageLoader {
     
     private final File directory;
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
-    
+
     private int nTotal = 0;
     private int nProcessed = 0;
     private final Flow.Subscriber<Message> imgTaskSubscriber = new Flow.Subscriber<Message>() {
@@ -137,10 +139,47 @@ public class ImageLoader {
                     .filter(p -> isValidImageFileName(p.toAbsolutePath().toString()))
                     .map(p -> p.toFile())
                     .count();
-            
+
             return result;
         } catch (IOException ex) {
             return 0;
+        }
+    }
+
+    private int getAllFolderCount() {
+        try (var stream = Files.walk(directory.toPath())) {
+            int result = (int) stream
+                    .filter(Files::isDirectory)
+                    .count();
+
+            return result;
+        } catch (IOException ex) {
+            return 0;
+        }
+    }
+
+    private void scanAndSendAll() {
+        scanAndSendAllDirectories();
+        scanAndSendAllImages();
+    }
+
+    private void scanAndSendAllDirectories() {
+        try (var stream = Files.walk(directory.toPath())) {
+            var dirs = stream
+                    .map(Path::toFile)
+                    .filter(File::isDirectory);
+            var dirIterator = dirs.iterator();
+
+            while (dirIterator.hasNext()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+
+                File f = dirIterator.next();
+                addDir(f);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ImageLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -166,6 +205,19 @@ public class ImageLoader {
         }
     }
 
+    private void addDir(File dir) {
+        Request.AddDirectory addDir = new Request.AddDirectory();
+        String name = directory.toPath()
+                .relativize(dir.toPath())
+                .toString()
+                .replace(File.separatorChar, '/');
+
+        addDir.setDirectoryName(name);
+        addDir.setFileId(FileIdGenerator.generate(name));
+
+        service.sendRequest(addDir);
+    }
+
     private void loadImage(File file) {
         try {
             Request.AddFile addImage = new Request.AddFile();
@@ -175,6 +227,7 @@ public class ImageLoader {
                     .replace(File.separatorChar, '/');
 
             ImageData imgData = Images.generateImage(file, name, 640, 480);
+            imgData.setFileId(FileIdGenerator.generate(name));
             addImage.setFile(imgData);
 
             service.sendRequest(addImage);
@@ -187,13 +240,13 @@ public class ImageLoader {
     }
     
     public void execute() {
-        nTotal = getAllImageCount();
+        nTotal = getAllImageCount() + getAllFolderCount();
         EventQueue.invokeLater(() -> {
             monitor.setMillisToPopup(0);
             monitor.setMillisToDecideToPopup(0);
             monitor.setMaximum(nTotal);
             monitor.setProgress(0);
         });
-        exec.execute(() -> scanAndSendAllImages());
+        exec.execute(this::scanAndSendAll);
     }
 }

@@ -4,6 +4,7 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import ru.danilakondr.netalbum.api.utils.FileIdGenerator;
 import ru.danilakondr.netalbum.client.utils.FileSize;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
@@ -24,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
 import javax.swing.JTree;
@@ -102,7 +104,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                         .filter(node -> !Objects.equals(node, rootNode))
                         .map(node -> Objects.toString(node, ""))
                         .toArray(String[]::new));
-                
+
                 contents.addUpdate(info.getFileId(), newPath);
             }
         });
@@ -293,10 +295,16 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         
         FolderContentNode node = FolderContentNode.createDirectory(newFolderName);
         FolderContentNode root = (FolderContentNode)contents.getRoot();
-        
+
+        String path = Arrays.stream(node.getPath())
+                .filter(obj -> !Objects.equals(obj, root))
+                .map(obj -> Objects.toString(obj))
+                .collect(Collectors.joining("/"));
+
         FileInfo info = new FileInfo();
         info.setFileType(FileInfo.Type.DIRECTORY);
         info.setFileName(newFolderName);
+        info.setFileId(FileIdGenerator.generate(path));
         
         node.setFileInfo(info);
         
@@ -318,7 +326,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
 
     private void initContents(Path zipFile) {
         try {
-            FileSystem fs = FileSystems.newFileSystem(zipFile);
+            FileSystem fs = FileSystems.newFileSystem(zipFile, (ClassLoader) null);
             this.contents = new FolderContentModel(folderName);
             this.contents.load(fs);
         }
