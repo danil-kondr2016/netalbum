@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
 import javax.swing.JTree;
@@ -32,7 +33,7 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 
 import ru.danilakondr.netalbum.api.data.FileInfo;
 import ru.danilakondr.netalbum.api.message.Response;
@@ -47,7 +48,7 @@ import ru.danilakondr.netalbum.client.contents.FolderContentNode;
 public class FolderContentsViewer extends javax.swing.JPanel {
     private FolderContentModel contents;
     private ImagePanel imageViewer;
-    private Session session;
+    private final Session session;
     private String folderName;
     
     public FolderContentsViewer(Session session, String folderName, Path zipFile) {
@@ -74,7 +75,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                         .filter(node -> !Objects.equals(node, childNode.getRoot()))
                         .map(node -> Objects.toString(node, ""))
                         .toArray(String[]::new));
-                    contents.addInsert(childNode.getFileInfo(), newPath);
+                    contents.addInsert(childNode.getFileInfo().getFileId(), newPath);
                 }
             }
 
@@ -82,7 +83,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
             public void treeNodesRemoved(TreeModelEvent e) {
                 for (Object oNode: e.getChildren()) {
                     var childNode = (FolderContentNode)oNode;
-                    contents.addRemove(childNode.getFileInfo());
+                    contents.addRemove(childNode.getFileInfo().getFileId());
                 }
             }
 
@@ -95,7 +96,6 @@ public class FolderContentsViewer extends javax.swing.JPanel {
             
             private void treeUpdated(FolderContentNode lastNode) {
                 FileInfo info = lastNode.getFileInfo();
-                String oldPath = info.getFileName();
                 
                 FolderContentNode rootNode = (FolderContentNode)lastNode.getRoot();
                 String newPath = String.join("/", Arrays.stream(lastNode.getPath())
@@ -103,7 +103,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
                         .map(node -> Objects.toString(node, ""))
                         .toArray(String[]::new));
                 
-                contents.addUpdate(info, newPath);
+                contents.addUpdate(info.getFileId(), newPath);
             }
         });
     }
@@ -275,7 +275,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
     }//GEN-LAST:event_treeFolderContentsValueChanged
 
     private void btnSynchronizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSynchronizeActionPerformed
-        List<Change> changes = contents.getChanges();
+        List<ChangeCommand> changes = contents.getChanges();
         
         var form = SwingUtilities.getWindowAncestor(this);
         session.addOnResponseListener(Response.Type.SYNCHRONIZING, s -> form.dispose(), true);
@@ -283,13 +283,20 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         session.synchronize(changes);
     }//GEN-LAST:event_btnSynchronizeActionPerformed
 
+    private final AtomicInteger newFolderCount = new AtomicInteger(1);
+    
     private void btnCreateDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateDirectoryActionPerformed
-        FolderContentNode node = FolderContentNode.createDirectory("New folder");
+        String newFolderName = "New folder";
+        if (newFolderCount.get() > 1)
+            newFolderName += " (" + newFolderCount.get() + ")";
+        newFolderCount.incrementAndGet();
+        
+        FolderContentNode node = FolderContentNode.createDirectory(newFolderName);
         FolderContentNode root = (FolderContentNode)contents.getRoot();
         
         FileInfo info = new FileInfo();
         info.setFileType(FileInfo.Type.DIRECTORY);
-        info.setFileName("New folder");
+        info.setFileName(newFolderName);
         
         node.setFileInfo(info);
         
@@ -481,6 +488,7 @@ class FolderContentTreeTransferHandler extends TransferHandler {
         return true;
     }
 
+    @Override
     public String toString() {
         return getClass().getName();
     }
