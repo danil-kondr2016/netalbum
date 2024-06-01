@@ -9,7 +9,6 @@
         <version>0.16.0</version>
     </parent>
 
-    <groupId>ru.danilakondr.les</groupId>
     <artifactId>netalbum-client</artifactId>
     <name>Net album client</name>
 
