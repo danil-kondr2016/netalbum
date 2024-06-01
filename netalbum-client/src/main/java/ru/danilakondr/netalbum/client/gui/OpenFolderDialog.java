@@ -4,6 +4,9 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
+import javax.swing.JOptionPane;
+import ru.danilakondr.netalbum.client.utils.SessionIdValidator;
+
 /**
  *
  * @author danko
@@ -104,6 +107,18 @@ public class OpenFolderDialog extends javax.swing.JDialog {
 
     private void btnConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnectActionPerformed
         sessionKey = tfSessionKey.getText();
+        if (SessionIdValidator.isSessionIdValid(sessionKey)) {
+            JOptionPane.showMessageDialog(this, 
+                    "Неправильный ключ сессии: он должен состоять из "
+                            + "40 символов и содержать только "
+                            + "шестнадцатеричные цифры "
+                            + "(0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f)", 
+                    "Ошибка", 
+                    JOptionPane.ERROR_MESSAGE);
+            
+            return;
+        }
+        
         serverAddress = tfServerAddress.getText();
         dispose();
     }//GEN-LAST:event_btnConnectActionPerformed
