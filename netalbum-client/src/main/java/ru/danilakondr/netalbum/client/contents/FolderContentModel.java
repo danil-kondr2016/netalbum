@@ -15,17 +15,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultTreeModel;
-import ru.danilakondr.netalbum.api.data.Change;
-import static ru.danilakondr.netalbum.api.data.Change.Type.ADD_FOLDER;
-import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_DIR;
-import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_FILE;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.FileInfo;
+import ru.danilakondr.netalbum.api.data.ChangeInfo;
 
 /**
  *
@@ -33,9 +30,9 @@ import ru.danilakondr.netalbum.api.data.FileInfo;
  */
 public class FolderContentModel extends DefaultTreeModel {
     private static class Command {
-        Command(Type type, FileInfo info, String path) {
+        Command(Type type, long fileId, String path) {
             this.type = type;
-            this.info = info;
+            this.fileId = fileId;
             this.path = path;
         }
         
@@ -48,13 +45,13 @@ public class FolderContentModel extends DefaultTreeModel {
         }
         
         public final Type type;
-        public final FileInfo info;
+        public final long fileId;
         public final String path;
     }
     
     private String folderName;
     private FileSystem fs;
-    private HashMap<String, FileInfo> imageInfoMap = new HashMap<>();
+    private final HashMap<String, FileInfo> fileInfoMap = new HashMap<>();
 
     private List<Command> commands;
     
@@ -64,24 +61,23 @@ public class FolderContentModel extends DefaultTreeModel {
         this.commands = new ArrayList<>();
     }
     
-    public void addInsert(FileInfo info, String path) {
-        commands.add(new Command(Command.Type.INSERT, info, path));
+    public void addInsert(long fileId, String path) {
+        commands.add(new Command(Command.Type.INSERT, fileId, path));
     }
     
-    public void addRemove(FileInfo info) {
+    public void addRemove(long fileId) {
         Command cmd = commands.getLast();
-        if (cmd.type == Command.Type.INSERT && cmd.info == info) {
-            cmd = new Command(Command.Type.MOVE, cmd.info, cmd.path);
+        if (cmd.type == Command.Type.INSERT && cmd.fileId == fileId) {
+            cmd = new Command(Command.Type.MOVE, cmd.fileId, cmd.path);
             commands.set(commands.size() - 1, cmd);
         }
         else {
-            commands.add(new Command(Command.Type.REMOVE, info, null));
+            commands.add(new Command(Command.Type.REMOVE, fileId, null));
         }
     }
     
-    public void addUpdate(FileInfo info, String path) {
-        System.out.println("INSERT " + info.getFileName() + " " + path);
-        commands.add(new Command(Command.Type.UPDATE, info, path));
+    public void addUpdate(long fileId, String path) {
+        commands.add(new Command(Command.Type.UPDATE, fileId, path));
     }
     
     public void load(FileSystem fs) {
@@ -97,7 +93,7 @@ public class FolderContentModel extends DefaultTreeModel {
             var tree = FolderContents.buildTree(pThumbnails, folderName);
             super.setRoot(tree);
           
-            fileInfoList.forEach(info -> imageInfoMap.put(info.getFileName(), info));
+            fileInfoList.forEach(info -> fileInfoMap.put(info.getFileName(), info));
             
             var treeEnum = tree.depthFirstEnumeration();
             while (treeEnum.hasMoreElements()) {
@@ -107,7 +103,7 @@ public class FolderContentModel extends DefaultTreeModel {
                         .map(obj -> Objects.toString(obj))
                         .filter(str -> !str.equals(folderName))
                         .toArray(n -> new String[n]));
-                node.setFileInfo(imageInfoMap.get(path));
+                node.setFileInfo(fileInfoMap.get(path));
             }
             
             this.fs = fs;
@@ -126,82 +122,26 @@ public class FolderContentModel extends DefaultTreeModel {
     }
     
     public FileInfo getImageInfo(String[] path) {
-        return imageInfoMap.get(String.join("/", path));
-    }
-    
-    private void replaceFileNames(List<Change> changes, int renIndex) {
-        Change.Rename ren = (Change.Rename)changes.get(renIndex);
-        String renOldName = "^" + Pattern.quote(ren.getOldName());
-        String renNewName = Matcher.quoteReplacement(ren.getNewName());
-        for (int j = renIndex + 1; j < changes.size(); j++) {
-            Change ch = changes.get(j);
-            switch (ch.getType()) {
-                case RENAME_DIR:
-                case RENAME_FILE:
-                    Change.Rename nextRen = (Change.Rename)ch;
-                    String oldName = nextRen.getOldName().replaceAll(renOldName, renNewName);
-                    nextRen.setOldName(oldName);
-                    changes.set(j, nextRen);
-                    break;
-            }
-        }
+        return fileInfoMap.get(String.join("/", path));
     }
 
-    private void replaceFolderPaths(List<Change> changes, int renIndex) {
-        Change.Rename ren = (Change.Rename)changes.get(renIndex);
-
-        String renOldName = "^" + Pattern.quote(ren.getOldName() + "/");
-        String renNewName = Matcher.quoteReplacement(ren.getNewName() + "/");
-        for (int j = renIndex + 1; j < changes.size(); j++) {
-            Change ch = changes.get(j);
-            switch (ch.getType()) {
-                case ADD_FOLDER:
-                    Change.AddFolder mkdir = (Change.AddFolder)ch;
-                    String oldFolderName = mkdir.getFolderName();
-                    String newFolderName = oldFolderName.replaceAll(renOldName, renNewName);
-                    mkdir.setFolderName(newFolderName);
-                    changes.set(j, mkdir);
-                    break;
-                case RENAME_DIR:
-                case RENAME_FILE:
-                    Change.Rename nextRen = (Change.Rename)ch;
-                    String oldDirName = nextRen.getOldName().replaceAll(renOldName, renNewName);
-                    String newDirName = nextRen.getNewName().replaceAll(renOldName, renNewName);
-                    nextRen.setOldName(oldDirName);
-                    nextRen.setNewName(newDirName);
-                    changes.set(j, nextRen);
-                    break;
-            }
-        }
-    }
-    
-    public List<Change> getChanges() {
-        List<Change> changes = new ArrayList<>();
+    public List<ChangeCommand> getChanges() {
+        List<ChangeCommand> changes = new ArrayList<>();
         
         for (Command cmd: commands) {
             switch (cmd.type) {
                 case MOVE:
                 case UPDATE: {
-                    Change.Rename ren = null;
-                    switch (cmd.info.getFileType()) {
-                        case FILE:
-                            ren = new Change.RenameFile();
-                            break;
-                        case DIRECTORY:
-                            ren = new Change.RenameDir();
-                            break;
-                    }
-                    
-                    ren.setOldName(cmd.info.getFileName());
+                    ChangeCommand.Rename ren = new ChangeCommand.Rename();
+                    ren.setFileId(cmd.fileId);
                     ren.setNewName(cmd.path);
                     changes.add(ren);
+                    break;
                 }
                 case INSERT: {
-                    if (cmd.info.getFileType() == FileInfo.Type.DIRECTORY) {
-                        Change.AddFolder mkdir = new Change.AddFolder();
-                        mkdir.setFolderName(cmd.path);
-                        changes.add(mkdir);
-                    }
+                    ChangeCommand.AddFolder mkdir = new ChangeCommand.AddFolder();
+                    mkdir.setFolderName(cmd.path);
+                    changes.add(mkdir);
                     break;
                 }
                 default:
@@ -209,30 +149,6 @@ public class FolderContentModel extends DefaultTreeModel {
             }
         }
         
-        for (int i = 0; i < changes.size(); i++) {
-            Change change = changes.get(i);
-            if (change.getType() != RENAME_DIR)
-                continue;
-            
-            replaceFolderPaths(changes, i);
-        }
-        
-        for (int i = 0; i < changes.size(); i++) {
-            Change change = changes.get(i);
-            if (change.getType() != RENAME_DIR && change.getType() != RENAME_FILE)
-                continue;
-            
-            replaceFileNames(changes, i);
-        }
-        
-        return changes.stream().filter(ch -> {
-            if (ch.getType() == RENAME_DIR || ch.getType() == RENAME_FILE) {
-                Change.Rename ren = (Change.Rename)ch;
-                return !Objects.equals(ren.getOldName(), ren.getNewName());
-            }
-            else {
-                return true;
-            }
-        }).toList();
+        return changes;
     }
 }
