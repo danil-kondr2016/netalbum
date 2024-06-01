@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.message.Message;
 import static ru.danilakondr.netalbum.api.message.Message.Type.RESPONSE;
 import ru.danilakondr.netalbum.api.message.Request;
@@ -38,7 +38,7 @@ public class Session {
         service.sendRequest(req);
     }
 
-    public void synchronize(List<Change> changes) {
+    public void synchronize(List<ChangeCommand> changes) {
         Request.Synchronize req = new Request.Synchronize();
         req.setChanges(changes);
         service.sendRequest(req);

@@ -3,35 +3,34 @@ package ru.danilakondr.netalbum.api.data;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_DIR;
-import static ru.danilakondr.netalbum.api.data.Change.Type.RENAME_FILE;
 
 /**
- * Класс-держатель параметра изменения. Содержит два поля:
+ * Класс-держатель параметра изменения. Содержит поле {@code type}, которое
+ * обозначает тип изменения.
+ * <p>Типы изменений:
  * <ul>
- *     <li>{@code oldName}: старое имя</li>
- *     <li>{@code newName}: новое имя (значение null означает, что файл удалён)</li>
+ * <li>{@code ADD_FOLDER}: создать папку</li>
+ * <li>{@code RENAME_FILE}: переименовать файл</li>
+ * <li>{@code RENAME_DIR}: переименовать папку</li>
  * </ul>
- *
+ * 
  * @author Данила А. Кондратенко
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="type", visible=true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(name="ADD_FOLDER", value=Change.AddFolder.class),
-    @JsonSubTypes.Type(name="RENAME_FILE", value=Change.RenameFile.class),
-    @JsonSubTypes.Type(name="RENAME_DIR", value=Change.RenameDir.class)
+    @JsonSubTypes.Type(name="ADD_FOLDER", value=ChangeCommand.AddFolder.class),
+    @JsonSubTypes.Type(name="RENAME", value=ChangeCommand.Rename.class),
 })
-public class Change {
+public class ChangeCommand {
     public enum Type {
         ADD_FOLDER,
-        RENAME_FILE,
-        RENAME_DIR,
+        RENAME,
     }
     private Type type;
     
-    public Change() {}
+    public ChangeCommand() {}
     
-    public Change(Type type) {
+    public ChangeCommand(Type type) {
         this.type = type;
     }
 
@@ -43,7 +42,7 @@ public class Change {
         this.type = type;
     }
     
-    public static class AddFolder extends Change {
+    public static class AddFolder extends ChangeCommand {
         private String folderName;
         
         public AddFolder() {
@@ -59,48 +58,30 @@ public class Change {
         }
     }
     
-    @JsonPropertyOrder({"type", "oldName", "newName"})
-    public static abstract class Rename extends Change {
-        private String oldName;
+    @JsonPropertyOrder({"type", "fileId", "newName"})
+    public static class Rename extends ChangeCommand {
+        private long fileId;
         private String newName;
         
-        private static Type checkType(Type type) {
-            if (type != RENAME_FILE && type != RENAME_DIR)
-                throw new IllegalArgumentException("Invalid type " + type);
-            
-            return type;
-        }
-        
-        protected Rename(Type type) {
-            super(checkType(type));
-        }
-
-        public void setOldName(String name) {
-            this.oldName = name;
+        public Rename() {
+            super(Type.RENAME);
         }
 
         public void setNewName(String name) {
             this.newName = name;
         }
 
-        public String getOldName() {
-            return oldName;
+        public void setFileId(long fileId) {
+            this.fileId = fileId;
         }
-
+        
         public String getNewName() {
             return newName;
         }
-    }
 
-    public static class RenameFile extends Rename {
-        public RenameFile() {
-            super(Type.RENAME_FILE);
+        public long getFileId() {
+            return fileId;
         }
-    }
-    
-    public static class RenameDir extends Rename {
-        public RenameDir() {
-            super(Type.RENAME_DIR);
-        }
+        
     }
 }
