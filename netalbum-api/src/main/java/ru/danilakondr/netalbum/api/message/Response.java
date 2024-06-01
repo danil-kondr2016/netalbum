@@ -125,7 +125,7 @@ public class Response extends Message {
         private long imageCount;
 
         public DirectoryInfo() {
-            super(Type.DIRECTORY_INFO);
+            super(Response.Type.DIRECTORY_INFO);
         }
 
         public DirectoryInfo(String directoryName, long directorySize) {
@@ -169,7 +169,7 @@ public class Response extends Message {
         private List<ChangeInfo> changes;
 
         public Synchronizing() {
-            super(Type.SYNCHRONIZING);
+            super(Response.Type.SYNCHRONIZING);
         }
 
         public Synchronizing(List<ChangeInfo> changes) {
@@ -191,7 +191,7 @@ public class Response extends Message {
         private byte[] thumbnailsZip;
 
         public ThumbnailsArchive() {
-            super(Type.THUMBNAILS_ARCHIVE);
+            super(Response.Type.THUMBNAILS_ARCHIVE);
         }
 
         public ThumbnailsArchive(byte[] zip) {
@@ -213,7 +213,7 @@ public class Response extends Message {
         private String sessionId;
 
         public SessionCreated() {
-            super(Type.SESSION_CREATED);
+            super(Response.Type.SESSION_CREATED);
         }
 
         public SessionCreated(String sessionId) {
@@ -274,7 +274,7 @@ public class Response extends Message {
         }
 
         public Error() {
-            super(Type.ERROR);
+            super(Response.Type.ERROR);
         }
 
         public Error(Status status) {
@@ -306,11 +306,11 @@ public class Response extends Message {
         private FileInfo file;
 
         public FileAdded() {
-            super(Type.FILE_ADDED);
+            super(Response.Type.FILE_ADDED);
         }
 
         public FileAdded(FileInfo file) {
-            super(Type.FILE_ADDED);
+            super(Response.Type.FILE_ADDED);
             this.file = file;
         }
 
