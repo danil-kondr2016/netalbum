@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
+import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.api.data.FileInfo;
 import ru.danilakondr.netalbum.api.data.FilenameUtils;
-import ru.danilakondr.netalbum.server.error.CannotMoveADirectoryError;
 import ru.danilakondr.netalbum.server.error.DirectoryNotFoundError;
 import ru.danilakondr.netalbum.server.error.NotADirectoryError;
 import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
@@ -69,7 +69,6 @@ public class NetAlbumService {
             dir.setFileType(ImageFile.Type.DIRECTORY);
             dir.setSessionId(sessionId);
             dir.setFileName(dirName);
-            dir.setFirstName(dirName);
             dir.setFileSize(0);
             dir.setImgWidth(0);
             dir.setImgHeight(0);
@@ -99,7 +98,6 @@ public class NetAlbumService {
         ImageFile file = new ImageFile();
         file.setFileType(ImageFile.Type.FILE);
         file.setFileName(data.getFileName());
-        file.setFirstName(data.getFileName());
         file.setFileSize(data.getFileSize());
         file.setSessionId(sessionId);
         file.setImgWidth(data.getWidth());
@@ -110,12 +108,12 @@ public class NetAlbumService {
     }
 
     @Transactional
-    public void renameFile(String sessionId, String oldName, String newName) {
-        ImageFile file = dao.getImageFile(sessionId, oldName);
-        if (file == null)
-            throw new FileNotFoundError(oldName);
-        if (file.getFileType() != ImageFile.Type.FILE)
-            throw new CannotMoveADirectoryError(file.getFileName());
+    public void rename(String sessionId, long fileId, String newName) {
+        ImageFile file = dao.getImageFile(sessionId, fileId);
+        if (file.getFileType() != ImageFile.Type.FILE) {
+            renameDir(sessionId, fileId, newName);
+            return;
+        }
 
         if (dao.getImageFile(sessionId, newName) != null)
             throw new FileAlreadyExistsError(newName);
@@ -125,18 +123,17 @@ public class NetAlbumService {
         if (newDir == null)
             throw new DirectoryNotFoundError(newDirName);
 
-        file.setFirstName(oldName);
         file.setFileName(newName);
         dao.putImageFile(file);
     }
     
     @Transactional
-    public void renameDir(String sessionId, String oldName, String newName) {
-        ImageFile dir = dao.getImageFile(sessionId, oldName);
-        if (dir == null)
-            throw new FileNotFoundError(oldName);
+    public void renameDir(String sessionId, long fileId, String newName) {
+        ImageFile dir = dao.getImageFile(sessionId, fileId);
         if (dir.getFileType() != ImageFile.Type.DIRECTORY)
             throw new NotADirectoryError(dir.getFileName());
+        
+        String oldName = dir.getFileName();
         
         ImageFile newDir = dao.getImageFile(sessionId, newName);
         if (newDir != null)
@@ -149,7 +146,6 @@ public class NetAlbumService {
                     String oldFileName = file.getFileName();
                     String newFileName = oldFileName.replace(oldName, newName);
                     
-                    file.setFirstName(oldFileName);
                     file.setFileName(newFileName);
                     
                     dao.putImageFile(file);
@@ -192,6 +188,7 @@ public class NetAlbumService {
                 if (f.getFileType() == ImageFile.Type.DIRECTORY) {
                     FileInfo info = new FileInfo(FileInfo.Type.DIRECTORY);
                     info.setFileName(f.getFileName());
+                    info.setFileId(f.getFileId());
                     infoList.add(info);
                     
                     String dirName = f.getFileName();
@@ -207,6 +204,7 @@ public class NetAlbumService {
                     info.setFileSize(f.getFileSize());
                     info.setWidth(f.getImgWidth());
                     info.setHeight(f.getImgHeight());
+                    info.setFileId(f.getFileId());
                     infoList.add(info);
 
                     ZipEntry fileEntry = new ZipEntry("thumbnails/" + f.getFileName());
@@ -233,20 +231,19 @@ public class NetAlbumService {
     }
     
     @Transactional
-    public void putChange(String sessionId, Change change) {
+    public void putChange(String sessionId, ChangeCommand change) {
         ChangeQueueRecord record = new ChangeQueueRecord();
         record.setSessionId(sessionId);
         record.setChangeType(change.getType());
         
         switch (change.getType()) {
             case ADD_FOLDER:
-                Change.AddFolder addFolder = (Change.AddFolder)change;
+                ChangeCommand.AddFolder addFolder = (ChangeCommand.AddFolder)change;
                 record.setNewName(addFolder.getFolderName());
                 break;
-            case RENAME_DIR:
-            case RENAME_FILE:
-                Change.Rename ren = (Change.Rename)change;
-                record.setOldName(ren.getOldName());
+            case RENAME:
+                ChangeCommand.Rename ren = (ChangeCommand.Rename)change;
+                record.setOldName(dao.getImageFile(sessionId, ren.getFileId()).getFileName());
                 record.setNewName(ren.getNewName());
                 break;
         }
@@ -255,8 +252,8 @@ public class NetAlbumService {
     }
     
     @Transactional
-    public List<Change> getChangesList(String sessionId) {
-                List<Change> result = new ArrayList<>();
+    public List<ChangeInfo> getChangesList(String sessionId) {
+        List<ChangeInfo> result = new ArrayList<>();
         NetAlbumSession session = dao.getSession(sessionId);
         if (session == null)
             throw new NonExistentSession(sessionId);
@@ -265,21 +262,15 @@ public class NetAlbumService {
         for (ChangeQueueRecord record: records) {
             switch (record.getChangeType()) {
                 case ADD_FOLDER:
-                    Change.AddFolder addFolder = new Change.AddFolder();
-                    addFolder.setFolderName(record.getNewName());
+                    ChangeInfo.AddFolder addFolder = 
+                            new ChangeInfo.AddFolder(record.getNewName());
                     result.add(addFolder);
                     break;
-                case RENAME_DIR:
-                    Change.RenameDir renDir = new Change.RenameDir();
-                    renDir.setOldName(record.getOldName());
-                    renDir.setNewName(record.getNewName());
-                    result.add(renDir);
-                    break;
-                case RENAME_FILE:
-                    Change.RenameFile renFile = new Change.RenameFile();
-                    renFile.setOldName(record.getOldName());
-                    renFile.setNewName(record.getNewName());
-                    result.add(renFile);
+                case RENAME:
+                    ChangeInfo.Rename rename = new ChangeInfo.Rename(
+                            record.getOldName(), 
+                            record.getNewName());
+                    result.add(rename);
                     break;
             }
         }
@@ -288,8 +279,8 @@ public class NetAlbumService {
     }
     
     @Transactional
-    public List<Change> moveChanges(String sessionId) {
-        List<Change> result = getChangesList(sessionId);
+    public List<ChangeInfo> moveChanges(String sessionId) {
+        List<ChangeInfo> result = getChangesList(sessionId);
         dao.clearChangeQueue(sessionId);
         
         return result;

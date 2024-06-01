@@ -8,7 +8,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.ImageData;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.api.data.FileInfo;
 
 import static ru.danilakondr.netalbum.api.message.Response.Error.Status.*;
@@ -147,11 +148,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             err.setProperty("fileName", e.getMessage());
             sendResponse(session, err);
         }
-        catch (CannotMoveADirectoryError e) {
-            Response.Error err = new Response.Error(CANNOT_MOVE_A_DIRECTORY);
-            err.setProperty("fileName", e.getMessage());
-            sendResponse(session, err);
-        }
     }
 
     private void putInitiator(WebSocketSession session, String sessionId) {
@@ -206,7 +202,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         sendResponse(session, resp);
         
         if (!service.isChangeQueueEmpty(id)) {
-            List<Change> changes = service.moveChanges(id);
+            List<ChangeInfo> changes = service.moveChanges(id);
             Response changesResp = new Response.Synchronizing(changes);
             sendResponse(session, changesResp);
         }
@@ -218,32 +214,28 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         
         String sessionId = connected.get(session);
 
-        List<Change> changes = req.getChanges();
-        // Первое. Записать изменения в базу данных.
-        for (Change change: changes) {
+        List<ChangeCommand> changes = req.getChanges();
+        
+        for (ChangeCommand change: changes) {
+            service.putChange(sessionId, change);
             switch (change.getType()) {
                 case ADD_FOLDER:
-                    Change.AddFolder mkdir = (Change.AddFolder)change;
+                    ChangeCommand.AddFolder mkdir = (ChangeCommand.AddFolder)change;
                     service.putDirectories(sessionId, mkdir.getFolderName());
                     break;
-                case RENAME_FILE:
-                    Change.RenameFile renFile = (Change.RenameFile)change;
-                    service.renameFile(sessionId, renFile.getOldName(), renFile.getNewName());
-                    break;
-                case RENAME_DIR:
-                    Change.RenameDir renDir = (Change.RenameDir)change;
-                    service.renameDir(sessionId, renDir.getOldName(), renDir.getNewName());
+                case RENAME:
+                    ChangeCommand.Rename ren = (ChangeCommand.Rename)change;
+                    service.rename(sessionId, ren.getFileId(), ren.getNewName());
                     break;
             }
-            service.putChange(sessionId, change);
         }
-        // Второе. Отправить изменения инициатору.
+        
         if (initiators.containsKey(sessionId)) {
-            Response changesResp = new Response.Synchronizing(changes);
+            Response changesResp = new Response.Synchronizing(service.moveChanges(sessionId));
             WebSocketSession initiator = initiators.get(sessionId);
             sendResponse(initiator, changesResp);
-            sendResponse(session, new Response(Response.Type.SUCCESS));
-            service.moveChanges(sessionId);
+            if (initiator != session)
+                sendResponse(session, new Response(Response.Type.SUCCESS));
         }
     }
 

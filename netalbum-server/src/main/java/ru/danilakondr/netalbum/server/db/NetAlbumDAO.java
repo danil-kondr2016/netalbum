@@ -79,6 +79,24 @@ public class NetAlbumDAO {
     }
     
     @Transactional
+    public ImageFile getImageFile(String sessionId, long id) {
+        Session s = factory.getCurrentSession();
+        Query<ImageFile> q = s.createQuery(
+                "FROM ImageFile WHERE sessionId=:sessionId AND fileId=:fileId",
+                        ImageFile.class)
+                .setParameter("sessionId", sessionId)
+                .setParameter("fileId", id);
+
+        List<ImageFile> results = q.getResultList();
+        if (results.isEmpty())
+            return null;
+        if (results.size() > 1)
+            throw new IllegalArgumentException("Repeating files");
+
+        return results.get(0);
+    }
+    
+    @Transactional
     public void putChangeQueueRecord(ChangeQueueRecord change) {
         Session s = factory.getCurrentSession();
         s.saveOrUpdate(change);

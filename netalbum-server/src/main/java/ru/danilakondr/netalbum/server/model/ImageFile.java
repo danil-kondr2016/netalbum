@@ -20,9 +20,6 @@ public class ImageFile {
     
     @Column(name="fileName")
     private String fileName;
-
-    @Column(name="firstName")
-    private String firstName;
     
     @Column(name="fileSize")
     private long fileSize;
@@ -68,10 +65,6 @@ public class ImageFile {
         return imgWidth;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
     public Type getFileType() {
         return fileType;
     }
@@ -102,10 +95,6 @@ public class ImageFile {
 
     public void setImgWidth(int imgWidth) {
         this.imgWidth = imgWidth;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public void setFileType(Type fileType) {

@@ -12,7 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 
 /**
  *
@@ -28,7 +28,7 @@ public class ChangeQueueRecord {
     
     @Column(name="changeType")
     @Enumerated(EnumType.STRING)
-    private Change.Type changeType;
+    private ChangeCommand.Type changeType;
     
     @Column(name="oldName")
     private String oldName;
@@ -47,11 +47,11 @@ public class ChangeQueueRecord {
         this.changeId = changeId;
     }
 
-    public Change.Type getChangeType() {
+    public ChangeCommand.Type getChangeType() {
         return changeType;
     }
 
-    public void setChangeType(Change.Type changeType) {
+    public void setChangeType(ChangeCommand.Type changeType) {
         this.changeType = changeType;
     }
 
