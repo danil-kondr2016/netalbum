@@ -62,7 +62,7 @@ public class NetAlbumService {
         ImageFile file = dao.getImageFile(sessionId, dirName);
         if (file != null && file.getFileType() == ImageFile.Type.FILE)
             throw new FileAlreadyExistsError(dirName);
-        
+
         if (file == null) {
             ImageFile dir = new ImageFile();
             dir.setFileType(ImageFile.Type.DIRECTORY);
