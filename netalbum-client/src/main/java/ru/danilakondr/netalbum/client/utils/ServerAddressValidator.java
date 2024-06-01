@@ -14,15 +14,15 @@ import java.net.URISyntaxException;
 public class ServerAddressValidator {
     public static boolean isValid(String url) {
         try {
-            URI uri = new URI(url);
-            if (uri.getScheme() != null && !uri.getScheme().isEmpty())
-                return false;
+            URI uri = URI.create("http://" + url);
+            
             if (uri.getQuery() != null && !uri.getQuery().isEmpty())
                 return false;
             if (uri.getFragment() != null && !uri.getFragment().isEmpty())
                 return false;
         }
-        catch (URISyntaxException e) {
+        catch (IllegalArgumentException e) {
+            System.out.println(e);
             return false;
         }
         
