@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import ru.danilakondr.netalbum.api.data.Change;
+import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.ImageData;
 import ru.danilakondr.netalbum.api.message.Request;
 
@@ -84,15 +84,15 @@ public class RequestGenerateTest {
 	@Test
 	@DisplayName("Check message with nullable fields (synchronize)")
 	void synchronize() throws JsonProcessingException {
-		Change.RenameFile first = new Change.RenameFile();
-		first.setOldName("test1.png");
+		ChangeCommand.Rename first = new ChangeCommand.Rename();
+		first.setFileId(1);
 		first.setNewName("test/test1.png");
 		
-		Change.RenameFile second = new Change.RenameFile();
-		second.setOldName("test2.png");
+		ChangeCommand.Rename second = new ChangeCommand.Rename();
+		second.setFileId(2);
 		second.setNewName(null);
 		
-		List<Change> changes = new ArrayList<>();
+		List<ChangeCommand> changes = new ArrayList<>();
 		changes.add(first);
 		changes.add(second);
 
@@ -100,6 +100,6 @@ public class RequestGenerateTest {
 		req.setProperty("changes", changes);
 		String x = objectToJson(req);
 		
-		assertEquals("{\"type\":\"REQUEST\",\"method\":\"SYNCHRONIZE\",\"changes\":[{\"type\":\"RENAME_FILE\",\"oldName\":\"test1.png\",\"newName\":\"test/test1.png\"},{\"type\":\"RENAME_FILE\",\"oldName\":\"test2.png\",\"newName\":null}]}", x);
+		assertEquals("{\"type\":\"REQUEST\",\"method\":\"SYNCHRONIZE\",\"changes\":[{\"type\":\"RENAME\",\"fileId\":1,\"newName\":\"test/test1.png\"},{\"type\":\"RENAME\",\"fileId\":2,\"newName\":null}]}", x);
 	}
 }
