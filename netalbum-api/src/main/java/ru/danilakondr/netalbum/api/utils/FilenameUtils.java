@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package ru.danilakondr.netalbum.api.data;
+package ru.danilakondr.netalbum.api.utils;
 
 /**
  *
@@ -26,5 +26,10 @@ public class FilenameUtils {
         }
         
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        String dirName = dirName("hello/world/");
+        System.out.println(dirName);
     }
 }

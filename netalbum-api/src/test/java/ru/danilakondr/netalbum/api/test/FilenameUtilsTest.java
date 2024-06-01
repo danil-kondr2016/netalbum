@@ -6,7 +6,7 @@ package ru.danilakondr.netalbum.api.test;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import ru.danilakondr.netalbum.api.data.FilenameUtils;
+import ru.danilakondr.netalbum.api.utils.FilenameUtils;
 
 /**
  *
