@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * Класс-держатель данных о файле/папке. Содержит поля:
  * 
  * <ul>
+ *  <li>{@code fileId}: код файла</li>
  *  <li>{@code fileName}: имя файла</li>
  *  <li>{@code fileType}: тип файла</li>
  * </ul>
@@ -22,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * 
  * @see FileInfo.Type
  */
-@JsonPropertyOrder({"fileName", "fileType", "fileSize", "width", "height"})
+@JsonPropertyOrder({"fileId", "fileName", "fileType"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.EXISTING_PROPERTY, property="fileType", visible = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(name="FILE", value=FileInfo.Image.class),
@@ -43,6 +44,7 @@ public class FileInfo {
         DIRECTORY;
     }
     
+    private long fileId;
     private String fileName;
     private Type fileType;
 
@@ -61,6 +63,10 @@ public class FileInfo {
         return fileType;
     }
 
+    public long getFileId() {
+        return fileId;
+    }
+
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
@@ -68,8 +74,12 @@ public class FileInfo {
     public void setFileType(Type fileType) {
         this.fileType = fileType;
     }
+
+    public void setFileId(long fileId) {
+        this.fileId = fileId;
+    }
     
-    @JsonPropertyOrder({"fileName", "fileType", "fileSize", "width", "height"})
+    @JsonPropertyOrder({"fileId", "fileName", "fileType", "fileSize", "width", "height"})
     public static class Image extends FileInfo {
         private long fileSize;
         private int width;
