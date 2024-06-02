@@ -417,6 +417,10 @@ public class Session {
         service.subscribe(new MessageListener(this, Message.Type.CONNECTION_FAILED, listener));
     }
     
+    public void addOnConnectionBrokenListener(BiConsumer<Session, Message> listener) {
+        service.subscribe(new MessageListener(this, Message.Type.CONNECTION_BROKEN, listener));
+    }
+    
     public void addOnResponseListener(Response.Type type, Consumer<Session> listener) {
         addOnResponseListener(type, listener, false);
     }

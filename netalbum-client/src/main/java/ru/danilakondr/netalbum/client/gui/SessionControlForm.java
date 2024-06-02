@@ -411,23 +411,22 @@ public class SessionControlForm extends javax.swing.JFrame {
         });
     
         session.addOnConnectionClosedListener((s, m) -> sessionTable.removeSession(s));
-        session.addOnConnectionClosedListener((s, m) -> {
-            if (!s.isConnected())
-                return;
-            
-            System.out.println(m.getProperties());
-            JOptionPane.showMessageDialog(SessionControlForm.this, 
-                "Обрыв соединения: \n" +
-                        "адрес связи " + s.getUrl() + "\n" +
-                        "ключ сессии " + s.getSessionId(), "Ошибка", JOptionPane.ERROR_MESSAGE);
-        });
         
         session.addOnConnectionFailedListener((s, m) -> {
+            sessionTable.removeSession(s);
             String msg = Objects.toString(m.getProperty("message"));
             JOptionPane.showMessageDialog(SessionControlForm.this,
                     "Ошибка при соединении с сервером. Пожалуйста, проверьте подключение.\n"
                             + "Исключение: " + msg,
                     "Ошибка", JOptionPane.ERROR_MESSAGE);
+        });
+        
+        session.addOnConnectionBrokenListener((s, m) -> {
+            sessionTable.removeSession(s);
+            JOptionPane.showMessageDialog(SessionControlForm.this, 
+                "Обрыв соединения: \n" +
+                        "адрес связи " + s.getUrl() + "\n" +
+                        "ключ сессии " + s.getSessionId(), "Ошибка", JOptionPane.ERROR_MESSAGE);
         });
     }
     

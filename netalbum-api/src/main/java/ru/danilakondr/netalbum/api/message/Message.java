@@ -23,6 +23,7 @@ import java.util.Map;
     @JsonSubTypes.Type(value=Message.class, name="CONNECTION_ESTABLISHED"),
     @JsonSubTypes.Type(value=Message.class, name="CONNECTION_CLOSED"),
     @JsonSubTypes.Type(value=Message.class, name="CONNECTION_FAILED"),
+    @JsonSubTypes.Type(value=Message.class, name="CONNECTION_BROKEN"),
 })
 @JsonPropertyOrder({"type"})
 public class Message {
@@ -32,6 +33,7 @@ public class Message {
         CONNECTION_ESTABLISHED,
         CONNECTION_CLOSED,
         CONNECTION_FAILED,
+        CONNECTION_BROKEN,
     };
     
     private Type type;

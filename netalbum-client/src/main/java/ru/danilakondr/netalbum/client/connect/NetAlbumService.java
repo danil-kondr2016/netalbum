@@ -63,13 +63,13 @@ public class NetAlbumService extends SubmissionPublisher<Message>
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException ex) {
-                Message msg = new Message(Message.Type.CONNECTION_FAILED);
+                Message msg = new Message(Message.Type.CONNECTION_BROKEN);
                 msg.setProperty("message", ex.toString());
                 submit(msg);
 
                 Logger.getLogger(NetAlbumService.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ExecutionException | CompletionException ex) {
-                Message msg = new Message(Message.Type.CONNECTION_FAILED);
+                Message msg = new Message(Message.Type.CONNECTION_BROKEN);
                 msg.setProperty("message", ex.toString());
                 submit(msg);
                 
@@ -111,10 +111,17 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         System.out.printf("Closed %d %s%n", statusCode, reason);
         connected = false;
         
-        Message msg = new Message(Message.Type.CONNECTION_CLOSED);
-        msg.setProperty("statusCode", statusCode);
-        msg.setProperty("reason", reason);
-        submit(msg);
+        if (statusCode == 1000) {
+            Message msg = new Message(Message.Type.CONNECTION_CLOSED);
+            msg.setProperty("statusCode", statusCode);
+            msg.setProperty("reason", reason);
+            submit(msg);
+        }
+        else {
+            Message msg = new Message(Message.Type.CONNECTION_BROKEN);
+            msg.setProperty("message", reason);
+            submit(msg);
+        }
         
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
@@ -123,6 +130,10 @@ public class NetAlbumService extends SubmissionPublisher<Message>
     public void onError(WebSocket webSocket, Throwable error) {
         WebSocket.Listener.super.onError(webSocket, error);
         System.out.println("Error: "+error);
+        
+        Message msg = new Message(Message.Type.CONNECTION_BROKEN);
+        msg.setProperty("message", error.toString());
+        submit(msg);
     }
 
     private void processResponse(String strResponse) {
