@@ -174,11 +174,15 @@ public class NetAlbumHandler extends TextWebSocketHandler {
         if (!isConnected(session))
             return;
         
-        String sessionId = connected.get(session);
+        System.out.print("Removing client " + session + " ");
+        
         if (isInitiator(session)) {
+            String sessionId = connected.get(session);
+            System.out.print("(initiator of " + sessionId + ")");
             initiators.remove(sessionId);
         }
 
+        System.out.println();
         connected.remove(session);
     }
 
@@ -345,13 +349,16 @@ public class NetAlbumHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        removeClient(session);
+
+        System.out.println("Transport error");
         exception.printStackTrace(System.out);
 
         Response resp = new Response.Error(EXCEPTION);
         resp.setProperty("message", exception.toString());
         sendResponse(session, resp);
-
-        removeClient(session);
+        
+        session.close();
     }
 
     @Override
