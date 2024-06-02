@@ -18,9 +18,11 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import ru.danilakondr.netalbum.api.data.ChangeCommand;
+import ru.danilakondr.netalbum.api.data.ImageData;
 import ru.danilakondr.netalbum.api.message.Message;
 import static ru.danilakondr.netalbum.api.message.Message.Type.RESPONSE;
 import ru.danilakondr.netalbum.api.message.Request;
@@ -32,18 +34,10 @@ import ru.danilakondr.netalbum.client.errors.NotADirectoryError;
  * @author danko
  */
 public class Session {
-
-    public void requestDirectoryInfo() {
-        Request req = new Request(Request.Method.GET_DIRECTORY_INFO);
-        service.sendRequest(req);
+    void subscribe(Flow.Subscriber<Message> subscriber) {
+        service.subscribe(subscriber);
     }
-
-    public void synchronize(List<ChangeCommand> changes) {
-        Request.Synchronize req = new Request.Synchronize();
-        req.setChanges(changes);
-        service.sendRequest(req);
-    }
-
+    
     public enum Type {
         INIT_SESSION("session.InitSession"),
         CONNECT_TO_SESSION("session.ConnectToSession"),
@@ -199,16 +193,52 @@ public class Session {
         service.sendRequest(req);
     }
 
+    public void requestDirectoryInfo() {
+        Request req = new Request(Request.Method.GET_DIRECTORY_INFO);
+        service.sendRequest(req);
+    }
+
+    public void synchronize(List<ChangeCommand> changes) {
+        Request.Synchronize req = new Request.Synchronize();
+        req.setChanges(changes);
+        service.sendRequest(req);
+    }
+    
+    private final AtomicLong fileId = new AtomicLong(0);
+    
+    public void setLastFileId(long fileId) {
+        this.fileId.set(fileId);
+    }
+    
+    public long getNextFileId() {
+        return fileId.incrementAndGet();
+    }
+    
     public void loadImages(File directory) {
         if (!directory.isDirectory()) {
             throw new NotADirectoryError(directory);
         }
 
         setPath(directory.getAbsolutePath());
-        ImageLoader loader = new ImageLoader(service, directory);
+        ImageLoader loader = new ImageLoader(this, directory);
         loader.execute();
     }
 
+    public void addDirectory(long dirId, String name) {
+        Request.AddDirectory addDir = new Request.AddDirectory();
+        addDir.setFileId(dirId);
+        addDir.setDirectoryName(name);
+        
+        service.sendRequest(addDir);
+    }
+    
+    public void addFile(ImageData data) {
+        Request.AddFile addFile = new Request.AddFile();
+        addFile.setFile(data);
+        
+        service.sendRequest(addFile);
+    }
+    
     private String url, sessionId, path;
     private URI wsApiUri, httpBaseUri;
     private Type type;
@@ -257,7 +287,7 @@ public class Session {
         this.path = path;
     }
 
-    public void setSessionType(Type type) {
+    private void setSessionType(Type type) {
         this.type = type;
     }
 

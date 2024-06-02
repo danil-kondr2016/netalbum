@@ -33,11 +33,11 @@ import ru.danilakondr.netalbum.client.utils.Images;
  * @author danko
  */
 public class ImageLoader {
-    public ImageLoader(NetAlbumService service, File directory) {
-        this.service = service;
+    public ImageLoader(Session session, File directory) {
+        this.session = session;
         this.directory = directory;
 
-        service.subscribe(imgTaskSubscriber);
+        session.subscribe(imgTaskSubscriber);
     }
     
     private static final ResourceBundle BUNDLE = ResourceBundle
@@ -52,7 +52,7 @@ public class ImageLoader {
     private static final String FAILED_TO_LOAD_IMAGES = BUNDLE
             .getString("imageLoader.failedToLoadImages");
     
-    private final NetAlbumService service;
+    private final Session session;
     private final ProgressMonitor monitor = new ProgressMonitor(null,
             LOADING_IMAGES,
             "",
@@ -212,10 +212,7 @@ public class ImageLoader {
                 .toString()
                 .replace(File.separatorChar, '/');
 
-        addDir.setDirectoryName(name);
-        addDir.setFileId(FileIdGenerator.generate(name));
-
-        service.sendRequest(addDir);
+        session.addDirectory(session.getNextFileId(), name);
     }
 
     private void loadImage(File file) {
@@ -227,10 +224,8 @@ public class ImageLoader {
                     .replace(File.separatorChar, '/');
 
             ImageData imgData = Images.generateImage(file, name, 640, 480);
-            imgData.setFileId(FileIdGenerator.generate(name));
-            addImage.setFile(imgData);
-
-            service.sendRequest(addImage);
+            imgData.setFileId(session.getNextFileId());
+            session.addFile(imgData);
         } catch (IOException ex) {
             SwingUtilities.invokeLater(() -> 
                 JOptionPane.showMessageDialog(null, ex, "Error", JOptionPane.ERROR_MESSAGE));
