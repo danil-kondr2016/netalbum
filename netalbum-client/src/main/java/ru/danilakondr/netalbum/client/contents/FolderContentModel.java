@@ -15,14 +15,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import javax.imageio.ImageIO;
 import javax.swing.tree.DefaultTreeModel;
 import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.FileInfo;
-import ru.danilakondr.netalbum.api.data.ChangeInfo;
 
 /**
  *
@@ -80,7 +78,7 @@ public class FolderContentModel extends DefaultTreeModel {
         commands.add(new Command(Command.Type.UPDATE, fileId, path));
     }
     
-    public void load(FileSystem fs) {
+    public long load(FileSystem fs) {
         try {
             var pThumbnails = fs.getPath("thumbnails");
             var pContents = fs.getPath("contents.json");
@@ -94,6 +92,9 @@ public class FolderContentModel extends DefaultTreeModel {
             super.setRoot(tree);
           
             fileInfoList.forEach(info -> fileInfoMap.put(info.getFileName(), info));
+            long lastFileId = fileInfoList.stream()
+                    .map(info -> info.getFileId())
+                    .max(Long::compareTo).get();
             
             var treeEnum = tree.depthFirstEnumeration();
             while (treeEnum.hasMoreElements()) {
@@ -107,6 +108,7 @@ public class FolderContentModel extends DefaultTreeModel {
             }
             
             this.fs = fs;
+            return lastFileId;
         }
         catch (IOException e) {
             throw new RuntimeException(e);

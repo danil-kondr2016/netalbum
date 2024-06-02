@@ -4,7 +4,6 @@
  */
 package ru.danilakondr.netalbum.client.gui;
 
-import ru.danilakondr.netalbum.api.utils.FileIdGenerator;
 import ru.danilakondr.netalbum.client.utils.FileSize;
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
@@ -304,7 +303,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         FileInfo info = new FileInfo();
         info.setFileType(FileInfo.Type.DIRECTORY);
         info.setFileName(newFolderName);
-        info.setFileId(FileIdGenerator.generate(path));
+        info.setFileId(session.getNextFileId());
         
         node.setFileInfo(info);
         
@@ -328,7 +327,7 @@ public class FolderContentsViewer extends javax.swing.JPanel {
         try {
             FileSystem fs = FileSystems.newFileSystem(zipFile, (ClassLoader) null);
             this.contents = new FolderContentModel(folderName);
-            this.contents.load(fs);
+            session.setLastFileId(this.contents.load(fs));
         }
         catch (IOException e) {
             this.contents = new FolderContentModel("Failure");
