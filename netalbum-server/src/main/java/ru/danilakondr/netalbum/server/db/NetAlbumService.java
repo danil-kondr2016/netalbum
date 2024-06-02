@@ -124,11 +124,16 @@ public class NetAlbumService {
     @Transactional
     public void rename(String sessionId, long fileId, String newName) {
         ImageFile file = dao.getImageFile(sessionId, fileId);
+        
+        // Игнорируем, если новое имя файла совпадает со старым
+        if (newName.equals(file.getFileName()))
+            return;
+        
         if (file.getFileType() != ImageFile.Type.FILE) {
             renameDir(sessionId, fileId, newName);
             return;
         }
-
+        
         if (dao.getImageFile(sessionId, newName) != null)
             throw new FileAlreadyExistsError(newName);
 
