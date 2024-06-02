@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.danilakondr.netalbum.api.data.ImageData;
-import ru.danilakondr.netalbum.api.utils.FileIdGenerator;
 import ru.danilakondr.netalbum.server.error.FileAlreadyExistsError;
 import ru.danilakondr.netalbum.server.error.NonExistentSession;
 import ru.danilakondr.netalbum.server.model.ImageFile;
@@ -21,7 +20,6 @@ import java.util.zip.ZipOutputStream;
 import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.api.data.FileInfo;
-import ru.danilakondr.netalbum.api.utils.FilenameUtils;
 import ru.danilakondr.netalbum.server.error.NotADirectoryError;
 import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
 
@@ -71,7 +69,7 @@ public class NetAlbumService {
     }
     
     @Transactional
-    public void putDirectory(String sessionId, String dirName) {
+    public void putDirectory(String sessionId, long fileId, String dirName) {
         ImageFile file = dao.getImageFile(sessionId, dirName);
         if (file != null && file.getFileType() == ImageFile.Type.FILE)
             throw new FileAlreadyExistsError(dirName);
@@ -80,7 +78,7 @@ public class NetAlbumService {
             ImageFile dir = new ImageFile();
             dir.setFileType(ImageFile.Type.DIRECTORY);
             dir.setSessionId(sessionId);
-            dir.setFileId(FileIdGenerator.generate(dirName));
+            dir.setFileId(fileId);
             dir.setFileName(dirName);
             dir.setFileSize(0);
             dir.setImgWidth(0);
@@ -90,24 +88,12 @@ public class NetAlbumService {
             dao.putImageFile(dir);
         }
     }
-    
-    @Transactional
-    public void putDirectories(String sessionId, String dirName) {
-        String dir = dirName;
-        while (!dir.isEmpty()) {
-            putDirectory(sessionId, dir);
-            dir = FilenameUtils.dirName(dir);
-        }
-    }
 
     @Transactional
     public void putImage(String sessionId, ImageData data) {
         if (dao.getImageFile(sessionId, data.getFileName()) != null)
             throw new FileAlreadyExistsError(data.getFileName());
         
-        String dirName = FilenameUtils.dirName(data.getFileName());
-        putDirectories(sessionId, dirName);
-
         ImageFile file = new ImageFile();
         file.setFileType(ImageFile.Type.FILE);
         file.setFileId(data.getFileId());

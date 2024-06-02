@@ -219,7 +219,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             switch (change.getType()) {
                 case ADD_FOLDER:
                     ChangeCommand.AddFolder mkdir = (ChangeCommand.AddFolder)change;
-                    service.putDirectories(sessionId, mkdir.getFolderName());
+                    service.putDirectory(sessionId, mkdir.getFileId(), mkdir.getFolderName());
                     service.putChange(sessionId, change);
                     break;
                 case RENAME:
@@ -372,7 +372,7 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             throw new NotConnectedError();
 
         String sessionId = connected.get(session);
-        service.putDirectory(sessionId, req.getDirectoryName());
+        service.putDirectory(sessionId, req.getFileId(), req.getDirectoryName());
         
         FileInfo dirInfo = new FileInfo(FileInfo.Type.DIRECTORY);
         dirInfo.setFileId(req.getFileId());
