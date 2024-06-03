@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.danilakondr.netalbum.api.message.Request;
 import ru.danilakondr.netalbum.api.message.Response;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.ByteBuffer;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +20,8 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         implements WebSocket.Listener {
     private final CountDownLatch connectionLatch = new CountDownLatch(1);
     private final ExecutorService service;
+    private Thread pinger;
+
     private volatile boolean connected = false;
     private WebSocket socket;
 
@@ -35,7 +40,7 @@ public class NetAlbumService extends SubmissionPublisher<Message>
                         .newHttpClient()
                         .newWebSocketBuilder()
                         .buildAsync(uri, NetAlbumService.this);
-                cfWebSocket.join();
+                WebSocket s = cfWebSocket.join();
                 connectionLatch.countDown();
 
                 Message msg = new Message(Message.Type.CONNECTION_ESTABLISHED);
@@ -48,6 +53,8 @@ public class NetAlbumService extends SubmissionPublisher<Message>
                 submit(msg);
             }
         });
+
+
     }
 
     public void waitUntilConnected() throws InterruptedException {
@@ -86,6 +93,26 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         webSocket.request(1);
         this.socket = webSocket;
         this.connected = true;
+
+        pinger = new Thread(() -> {
+            try {
+                while (true) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(bos);
+
+                    dos.writeLong(System.currentTimeMillis());
+                    dos.writeLong(System.nanoTime());
+
+                    ByteBuffer buf = ByteBuffer.wrap(bos.toByteArray());
+                    webSocket.sendPing(buf).join();
+                    Thread.sleep(10000);
+                }
+            }
+            catch (Exception ex) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        pinger.start();
     }
 
     @Override
@@ -122,7 +149,9 @@ public class NetAlbumService extends SubmissionPublisher<Message>
             msg.setProperty("message", reason);
             submit(msg);
         }
-        
+
+        pinger.interrupt();
+
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 
@@ -134,6 +163,8 @@ public class NetAlbumService extends SubmissionPublisher<Message>
         Message msg = new Message(Message.Type.CONNECTION_BROKEN);
         msg.setProperty("message", error.toString());
         submit(msg);
+
+        pinger.interrupt();
     }
 
     private void processResponse(String strResponse) {
@@ -148,6 +179,8 @@ public class NetAlbumService extends SubmissionPublisher<Message>
     }
 
     public void disconnect() {
+        socket.sendClose(1000, "");
         service.shutdown();
+        pinger.interrupt();
     }
 }
