@@ -20,7 +20,6 @@ import java.util.zip.ZipOutputStream;
 import ru.danilakondr.netalbum.api.data.ChangeCommand;
 import ru.danilakondr.netalbum.api.data.ChangeInfo;
 import ru.danilakondr.netalbum.api.data.FileInfo;
-import ru.danilakondr.netalbum.server.error.NotADirectoryError;
 import ru.danilakondr.netalbum.server.model.ChangeQueueRecord;
 
 @Service
@@ -115,24 +114,19 @@ public class NetAlbumService {
         if (newName.equals(file.getFileName()))
             return;
         
-        if (file.getFileType() != ImageFile.Type.FILE) {
-            renameDir(sessionId, fileId, newName);
-            return;
-        }
-        
         if (dao.getImageFile(sessionId, newName) != null)
             throw new FileAlreadyExistsError(newName);
 
         file.setFileName(newName);
         dao.putImageFile(file);
+        
+        if (file.getFileType() == ImageFile.Type.DIRECTORY)
+            renameSubDirectories(sessionId, fileId, newName);
     }
     
     @Transactional
-    private void renameDir(String sessionId, long fileId, String newName) {
+    private void renameSubDirectories(String sessionId, long fileId, String newName) {
         ImageFile dir = dao.getImageFile(sessionId, fileId);
-        if (dir.getFileType() != ImageFile.Type.DIRECTORY)
-            throw new NotADirectoryError(dir.getFileName());
-        
         String oldName = dir.getFileName();
         
         ImageFile newDir = dao.getImageFile(sessionId, newName);
@@ -141,10 +135,10 @@ public class NetAlbumService {
         
         dao.getSession(sessionId)
                 .getFiles().stream()
-                .filter(file -> file.getFileName().startsWith(oldName))
+                .filter(file -> file.getFileName().startsWith(oldName+"/"))
                 .forEach(file -> {
                     String oldFileName = file.getFileName();
-                    String newFileName = oldFileName.replace(oldName, newName);
+                    String newFileName = oldFileName.replace(oldName+"/", newName+"/");
                     
                     file.setFileName(newFileName);
                     

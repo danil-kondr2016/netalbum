@@ -138,11 +138,6 @@ public class NetAlbumHandler extends TextWebSocketHandler {
             err.setProperty("fileName", e.getMessage());
             sendResponse(session, err);
         }
-        catch (NotADirectoryError e) {
-            Response.Error err = new Response.Error(NOT_A_DIRECTORY);
-            err.setProperty("fileName", e.getMessage());
-            sendResponse(session, err);
-        }
     }
 
     private void putInitiator(WebSocketSession session, String sessionId) {

@@ -393,13 +393,6 @@ public class SessionControlForm extends javax.swing.JFrame {
                             GuiMessages.ERROR_TITLE);
                     break;
                 }
-                case NOT_A_DIRECTORY: {
-                    String fileName = (String)err.getProperty("fileName");
-                    error(MessageFormat
-                            .format(GuiMessages.NOT_A_DIRECTORY, fileName), 
-                            GuiMessages.ERROR_TITLE);
-                    break;
-                }
                 case EXCEPTION: {
                     String message = (String)err.getProperty("message");
                     error(MessageFormat
